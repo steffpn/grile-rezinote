@@ -35,6 +35,7 @@ export const users = pgTable("users", {
   yearOfStudy: integer("year_of_study"), // 1-6, nullable for admin users
   role: userRoleEnum("role").notNull().default("student"),
   isSuperadmin: boolean("is_superadmin").notNull().default(false),
+  trialStartedAt: timestamp("trial_started_at"), // set on first paid feature access
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
@@ -107,6 +108,8 @@ export const subscriptions = pgTable("subscriptions", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   status: subscriptionStatusEnum("status").notNull().default("inactive"),
+  planType: text("plan_type"), // 'monthly' | 'annual'
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
   currentPeriodEnd: timestamp("current_period_end"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
@@ -130,4 +133,11 @@ export const auditLogs = pgTable("audit_logs", {
   entityId: uuid("entity_id").notNull(),
   changes: text("changes"), // JSON string of changes made
   createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+
+export const webhookEvents = pgTable("webhook_events", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  stripeEventId: text("stripe_event_id").notNull().unique(),
+  type: text("type").notNull(),
+  processedAt: timestamp("processed_at").defaultNow().notNull(),
 })
