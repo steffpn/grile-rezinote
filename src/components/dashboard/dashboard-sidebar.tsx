@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, BookOpen, TrendingUp, History, Menu } from "lucide-react"
+import { BarChart3, BookOpen, TrendingUp, History, Trophy, Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +17,7 @@ const navItems = [
   { href: "/dashboard/chapters", label: "Capitole", icon: BookOpen },
   { href: "/dashboard/trends", label: "Tendinte", icon: TrendingUp },
   { href: "/dashboard/history", label: "Istoric", icon: History },
+  { href: "/dashboard/ranking", label: "Clasament", icon: Trophy },
 ]
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
