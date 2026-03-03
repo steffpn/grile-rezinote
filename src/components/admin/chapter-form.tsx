@@ -37,6 +37,7 @@ export function ChapterForm({ chapter, open, onClose }: ChapterFormProps) {
         setErrors(result.error as Record<string, string[]>)
       } else {
         onClose()
+        window.location.reload()
       }
     } finally {
       setIsLoading(false)
