@@ -47,7 +47,7 @@ export default async function StudentLayout({
   }
 
   return (
-    <AppShell links={studentLinks} userEmail={user?.email ?? null}>
+    <AppShell links={studentLinks} userEmail={user?.email ?? null} showMobileTabBar>
       {/* Trial banner */}
       {subscriptionAccess?.status === "trialing" &&
         subscriptionAccess.trialDaysRemaining !== undefined && (

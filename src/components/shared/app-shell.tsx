@@ -1,4 +1,5 @@
 import { NavHeader } from "@/components/shared/nav-header"
+import { MobileTabBar } from "@/components/shared/mobile-tab-bar"
 
 interface NavLink {
   href: string
@@ -9,24 +10,40 @@ interface AppShellProps {
   children: React.ReactNode
   links?: NavLink[]
   userEmail?: string | null
+  showMobileTabBar?: boolean
 }
 
-export function AppShell({ children, links, userEmail }: AppShellProps) {
+export function AppShell({
+  children,
+  links,
+  userEmail,
+  showMobileTabBar = false,
+}: AppShellProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <NavHeader links={links} userEmail={userEmail} />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+      <main
+        className={`mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8 ${
+          showMobileTabBar ? "pb-24 md:pb-8" : ""
+        }`}
+      >
         {children}
       </main>
 
-      <footer className="border-t border-border">
+      <footer
+        className={`border-t border-border ${
+          showMobileTabBar ? "hidden md:block" : ""
+        }`}
+      >
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-muted-foreground">
             &copy; 2026 grile-ReziNOTE. Toate drepturile rezervate.
           </p>
         </div>
       </footer>
+
+      {showMobileTabBar && <MobileTabBar />}
     </div>
   )
 }
