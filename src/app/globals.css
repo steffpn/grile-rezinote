@@ -148,3 +148,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* PWA safe area utilities for notched devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

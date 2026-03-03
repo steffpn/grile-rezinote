@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
 import { startTrial } from "@/lib/subscription/trial"
 import { PaywallOverlay } from "@/components/paywall/PaywallOverlay"
+import { PwaInstallPrompt } from "@/components/pwa/install-prompt"
 
 export const metadata: Metadata = {
   title: "Dashboard | grile-ReziNOTE",
@@ -65,6 +66,9 @@ export default async function StudentLayout({
         )}
 
       {children}
+
+      {/* PWA install prompt for mobile users */}
+      <PwaInstallPrompt />
 
       {/* Paywall overlay for expired users */}
       <PaywallOverlay isVisible={showPaywall} />

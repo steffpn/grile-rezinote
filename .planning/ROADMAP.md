@@ -15,10 +15,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Design System** - Project scaffolding, DB schema with answer snapshotting, scoring engine, design system tokens, PWA shell, Romanian language baseline
 - [x] **Phase 2: Landing Page & Authentication** - Branded landing page, full email+password auth flow with verification and password reset (completed 2026-03-03)
 - [x] **Phase 3: Admin Content Management** - Chapter CRUD, question CRUD with CS/CM support, bulk import/export, admin panel security (completed 2026-03-03)
-- [x] **Phase 4: Practice Tests** - Quiz engine for chapter-based and mixed practice tests with immediate/deferred feedback (completed 2026-03-03)
-- [x] **Phase 5: Exam Simulation** - Timed 200-question exam (50 CS + 150 CM) with server-authoritative timer and progressive save (completed 2026-03-03)
-- [ ] **Phase 6: Admission Comparison** - Historical admission data management and post-simulation admission outcome prediction
-- [x] **Phase 7: Dashboard & Analytics** - Student dashboard with per-chapter stats, trends, visualizations, and dynamic updates (completed 2026-03-03)
+- [ ] **Phase 4: Practice Tests** - Quiz engine for chapter-based and mixed practice tests with immediate/deferred feedback
+- [ ] **Phase 5: Exam Simulation** - Timed 200-question exam (50 CS + 150 CM) with server-authoritative timer and progressive save
+- [x] **Phase 6: Admission Comparison** - Historical admission data management and post-simulation admission outcome prediction (completed 2026-03-03)
+- [ ] **Phase 7: Dashboard & Analytics** - Student dashboard with per-chapter stats, trends, visualizations, and dynamic updates
 - [x] **Phase 8: Peer Comparison & Motivation** - Anonymous peer leaderboard with percentile/distribution and auto-generated motivational messages (completed 2026-03-03)
 - [x] **Phase 9: Payments & Subscriptions** - Stripe subscription billing with access gating, webhook sync, and subscription management (completed 2026-03-03)
 - [ ] **Phase 10: PWA & Mobile Polish** - Installable PWA with home screen icon, splash screen, and full mobile responsiveness
@@ -104,13 +104,12 @@ Plans:
   3. During the simulation, the student sees NO correct answers and NO scoring — results appear only after completing or time-expiring the entire exam
   4. The scoring uses the official Romanian formula: CS questions award 4 points for correct / 0 for wrong; CM questions award 1 point per correctly-handled option (selected correct OR unselected incorrect), with annulment (0 points) for fewer than 2 or more than 4 selections
   5. Each answer is saved to the server as the student progresses — if the browser crashes or the connection drops, the student can resume without losing answers; the server rejects submissions past the deadline plus a grace period
-**Plans**: Complete
+**Plans**: TBD
 
 Plans:
-- [x] 05-01: DB schema extensions (siteSettings table, shuffleSeed column) + exam server actions and queries
-- [x] 05-02: Admin settings page for exam duration configuration
-- [x] 05-03: Exam UI components (timer, navigator, one-per-page question, auto-save, submit modal)
-- [x] 05-04: Exam results page with chapter breakdown and question review
+- [ ] 05-01: TBD
+- [ ] 05-02: TBD
+- [ ] 05-03: TBD
 
 ### Phase 6: Admission Comparison
 **Goal**: After completing an exam simulation, students instantly see whether their score would have earned them admission to specific dental specialties based on real historical threshold data — the platform's core differentiator
@@ -122,12 +121,12 @@ Plans:
   3. The platform shows the student which specialties they would have been admitted to (and which they would not), based on their score compared against historical thresholds for each of the last 5 years
   4. A student can browse historical admission data independently (outside of simulation results) through an interactive explorer — filtering by specialty and year, seeing thresholds and available spots
   5. The comparison clearly shows per-year results (e.g., "Admitted to Orthodontics in 3 of 5 years") so students understand the variability of admission thresholds
-**Plans**: TBD
+**Plans**: Complete
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-- [ ] 06-03: TBD
+- [x] 06-01: Specialties CRUD & Admission Data Admin (schema, validation, queries, actions, admin UI)
+- [x] 06-02: Admission Data Bulk Import (CSV/Excel parsing, column mapping, upsert, export with BOM)
+- [x] 06-03: Post-Simulation Comparison & Independent Explorer (comparison logic, card UI, Recharts charts)
 
 ### Phase 7: Dashboard & Analytics
 **Goal**: Students have a rich, visual dashboard showing their preparation progress — overall stats, per-chapter breakdown with advanced visualizations, daily/weekly trends, and answer history — all updating dynamically after every test
@@ -203,10 +202,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 1. Foundation & Design System | 3/3 | Complete    | 2026-03-02 |
 | 2. Landing Page & Authentication | 0/3 | Complete    | 2026-03-03 |
 | 3. Admin Content Management | 4/4 | Complete    | 2026-03-03 |
-| 4. Practice Tests | 0/3 | Complete    | 2026-03-03 |
-| 5. Exam Simulation | 4/4 | Complete    | 2026-03-03 |
-| 6. Admission Comparison | 0/3 | Not started | - |
-| 7. Dashboard & Analytics | 0/3 | Complete    | 2026-03-03 |
+| 4. Practice Tests | 0/3 | Not started | - |
+| 5. Exam Simulation | 0/3 | Not started | - |
+| 6. Admission Comparison | 3/3 | Complete    | 2026-03-03 |
+| 7. Dashboard & Analytics | 0/3 | Not started | - |
 | 8. Peer Comparison & Motivation | 0/3 | Complete    | 2026-03-03 |
 | 9. Payments & Subscriptions | 0/3 | Complete    | 2026-03-03 |
 | 10. PWA & Mobile Polish | 0/2 | Not started | - |
