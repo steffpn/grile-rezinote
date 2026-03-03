@@ -34,6 +34,7 @@ export const users = pgTable("users", {
   fullName: text("full_name").notNull(),
   yearOfStudy: integer("year_of_study"), // 1-6, nullable for admin users
   role: userRoleEnum("role").notNull().default("student"),
+  isSuperadmin: boolean("is_superadmin").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
@@ -42,7 +43,9 @@ export const chapters = pgTable("chapters", {
   name: text("name").notNull(),
   description: text("description"),
   sortOrder: integer("sort_order").notNull().default(0),
+  archivedAt: timestamp("archived_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })
 
 export const questions = pgTable("questions", {
@@ -54,6 +57,7 @@ export const questions = pgTable("questions", {
   type: questionTypeEnum("type").notNull(),
   sourceBook: text("source_book"),
   sourcePage: text("source_page"),
+  archivedAt: timestamp("archived_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })
@@ -113,5 +117,17 @@ export const admissionData = pgTable("admission_data", {
   year: integer("year").notNull(),
   thresholdScore: integer("threshold_score").notNull(),
   availableSpots: integer("available_spots").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+
+export const auditLogs = pgTable("audit_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .references(() => users.id)
+    .notNull(),
+  action: text("action").notNull(), // "create" | "update" | "delete" | "restore" | "reorder"
+  entityType: text("entity_type").notNull(), // "chapter" | "question"
+  entityId: uuid("entity_id").notNull(),
+  changes: text("changes"), // JSON string of changes made
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
