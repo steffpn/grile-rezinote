@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/shared/theme-toggle"
+import { logout } from "@/lib/auth/actions"
 
 interface NavLink {
   href: string
@@ -13,14 +14,18 @@ interface NavLink {
 
 interface NavHeaderProps {
   links?: NavLink[]
+  userEmail?: string | null
 }
 
 const defaultLinks: NavLink[] = [
-  { href: "/", label: "Acasă" },
+  { href: "/", label: "Acasa" },
   { href: "/dashboard", label: "Dashboard" },
 ]
 
-export function NavHeader({ links = defaultLinks }: NavHeaderProps) {
+export function NavHeader({
+  links = defaultLinks,
+  userEmail,
+}: NavHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -40,6 +45,24 @@ export function NavHeader({ links = defaultLinks }: NavHeaderProps) {
             </Button>
           ))}
           <ThemeToggle />
+          {userEmail && (
+            <>
+              <span className="ml-2 text-sm text-muted-foreground">
+                {userEmail}
+              </span>
+              <form action={logout}>
+                <Button variant="ghost" size="sm" type="submit">
+                  <LogOut className="mr-1 h-4 w-4" />
+                  Deconectare
+                </Button>
+              </form>
+            </>
+          )}
+          {!userEmail && (
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/login">Autentificare</Link>
+            </Button>
+          )}
         </nav>
 
         {/* Mobile menu button */}
@@ -49,9 +72,13 @@ export function NavHeader({ links = defaultLinks }: NavHeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Închide meniul" : "Deschide meniul"}
+            aria-label={mobileOpen ? "Inchide meniul" : "Deschide meniul"}
           >
-            {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            {mobileOpen ? (
+              <X className="size-5" />
+            ) : (
+              <Menu className="size-5" />
+            )}
           </Button>
         </div>
       </div>
@@ -72,6 +99,36 @@ export function NavHeader({ links = defaultLinks }: NavHeaderProps) {
                 <Link href={link.href}>{link.label}</Link>
               </Button>
             ))}
+            {userEmail && (
+              <>
+                <div className="my-2 border-t border-border" />
+                <span className="px-3 text-sm text-muted-foreground">
+                  {userEmail}
+                </span>
+                <form action={logout}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="submit"
+                    className="w-full justify-start"
+                  >
+                    <LogOut className="mr-1 h-4 w-4" />
+                    Deconectare
+                  </Button>
+                </form>
+              </>
+            )}
+            {!userEmail && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start"
+                asChild
+                onClick={() => setMobileOpen(false)}
+              >
+                <Link href="/login">Autentificare</Link>
+              </Button>
+            )}
           </div>
         </nav>
       )}

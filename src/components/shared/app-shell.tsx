@@ -8,12 +8,13 @@ interface NavLink {
 interface AppShellProps {
   children: React.ReactNode
   links?: NavLink[]
+  userEmail?: string | null
 }
 
-export function AppShell({ children, links }: AppShellProps) {
+export function AppShell({ children, links, userEmail }: AppShellProps) {
   return (
     <div className="flex min-h-screen flex-col">
-      <NavHeader links={links} />
+      <NavHeader links={links} userEmail={userEmail} />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         {children}
