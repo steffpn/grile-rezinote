@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 const studentLinks = [
   { href: "/", label: "Acasa" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/practice", label: "Teste Practice" },
   { href: "/subscription", label: "Abonament" },
 ]
 
