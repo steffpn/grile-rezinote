@@ -3,8 +3,9 @@
 import { forwardRef } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Toggle } from "@/components/ui/toggle"
-import { Flag, BookOpen } from "lucide-react"
+import { Flag, BookOpen, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { QuestionOptionGroup } from "./QuestionOptionGroup"
 
@@ -30,12 +31,14 @@ interface QuestionCardProps {
   questionNumber: number
   selected: string[]
   onAnswer: (questionId: string, selected: string[]) => void
+  onVerify?: (questionId: string) => void
   onFlag: (questionId: string) => void
   isFlagged: boolean
   isAnswered: boolean
   disabled?: boolean
   feedback?: Feedback
   showResults?: boolean
+  isVerifying?: boolean
 }
 
 export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
@@ -45,12 +48,14 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
       questionNumber,
       selected,
       onAnswer,
+      onVerify,
       onFlag,
       isFlagged,
       isAnswered,
       disabled = false,
       feedback,
       showResults = false,
+      isVerifying = false,
     },
     ref
   ) {
@@ -118,6 +123,18 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
             correctOptions={feedback?.correctOptions}
             showResults={showResults}
           />
+
+          {/* Verify button for CM questions with immediate feedback */}
+          {onVerify && !isAnswered && !showResults && selected.length > 0 && (
+            <Button
+              onClick={() => onVerify(question.id)}
+              disabled={isVerifying}
+              className="w-full rounded-xl gradient-primary border-0 text-white shadow-md"
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              {isVerifying ? "Se verifica..." : "Verifica raspunsul"}
+            </Button>
+          )}
 
           {/* Source reference for incorrect answers */}
           {feedback && !feedback.isCorrect && (feedback.sourceBook || feedback.sourcePage) && (

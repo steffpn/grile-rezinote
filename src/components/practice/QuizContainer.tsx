@@ -99,21 +99,11 @@ export function QuizContainer({
     }
   }, [questions, answeredIds, scrollToQuestion])
 
-  async function handleAnswer(questionId: string, selectedOptions: string[]) {
-    // Update local state immediately
-    setAnswers((prev) => {
-      const next = new Map(prev)
-      next.set(questionId, selectedOptions)
-      return next
-    })
-
-    // Don't submit if no options selected
-    if (selectedOptions.length === 0) return
-
+  // Submit answer to server and process feedback
+  async function submitAndProcess(questionId: string, selectedOptions: string[]) {
     setIsSubmitting(true)
 
     try {
-      // Always submit to server for persistence (save/resume)
       const result = await submitAnswer({
         attemptId,
         questionId,
@@ -157,6 +147,33 @@ export function QuizContainer({
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  async function handleAnswer(questionId: string, selectedOptions: string[]) {
+    // Update local state immediately
+    setAnswers((prev) => {
+      const next = new Map(prev)
+      next.set(questionId, selectedOptions)
+      return next
+    })
+
+    // Don't submit if no options selected
+    if (selectedOptions.length === 0) return
+
+    // For CM questions with immediate feedback, wait for explicit "Verify" click
+    const question = questions.find((q) => q.id === questionId)
+    if (feedbackMode === "immediate" && question?.type === "CM") {
+      return
+    }
+
+    await submitAndProcess(questionId, selectedOptions)
+  }
+
+  // Called when user clicks "Verifica raspunsul" on a CM question
+  async function handleVerify(questionId: string) {
+    const selectedOptions = answers.get(questionId)
+    if (!selectedOptions || selectedOptions.length === 0) return
+    await submitAndProcess(questionId, selectedOptions)
   }
 
   function handleFlag(questionId: string) {
@@ -250,10 +267,16 @@ export function QuizContainer({
                 questionNumber={index + 1}
                 selected={answers.get(question.id) ?? []}
                 onAnswer={handleAnswer}
+                onVerify={
+                  feedbackMode === "immediate" && question.type === "CM"
+                    ? handleVerify
+                    : undefined
+                }
                 onFlag={handleFlag}
                 isFlagged={flaggedIds.has(question.id)}
                 isAnswered={answeredIds.has(question.id)}
                 disabled={isSubmitting}
+                isVerifying={isSubmitting}
                 feedback={
                   showFeedback && questionFeedback
                     ? {
