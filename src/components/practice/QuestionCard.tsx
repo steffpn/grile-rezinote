@@ -59,22 +59,23 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
         ref={ref}
         id={`question-${question.id}`}
         className={cn(
-          "transition-all",
-          showResults && feedback?.isCorrect && "border-green-300 dark:border-green-700",
-          showResults && feedback && !feedback.isCorrect && "border-red-300 dark:border-red-700"
+          "border-border/50 transition-all duration-300",
+          showResults && feedback?.isCorrect && "border-green-400 bg-green-50/30 dark:border-green-600 dark:bg-green-950/20",
+          showResults && feedback && !feedback.isCorrect && "border-red-400 bg-red-50/30 dark:border-red-600 dark:bg-red-950/20"
         )}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold">
+            <span className="text-lg font-bold tracking-tight">
               Intrebarea {questionNumber}
             </span>
             <Badge
               variant="outline"
               className={cn(
+                "rounded-full text-[11px] font-semibold",
                 question.type === "CS"
-                  ? "border-teal-500 text-teal-700 dark:text-teal-300"
-                  : "border-purple-500 text-purple-700 dark:text-purple-300"
+                  ? "border-primary/30 bg-primary/5 text-primary"
+                  : "border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400"
               )}
             >
               {question.type}
@@ -83,7 +84,8 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
               <Badge
                 variant={feedback.isCorrect ? "default" : "destructive"}
                 className={cn(
-                  feedback.isCorrect && "bg-green-600 hover:bg-green-700"
+                  "rounded-full text-[11px]",
+                  feedback.isCorrect && "bg-emerald-600 hover:bg-emerald-700"
                 )}
               >
                 {feedback.isCorrect ? "Corect" : "Gresit"}
@@ -96,7 +98,8 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
             size="sm"
             aria-label="Marcheaza intrebarea"
             className={cn(
-              isFlagged && "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+              "rounded-lg",
+              isFlagged && "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
             )}
           >
             <Flag className="h-4 w-4" />
@@ -118,7 +121,7 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
 
           {/* Source reference for incorrect answers */}
           {feedback && !feedback.isCorrect && (feedback.sourceBook || feedback.sourcePage) && (
-            <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950">
+            <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950">
               <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
               <span className="text-amber-800 dark:text-amber-200">
                 Sursa: {feedback.sourceBook}

@@ -43,27 +43,26 @@ export function QuestionOptionGroup({
           const isWrong = showResults && isSelected && !isCorrect
 
           return (
-            <div
+            <Label
               key={opt.label}
+              htmlFor={`opt-${opt.label}`}
               className={cn(
                 "flex min-h-[44px] items-center gap-3 rounded-lg border p-3 transition-colors",
+                !disabled && "cursor-pointer",
+                disabled && "cursor-default",
                 !showResults && "hover:bg-accent active:bg-accent",
                 showResults && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/30",
                 showResults && isWrong && "border-red-500 bg-red-50 dark:bg-red-950/30"
               )}
             >
               <RadioGroupItem value={opt.label} id={`opt-${opt.label}`} />
-              <Label
-                htmlFor={`opt-${opt.label}`}
-                className={cn(
-                  "flex-1 cursor-pointer text-sm sm:text-base",
-                  disabled && "cursor-default"
-                )}
+              <span
+                className="flex-1 text-sm sm:text-base"
               >
                 <span className="mr-2 font-semibold">{opt.label}.</span>
                 {opt.text}
-              </Label>
-            </div>
+              </span>
+            </Label>
           )
         })}
       </RadioGroup>
@@ -79,10 +78,13 @@ export function QuestionOptionGroup({
         const isWrong = showResults && isSelected && !isCorrect
 
         return (
-          <div
+          <Label
             key={opt.label}
+            htmlFor={`opt-${opt.label}`}
             className={cn(
               "flex min-h-[44px] items-center gap-3 rounded-lg border p-3 transition-colors",
+              !disabled && "cursor-pointer",
+              disabled && "cursor-default",
               !showResults && "hover:bg-accent active:bg-accent",
               showResults && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/30",
               showResults && isWrong && "border-red-500 bg-red-50 dark:bg-red-950/30"
@@ -101,17 +103,13 @@ export function QuestionOptionGroup({
               }}
               disabled={disabled}
             />
-            <Label
-              htmlFor={`opt-${opt.label}`}
-              className={cn(
-                "flex-1 cursor-pointer text-sm sm:text-base",
-                disabled && "cursor-default"
-              )}
+            <span
+              className="flex-1 text-sm sm:text-base"
             >
               <span className="mr-2 font-semibold">{opt.label}.</span>
               {opt.text}
-            </Label>
-          </div>
+            </span>
+          </Label>
         )
       })}
     </div>

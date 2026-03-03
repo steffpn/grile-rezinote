@@ -33,13 +33,13 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
               isActive
-                ? "bg-accent text-accent-foreground font-medium"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                ? "bg-primary/10 text-primary font-semibold shadow-sm"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
             )}
           >
-            <item.icon className="h-4 w-4" />
+            <item.icon className={cn("h-4 w-4", isActive && "text-primary")} />
             {item.label}
           </Link>
         )
@@ -57,7 +57,7 @@ export function DashboardSidebar() {
       <div className="lg:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Meniu navigare</span>
             </Button>
@@ -69,9 +69,9 @@ export function DashboardSidebar() {
       </div>
 
       {/* Desktop: Fixed sidebar */}
-      <aside className="hidden lg:block w-60 shrink-0 border-r">
-        <div className="sticky top-0 p-4">
-          <h2 className="mb-4 px-3 text-lg font-semibold">Dashboard</h2>
+      <aside className="hidden lg:block w-60 shrink-0">
+        <div className="sticky top-20 p-4">
+          <h2 className="mb-4 px-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">Dashboard</h2>
           <NavLinks />
         </div>
       </aside>

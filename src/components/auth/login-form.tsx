@@ -15,11 +15,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { GraduationCap } from "lucide-react"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <Button
+      type="submit"
+      className="w-full rounded-xl gradient-primary border-0 text-white shadow-lg shadow-primary-500/20 hover:shadow-xl transition-all"
+      disabled={pending}
+    >
       {pending ? "Se conecteaza..." : "Autentificare"}
     </Button>
   )
@@ -29,16 +34,19 @@ export function LoginForm() {
   const [state, formAction] = useActionState<AuthState, FormData>(login, null)
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Autentificare</CardTitle>
+    <Card className="w-full max-w-md border-border/50 shadow-xl shadow-primary-500/5">
+      <CardHeader className="text-center pb-2">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl gradient-primary shadow-lg shadow-primary-500/25">
+          <GraduationCap className="h-7 w-7 text-white" />
+        </div>
+        <CardTitle className="text-2xl font-bold">Bine ai revenit!</CardTitle>
         <CardDescription>Conecteaza-te la contul tau</CardDescription>
       </CardHeader>
 
       <CardContent>
         <form action={formAction} className="space-y-4">
           {state?.error && (
-            <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {state.error}
             </div>
           )}
@@ -50,6 +58,7 @@ export function LoginForm() {
               name="email"
               type="email"
               placeholder="exemplu@email.com"
+              className="rounded-xl"
               required
             />
             {state?.errors?.email && (
@@ -63,6 +72,7 @@ export function LoginForm() {
               id="password"
               name="password"
               type="password"
+              className="rounded-xl"
               required
             />
             {state?.errors?.password && (
@@ -87,7 +97,7 @@ export function LoginForm() {
           Nu ai cont?{" "}
           <Link
             href="/signup"
-            className="font-medium text-primary hover:underline"
+            className="font-semibold text-primary hover:underline"
           >
             Inregistreaza-te
           </Link>

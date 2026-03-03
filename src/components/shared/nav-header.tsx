@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, LogOut } from "lucide-react"
+import { Menu, X, LogOut, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/shared/theme-toggle"
 import { logout } from "@/lib/auth/actions"
@@ -29,37 +29,42 @@ export function NavHeader({
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-1 text-lg font-bold">
-          <span className="text-foreground">Rezi</span>
-          <span className="text-primary">NOTE</span>
+        <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
+            <GraduationCap className="h-5 w-5 text-white" />
+          </div>
+          <span>
+            <span className="text-foreground">Rezi</span>
+            <span className="bg-gradient-to-r from-primary-500 to-primary-400 bg-clip-text text-transparent">NOTE</span>
+          </span>
         </Link>
 
         {/* Desktop navigation */}
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((link) => (
-            <Button key={link.href} variant="ghost" size="sm" asChild>
+            <Button key={link.href} variant="ghost" size="sm" className="rounded-full" asChild>
               <Link href={link.href}>{link.label}</Link>
             </Button>
           ))}
           <ThemeToggle />
           {userEmail && (
             <>
-              <span className="ml-2 text-sm text-muted-foreground">
+              <span className="ml-2 rounded-full bg-secondary px-3 py-1 text-xs text-muted-foreground">
                 {userEmail}
               </span>
               <form action={logout}>
-                <Button variant="ghost" size="sm" type="submit">
+                <Button variant="ghost" size="sm" className="rounded-full text-muted-foreground hover:text-destructive" type="submit">
                   <LogOut className="mr-1 h-4 w-4" />
-                  Deconectare
+                  Iesi
                 </Button>
               </form>
             </>
           )}
           {!userEmail && (
-            <Button variant="ghost" size="sm" asChild>
+            <Button size="sm" className="rounded-full gradient-primary border-0 text-white shadow-md hover:shadow-lg transition-shadow" asChild>
               <Link href="/login">Autentificare</Link>
             </Button>
           )}
@@ -71,6 +76,7 @@ export function NavHeader({
           <Button
             variant="ghost"
             size="icon"
+            className="rounded-full"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? "Inchide meniul" : "Deschide meniul"}
           >
@@ -85,14 +91,14 @@ export function NavHeader({
 
       {/* Mobile navigation */}
       {mobileOpen && (
-        <nav className="border-t border-border px-4 py-3 md:hidden">
+        <nav className="border-t border-border/50 bg-background/95 backdrop-blur-xl px-4 py-3 md:hidden">
           <div className="flex flex-col gap-1">
             {links.map((link) => (
               <Button
                 key={link.href}
                 variant="ghost"
                 size="sm"
-                className="justify-start"
+                className="justify-start rounded-lg"
                 asChild
                 onClick={() => setMobileOpen(false)}
               >
@@ -101,7 +107,7 @@ export function NavHeader({
             ))}
             {userEmail && (
               <>
-                <div className="my-2 border-t border-border" />
+                <div className="my-2 border-t border-border/50" />
                 <span className="px-3 text-sm text-muted-foreground">
                   {userEmail}
                 </span>
@@ -110,7 +116,7 @@ export function NavHeader({
                     variant="ghost"
                     size="sm"
                     type="submit"
-                    className="w-full justify-start"
+                    className="w-full justify-start text-muted-foreground hover:text-destructive"
                   >
                     <LogOut className="mr-1 h-4 w-4" />
                     Deconectare
@@ -120,9 +126,8 @@ export function NavHeader({
             )}
             {!userEmail && (
               <Button
-                variant="ghost"
                 size="sm"
-                className="justify-start"
+                className="justify-start rounded-lg gradient-primary border-0 text-white"
                 asChild
                 onClick={() => setMobileOpen(false)}
               >

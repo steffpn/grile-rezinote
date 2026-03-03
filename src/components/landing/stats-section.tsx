@@ -23,9 +23,9 @@ const stats = [
 
 export function StatsSection() {
   return (
-    <section className="py-20 sm:py-24">
+    <section className="py-20 sm:py-28">
       <div className="mx-auto max-w-5xl px-4">
-        <div className="mb-12 text-center">
+        <div className="mb-16 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Pregatire bazata pe date reale
           </h2>
@@ -37,10 +37,10 @@ export function StatsSection() {
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="text-4xl font-bold text-primary sm:text-5xl">
+              <div className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary-500 to-[#8b5cf6] bg-clip-text text-transparent sm:text-5xl">
                 {stat.value}
               </div>
-              <div className="mt-2 text-sm font-medium uppercase tracking-wider text-foreground">
+              <div className="mt-2 text-sm font-bold uppercase tracking-wider text-foreground">
                 {stat.label}
               </div>
               <div className="mt-1 text-sm text-muted-foreground">

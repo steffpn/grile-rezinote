@@ -99,8 +99,8 @@ export function MistakesList({ mistakes, chapters }: MistakesListProps) {
                       variant="outline"
                       className={
                         mistake.questionType === "CS"
-                          ? "border-teal-500 text-teal-700 dark:text-teal-300"
-                          : "border-purple-500 text-purple-700 dark:text-purple-300"
+                          ? "border-primary/30 bg-primary/5 text-primary rounded-full text-[11px] font-semibold"
+                          : "border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400 rounded-full text-[11px] font-semibold"
                       }
                     >
                       {mistake.questionType}

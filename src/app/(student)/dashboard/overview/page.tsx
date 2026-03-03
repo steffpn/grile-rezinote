@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Target, FileQuestion, ClipboardCheck, Flame } from "lucide-react"
+import { Target, FileQuestion, ClipboardCheck, Flame, Sparkles } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/dashboard/stat-card"
@@ -47,12 +47,12 @@ export default async function OverviewPage({
   const hasData = overview.stats.totalQuestions > 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header with filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Progresul tau in pregatirea pentru rezidentiat
           </p>
         </div>
@@ -68,16 +68,18 @@ export default async function OverviewPage({
 
       {!hasData ? (
         /* Empty state */
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <FileQuestion className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">
-              Inca nu ai completat niciun test
+        <Card className="border-dashed border-2 border-primary/20">
+          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10">
+              <Sparkles className="h-10 w-10 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold">
+              Incepe-ti aventura!
             </h2>
-            <p className="mb-6 mt-2 max-w-sm text-sm text-muted-foreground">
-              Incepe un test de practica pentru a vedea statisticile tale!
+            <p className="mb-8 mt-2 max-w-sm text-sm text-muted-foreground">
+              Completeaza primul test de practica si urmareste-ti progresul aici.
             </p>
-            <Button asChild>
+            <Button size="lg" className="rounded-full gradient-primary border-0 text-white shadow-lg hover:shadow-xl transition-shadow px-8" asChild>
               <Link href="/practice">Incepe un test</Link>
             </Button>
           </CardContent>
@@ -89,22 +91,22 @@ export default async function OverviewPage({
             <StatCard
               label="Acuratete"
               value={`${overview.stats.accuracyPct}%`}
-              icon={Target}
+              icon={<Target className="h-6 w-6 text-primary" />}
             />
             <StatCard
               label="Intrebari"
               value={overview.stats.totalQuestions}
-              icon={FileQuestion}
+              icon={<FileQuestion className="h-6 w-6 text-primary" />}
             />
             <StatCard
               label="Teste"
               value={overview.stats.totalTests}
-              icon={ClipboardCheck}
+              icon={<ClipboardCheck className="h-6 w-6 text-primary" />}
             />
             <StatCard
               label="Serie"
               value={`${overview.streak} zile`}
-              icon={Flame}
+              icon={<Flame className="h-6 w-6 text-accent-warm" />}
             />
           </div>
 
@@ -113,25 +115,26 @@ export default async function OverviewPage({
             <MotivationCard />
           </Suspense>
 
-          {/* Trend Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Evolutia Acuratetii</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TrendChart data={trends} height={300} />
-            </CardContent>
-          </Card>
+          {/* Charts Grid */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="border-border/50 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Evolutia Acuratetii</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TrendChart data={trends} height={280} />
+              </CardContent>
+            </Card>
 
-          {/* Radar Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Puncte Forte per Capitol</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChapterRadar data={chapterStats} />
-            </CardContent>
-          </Card>
+            <Card className="border-border/50 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Puncte Forte per Capitol</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChapterRadar data={chapterStats} />
+              </CardContent>
+            </Card>
+          </div>
         </>
       )}
     </div>

@@ -52,7 +52,7 @@ export default async function ExamStartPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-start gap-3 rounded-lg border p-3">
-                <BookOpen className="mt-0.5 h-5 w-5 text-teal-600" />
+                <BookOpen className="mt-0.5 h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium">200 intrebari</p>
                   <p className="text-sm text-muted-foreground">
@@ -62,7 +62,7 @@ export default async function ExamStartPage() {
               </div>
 
               <div className="flex items-start gap-3 rounded-lg border p-3">
-                <Clock className="mt-0.5 h-5 w-5 text-teal-600" />
+                <Clock className="mt-0.5 h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium">
                     {durationHours} {durationHours === 1 ? "ora" : "ore"}
@@ -74,7 +74,7 @@ export default async function ExamStartPage() {
               </div>
 
               <div className="flex items-start gap-3 rounded-lg border p-3">
-                <Shield className="mt-0.5 h-5 w-5 text-teal-600" />
+                <Shield className="mt-0.5 h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium">Rezultate la final</p>
                   <p className="text-sm text-muted-foreground">
@@ -84,7 +84,7 @@ export default async function ExamStartPage() {
               </div>
 
               <div className="flex items-start gap-3 rounded-lg border p-3">
-                <Save className="mt-0.5 h-5 w-5 text-teal-600" />
+                <Save className="mt-0.5 h-5 w-5 text-primary" />
                 <div>
                   <p className="font-medium">Salvare automata</p>
                   <p className="text-sm text-muted-foreground">
@@ -99,13 +99,13 @@ export default async function ExamStartPage() {
               <div className="flex flex-wrap gap-2">
                 <Badge
                   variant="outline"
-                  className="border-teal-500 text-teal-700 dark:text-teal-300"
+                  className="border-primary/30 bg-primary/5 text-primary rounded-full text-[11px] font-semibold"
                 >
                   CS: 4 puncte / intrebare
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="border-purple-500 text-purple-700 dark:text-purple-300"
+                  className="border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400 rounded-full text-[11px] font-semibold"
                 >
                   CM: 1 punct / optiune corecta
                 </Badge>

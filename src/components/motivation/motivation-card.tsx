@@ -73,13 +73,13 @@ const typeLabels: Record<MessageType, string> = {
 
 const typeGradients: Record<MessageType, string> = {
   encouragement:
-    "bg-gradient-to-r from-green-50 to-transparent dark:from-green-950/20 dark:to-transparent",
+    "bg-gradient-to-r from-emerald-50 to-transparent dark:from-emerald-950/20 dark:to-transparent border-emerald-200/50 dark:border-emerald-800/30",
   guidance:
-    "bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/20 dark:to-transparent",
+    "bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/20 dark:to-transparent border-amber-200/50 dark:border-amber-800/30",
   didYouKnow:
-    "bg-gradient-to-r from-blue-50 to-transparent dark:from-blue-950/20 dark:to-transparent",
+    "bg-gradient-to-r from-primary-50 to-transparent dark:from-primary-950/20 dark:to-transparent border-primary-200/50 dark:border-primary-800/30",
   milestone:
-    "bg-gradient-to-r from-purple-50 to-transparent dark:from-purple-950/20 dark:to-transparent",
+    "bg-gradient-to-r from-violet-50 to-transparent dark:from-violet-950/20 dark:to-transparent border-violet-200/50 dark:border-violet-800/30",
 }
 
 /**

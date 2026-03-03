@@ -76,18 +76,19 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/dashboard") &&
     !subscriptionBypassRoutes.some((route) => pathname.startsWith(route))
   ) {
-    // Query subscription status via Supabase client (Edge-compatible)
-    const { data: subscription } = await supabase
-      .from("subscriptions")
-      .select("status, current_period_end")
-      .eq("user_id", user.id)
-      .single()
-
-    const { data: userRecord } = await supabase
-      .from("users")
-      .select("trial_started_at")
-      .eq("id", user.id)
-      .single()
+    // Query subscription + user data in parallel (Edge-compatible)
+    const [{ data: subscription }, { data: userRecord }] = await Promise.all([
+      supabase
+        .from("subscriptions")
+        .select("status, current_period_end")
+        .eq("user_id", user.id)
+        .single(),
+      supabase
+        .from("users")
+        .select("trial_started_at")
+        .eq("id", user.id)
+        .single(),
+    ])
 
     const hasActiveSubscription =
       subscription?.status === "active" ||

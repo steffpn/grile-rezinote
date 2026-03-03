@@ -242,20 +242,24 @@ export async function getInProgressAttempts(userId: string) {
     )
     .orderBy(desc(attempts.startedAt))
 
-  // Get answered counts for each attempt
-  const result = []
-  for (const attempt of inProgressAttempts) {
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(attemptAnswers)
-      .where(eq(attemptAnswers.attemptId, attempt.id))
+  if (inProgressAttempts.length === 0) return []
 
-    result.push({
-      ...attempt,
-      answeredCount: count,
-      totalQuestions: attempt.questionOrder?.length ?? 0,
+  // Get answered counts for all attempts in a single query
+  const attemptIds = inProgressAttempts.map((a) => a.id)
+  const answerCounts = await db
+    .select({
+      attemptId: attemptAnswers.attemptId,
+      count: sql<number>`count(*)::int`,
     })
-  }
+    .from(attemptAnswers)
+    .where(inArray(attemptAnswers.attemptId, attemptIds))
+    .groupBy(attemptAnswers.attemptId)
 
-  return result
+  const countMap = new Map(answerCounts.map((r) => [r.attemptId, r.count]))
+
+  return inProgressAttempts.map((attempt) => ({
+    ...attempt,
+    answeredCount: countMap.get(attempt.id) ?? 0,
+    totalQuestions: attempt.questionOrder?.length ?? 0,
+  }))
 }

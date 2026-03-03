@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { ChapterSelector } from "./ChapterSelector"
 import { createPracticeAttempt } from "@/lib/actions/practice"
+import { Rocket } from "lucide-react"
 
 interface Chapter {
   id: string
@@ -79,17 +80,17 @@ export function PracticeConfigForm({
       <div className="space-y-6">
         {/* Wrong answers only toggle */}
         {wrongAnswerCount > 0 && (
-          <Card>
+          <Card className="border-amber-200/50 bg-amber-50/30 dark:border-amber-800/50 dark:bg-amber-950/20">
             <CardContent className="pt-6">
               <label className="flex cursor-pointer items-center gap-3">
                 <input
                   type="checkbox"
                   checked={wrongAnswersOnly}
                   onChange={(e) => setWrongAnswersOnly(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-gray-300 text-primary accent-primary"
                 />
                 <div>
-                  <span className="font-medium">Doar intrebari gresite</span>
+                  <span className="font-semibold">Doar intrebari gresite</span>
                   <p className="text-sm text-muted-foreground">
                     Exerseaza doar intrebarile la care ai gresit anterior ({wrongAnswerCount} disponibile)
                   </p>
@@ -100,9 +101,9 @@ export function PracticeConfigForm({
         )}
 
         {/* Chapter Selection */}
-        <Card>
+        <Card className="border-border/50">
           <CardHeader>
-            <CardTitle>Alege capitolele</CardTitle>
+            <CardTitle className="text-lg">Alege capitolele</CardTitle>
           </CardHeader>
           <CardContent>
             <ChapterSelector
@@ -115,13 +116,13 @@ export function PracticeConfigForm({
 
         {/* Question Count */}
         {!wrongAnswersOnly && (
-          <Card>
+          <Card className="border-border/50">
             <CardHeader>
-              <CardTitle>Numar de intrebari</CardTitle>
+              <CardTitle className="text-lg">Numar de intrebari</CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={questionCount} onValueChange={setQuestionCount}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Alege numarul de intrebari" />
                 </SelectTrigger>
                 <SelectContent>
@@ -144,9 +145,9 @@ export function PracticeConfigForm({
         )}
 
         {/* Feedback Mode */}
-        <Card>
+        <Card className="border-border/50">
           <CardHeader>
-            <CardTitle>Mod de feedback</CardTitle>
+            <CardTitle className="text-lg">Mod de feedback</CardTitle>
           </CardHeader>
           <CardContent>
             <RadioGroup
@@ -154,19 +155,19 @@ export function PracticeConfigForm({
               onValueChange={setFeedbackMode}
               className="space-y-3"
             >
-              <div className="flex min-h-[44px] items-start gap-3 rounded-lg border p-3">
+              <div className="flex min-h-[44px] items-start gap-3 rounded-xl border border-border/50 p-3 transition-colors hover:bg-accent/50">
                 <RadioGroupItem value="immediate" id="immediate" className="mt-1" />
                 <Label htmlFor="immediate" className="cursor-pointer">
-                  <div className="font-medium">Feedback imediat</div>
+                  <div className="font-semibold">Feedback imediat</div>
                   <p className="text-sm text-muted-foreground">
                     Vezi raspunsul corect dupa fiecare intrebare
                   </p>
                 </Label>
               </div>
-              <div className="flex min-h-[44px] items-start gap-3 rounded-lg border p-3">
+              <div className="flex min-h-[44px] items-start gap-3 rounded-xl border border-border/50 p-3 transition-colors hover:bg-accent/50">
                 <RadioGroupItem value="deferred" id="deferred" className="mt-1" />
                 <Label htmlFor="deferred" className="cursor-pointer">
-                  <div className="font-medium">Feedback la final</div>
+                  <div className="font-semibold">Feedback la final</div>
                   <p className="text-sm text-muted-foreground">
                     Vezi toate rezultatele la finalul testului
                   </p>
@@ -178,7 +179,7 @@ export function PracticeConfigForm({
 
         {/* Error Display */}
         {state?.error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
             {typeof state.error === "string"
               ? state.error
               : Object.values(state.error).flat().join(", ")}
@@ -189,10 +190,17 @@ export function PracticeConfigForm({
         <Button
           type="submit"
           size="lg"
-          className="min-h-[44px] w-full"
+          className="min-h-[52px] w-full rounded-xl gradient-primary border-0 text-white text-base shadow-lg shadow-primary-500/20 hover:shadow-xl transition-all"
           disabled={selectedChapterIds.length === 0 || isPending}
         >
-          {isPending ? "Se creeaza testul..." : "Incepe testul"}
+          {isPending ? (
+            "Se creeaza testul..."
+          ) : (
+            <>
+              <Rocket className="mr-2 h-5 w-5" />
+              Incepe testul
+            </>
+          )}
         </Button>
       </div>
     </form>
