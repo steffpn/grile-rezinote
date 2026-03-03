@@ -1,13 +1,6 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
-// Routes that bypass subscription check (user must be authed but not subscribed)
-const subscriptionBypassRoutes = [
-  "/pricing",
-  "/checkout",
-  "/subscription",
-]
-
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -36,7 +29,7 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh the auth session
+  // Refresh the auth session (single network call)
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -62,67 +55,30 @@ export async function middleware(request: NextRequest) {
   // Redirect unauthenticated users from protected routes
   if (
     !user &&
-    (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))
+    (pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/practice") ||
+      pathname.startsWith("/exam") ||
+      pathname.startsWith("/admission") ||
+      pathname.startsWith("/subscription") ||
+      pathname.startsWith("/admin"))
   ) {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     return NextResponse.redirect(url)
   }
 
-  // Subscription gating for student routes (dashboard)
-  // Skip check for admin routes, subscription bypass routes, and API routes
-  if (
-    user &&
-    pathname.startsWith("/dashboard") &&
-    !subscriptionBypassRoutes.some((route) => pathname.startsWith(route))
-  ) {
-    // Query subscription + user data in parallel (Edge-compatible)
-    const [{ data: subscription }, { data: userRecord }] = await Promise.all([
-      supabase
-        .from("subscriptions")
-        .select("status, current_period_end")
-        .eq("user_id", user.id)
-        .single(),
-      supabase
-        .from("users")
-        .select("trial_started_at")
-        .eq("id", user.id)
-        .single(),
-    ])
-
-    const hasActiveSubscription =
-      subscription?.status === "active" ||
-      (subscription?.status === "trialing" &&
-        subscription.current_period_end &&
-        new Date(subscription.current_period_end) > new Date())
-
-    // Check server-side trial
-    const trialStartedAt = userRecord?.trial_started_at
-      ? new Date(userRecord.trial_started_at)
-      : null
-
-    const trialActive =
-      trialStartedAt &&
-      new Date(trialStartedAt.getTime() + 7 * 24 * 60 * 60 * 1000) >
-        new Date()
-
-    // Trial not started yet — allow access (will start on this visit)
-    const trialNotStarted = !trialStartedAt
-
-    if (!hasActiveSubscription && !trialActive && !trialNotStarted) {
-      // Subscription expired — redirect to pricing with paywall flag
-      const url = request.nextUrl.clone()
-      url.pathname = "/pricing"
-      url.searchParams.set("paywall", "true")
-      return NextResponse.redirect(url)
-    }
-  }
+  // Subscription gating is handled in the student layout (server component)
+  // — avoids 2 extra DB queries in the middleware hot path
 
   return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    /*
+     * Match all paths except static files and images.
+     * This keeps middleware fast for asset requests.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)",
   ],
 }

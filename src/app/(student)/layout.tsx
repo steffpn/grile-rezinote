@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { AppShell } from "@/components/shared/app-shell"
-import { createClient } from "@/lib/supabase/server"
+import { getAuthUser } from "@/lib/auth/get-user"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
 import { startTrial } from "@/lib/subscription/trial"
 import { PaywallOverlay } from "@/components/paywall/PaywallOverlay"
@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 }
 
 const studentLinks = [
-  { href: "/", label: "Acasa" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/practice", label: "Teste Practice" },
   { href: "/exam", label: "Simulare" },
@@ -25,10 +24,8 @@ export default async function StudentLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Use cached auth — shared with page-level getCurrentUser() calls
+  const user = await getAuthUser()
 
   let subscriptionAccess = null
   let showPaywall = false

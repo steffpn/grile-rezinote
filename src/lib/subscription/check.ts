@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { db } from "@/lib/db"
 import { subscriptions, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
@@ -14,9 +15,9 @@ export type SubscriptionAccess = {
 
 /**
  * Checks the subscription access status for a user.
- * Returns whether the user has access and their current subscription state.
+ * Cached per request — layout and page share the same result.
  */
-export async function checkSubscriptionAccess(
+export const checkSubscriptionAccess = cache(async function checkSubscriptionAccess(
   userId: string
 ): Promise<SubscriptionAccess> {
   const [sub] = await db
@@ -86,4 +87,4 @@ export async function checkSubscriptionAccess(
 
   // Trial expired and no active subscription
   return { hasAccess: false, status: "expired" }
-}
+})
