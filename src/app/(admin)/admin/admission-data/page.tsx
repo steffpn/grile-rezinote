@@ -15,7 +15,7 @@ export default async function AdmissionDataPage() {
   }))
 
   return (
-    <div className="space-y-6">
+    <div className="p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
           Date Istorice de Admitere

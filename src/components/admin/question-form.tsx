@@ -68,7 +68,7 @@ export function QuestionForm({ question, chapters }: QuestionFormProps) {
   const [questionOptions, setQuestionOptions] = useState<OptionData[]>(
     getDefaultOptions(question?.options)
   )
-  const [sourceBook, setSourceBook] = useState(question?.sourceBook ?? "")
+  const [sourceBook, setSourceBook] = useState(question?.sourceBook ?? "none")
   const [sourcePage, setSourcePage] = useState(question?.sourcePage ?? "")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -115,7 +115,7 @@ export function QuestionForm({ question, chapters }: QuestionFormProps) {
       text: questionText,
       type,
       options: questionOptions,
-      sourceBook: sourceBook || undefined,
+      sourceBook: sourceBook && sourceBook !== "none" ? sourceBook : undefined,
       sourcePage: sourcePage || undefined,
     }
 
@@ -251,7 +251,7 @@ export function QuestionForm({ question, chapters }: QuestionFormProps) {
                 <SelectValue placeholder="Selecteaza carte..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Fara sursa</SelectItem>
+                <SelectItem value="none">Fara sursa</SelectItem>
                 {SOURCE_BOOKS.map((book) => (
                   <SelectItem key={book} value={book}>
                     {book}
