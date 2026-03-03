@@ -35,6 +35,7 @@ export const users = pgTable("users", {
   yearOfStudy: integer("year_of_study"), // 1-6, nullable for admin users
   role: userRoleEnum("role").notNull().default("student"),
   isSuperadmin: boolean("is_superadmin").notNull().default(false),
+  peerOptIn: boolean("peer_opt_in").notNull().default(false), // opt-in for anonymous peer rankings
   trialStartedAt: timestamp("trial_started_at"), // set on first paid feature access
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
@@ -120,9 +121,21 @@ export const subscriptions = pgTable("subscriptions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
+export const specialties = pgTable("specialties", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  archivedAt: timestamp("archived_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+
 export const admissionData = pgTable("admission_data", {
   id: uuid("id").defaultRandom().primaryKey(),
-  specialty: text("specialty").notNull(),
+  specialtyId: uuid("specialty_id")
+    .references(() => specialties.id)
+    .notNull(),
+  specialty: text("specialty").notNull(), // denormalized name for display
   year: integer("year").notNull(),
   thresholdScore: integer("threshold_score").notNull(),
   availableSpots: integer("available_spots").notNull(),
