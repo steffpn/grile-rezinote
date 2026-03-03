@@ -66,18 +66,18 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Comparatie Anonima
 
-- [ ] **PEER-01**: User vede percentila sa (top X%) din toti utilizatorii care au facut simulare completa
-- [ ] **PEER-02**: User vede grafic distributie scoruri (curba cu pozitia sa evidentiata)
-- [ ] **PEER-03**: User vede media si mediana scorurilor celorlalti utilizatori vs scorul propriu
-- [ ] **PEER-04**: User vede ranking anonim (locul X din Y participanti), fara nume afisate
-- [ ] **PEER-05**: Comparatia include doar utilizatori care au completat simularea integrala
+- [x] **PEER-01**: User vede percentila sa (top X%) din toti utilizatorii care au facut simulare completa
+- [x] **PEER-02**: User vede grafic distributie scoruri (curba cu pozitia sa evidentiata)
+- [x] **PEER-03**: User vede media si mediana scorurilor celorlalti utilizatori vs scorul propriu
+- [x] **PEER-04**: User vede ranking anonim (locul X din Y participanti), fara nume afisate
+- [x] **PEER-05**: Comparatia include doar utilizatori care au completat simularea integrala
 
 ### Sistem Motivational
 
-- [ ] **MOTV-01**: Dashboard-ul afiseaza mesaje de incurajare auto-generate cand user-ul completeaza corect teste
-- [ ] **MOTV-02**: Dashboard-ul afiseaza mesaje motivationale cand user-ul are capitole la care trebuie sa mai invete
-- [ ] **MOTV-03**: Dashboard-ul afiseaza "stiai ca"-uri rotative si statistici interesante despre grile si performanta
-- [ ] **MOTV-04**: Mesajele sunt contextuale, bazate pe performanta reala (trend, milestone-uri, comparatii personale)
+- [x] **MOTV-01**: Dashboard-ul afiseaza mesaje de incurajare auto-generate cand user-ul completeaza corect teste
+- [x] **MOTV-02**: Dashboard-ul afiseaza mesaje motivationale cand user-ul are capitole la care trebuie sa mai invete
+- [x] **MOTV-03**: Dashboard-ul afiseaza "stiai ca"-uri rotative si statistici interesante despre grile si performanta
+- [x] **MOTV-04**: Mesajele sunt contextuale, bazate pe performanta reala (trend, milestone-uri, comparatii personale)
 
 ### Plati
 
@@ -175,15 +175,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-04 | Phase 7 | Pending |
 | DASH-05 | Phase 7 | Pending |
 | DASH-06 | Phase 7 | Pending |
-| PEER-01 | Phase 8 | Pending |
-| PEER-02 | Phase 8 | Pending |
-| PEER-03 | Phase 8 | Pending |
-| PEER-04 | Phase 8 | Pending |
-| PEER-05 | Phase 8 | Pending |
-| MOTV-01 | Phase 8 | Pending |
-| MOTV-02 | Phase 8 | Pending |
-| MOTV-03 | Phase 8 | Pending |
-| MOTV-04 | Phase 8 | Pending |
+| PEER-01 | Phase 8 | Complete |
+| PEER-02 | Phase 8 | Complete |
+| PEER-03 | Phase 8 | Complete |
+| PEER-04 | Phase 8 | Complete |
+| PEER-05 | Phase 8 | Complete |
+| MOTV-01 | Phase 8 | Complete |
+| MOTV-02 | Phase 8 | Complete |
+| MOTV-03 | Phase 8 | Complete |
+| MOTV-04 | Phase 8 | Complete |
 | PAY-01 | Phase 9 | Pending |
 | PAY-02 | Phase 9 | Pending |
 | PAY-03 | Phase 9 | Pending |

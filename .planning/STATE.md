@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-03T01:22:52.886Z"
+last_updated: "2026-03-03T01:49:05.300Z"
 progress:
   total_phases: 10
-  completed_phases: 5
-  total_plans: 27
-  completed_plans: 19
+  completed_phases: 6
+  total_plans: 34
+  completed_plans: 23
 ---
 
 # Project State
@@ -18,23 +18,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-02)
 
 **Core value:** Studentii pot simula examene reale de rezidentiat si vedea instant daca ar fi fost admisi si unde, pe baza datelor istorice reale.
-**Current focus:** Phase 5 - Exam Simulation (complete)
+**Current focus:** Phase 8 - Peer Comparison & Motivation (complete)
 
 ## Current Position
 
-Phase: 5 of 10 (Exam Simulation)
+Phase: 8 of 10 (Peer Comparison & Motivation)
 Plan: 4 of 4 in current phase
 Status: Phase complete
-Last activity: 2026-03-03 — Phase 5 completed
+Last activity: 2026-03-03 — Phase 8 completed
 
-Progress: [█████░░░░░] 50%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 23
 - Average duration: ~12 min
-- Total execution time: ~210 min
+- Total execution time: ~280 min
 
 **By Phase:**
 
@@ -45,9 +45,11 @@ Progress: [█████░░░░░] 50%
 | 3. Admin Content Management | 4/4 | ~55 min | ~14 min |
 | 4. Practice Tests | 4/4 | ~45 min | ~11 min |
 | 5. Exam Simulation | 4/4 | ~45 min | ~11 min |
+| 7. Dashboard & Analytics | 5/5 | ~50 min | ~10 min |
+| 8. Peer Comparison & Motivation | 4/4 | ~47 min | ~12 min |
 
 **Recent Trend:**
-- Last 4 plans: 05-01 (12min), 05-02 (10min), 05-03 (13min), 05-04 (10min)
+- Last 4 plans: 08-01 (12min), 08-02 (10min), 08-03 (15min), 08-04 (10min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -79,6 +81,11 @@ Recent decisions affecting current work:
 - [Phase 5]: 60-second grace period after deadline for network latency; server rejects saves/submits past grace
 - [Phase 5]: One question per page display (unlike practice mode's scrollable list) — closer to real exam UX
 - [Phase 5]: siteSettings table for admin-configurable exam duration (key-value store pattern)
+- [Phase 8]: Raw SQL via db.execute for RANK(), PERCENT_RANK(), PERCENTILE_CONT() — Drizzle ORM doesn't support window functions
+- [Phase 8]: Opt-in privacy model: peerOptIn defaults to false, users must explicitly opt in for rankings
+- [Phase 8]: Deterministic daily message rotation using date+userId hash — no database storage needed
+- [Phase 8]: Custom SVG avatar instead of DiceBear library to minimize bundle size
+- [Phase 8]: Template-based motivation (not AI) for predictable, controllable Romanian messages
 
 ### Pending Todos
 
@@ -92,5 +99,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-03
-Stopped at: Phase 5 complete, ready for Phase 6 planning
+Stopped at: Phase 8 complete, ready for Phase 9 planning (if not already done)
 Resume file: None
