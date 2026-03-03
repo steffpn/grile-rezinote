@@ -89,6 +89,7 @@ export const attempts = pgTable("attempts", {
   questionCount: integer("question_count"), // how many questions requested
   questionOrder: text("question_order").array(), // ordered question IDs snapshot at creation
   status: text("status").default("in_progress"), // 'in_progress' | 'completed' | 'abandoned'
+  shuffleSeed: integer("shuffle_seed"), // deterministic option shuffling per exam
 })
 
 export const attemptAnswers = pgTable("attempt_answers", {
@@ -145,4 +146,10 @@ export const webhookEvents = pgTable("webhook_events", {
   stripeEventId: text("stripe_event_id").notNull().unique(),
   type: text("type").notNull(),
   processedAt: timestamp("processed_at").defaultNow().notNull(),
+})
+
+export const siteSettings = pgTable("site_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })
