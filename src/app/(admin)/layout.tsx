@@ -1,29 +1,23 @@
 import type { Metadata } from "next"
-import { AppShell } from "@/components/shared/app-shell"
-import { createClient } from "@/lib/supabase/server"
+import { getCurrentAdmin } from "@/lib/db/queries/admin"
+import { AdminSidebar } from "@/components/admin/admin-sidebar"
 
 export const metadata: Metadata = {
   title: "Admin | grile-ReziNOTE",
 }
-
-const adminLinks = [
-  { href: "/admin", label: "Panou Admin" },
-  { href: "/dashboard", label: "Dashboard" },
-]
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Server-side superadmin check - redirects non-admins to /dashboard
+  await getCurrentAdmin()
 
   return (
-    <AppShell links={adminLinks} userEmail={user?.email ?? null}>
-      {children}
-    </AppShell>
+    <div className="flex h-screen overflow-hidden">
+      <AdminSidebar />
+      <main className="flex-1 overflow-y-auto">{children}</main>
+    </div>
   )
 }
