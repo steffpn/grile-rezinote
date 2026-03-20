@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Check, X } from "lucide-react"
+import { Check, X, Clock, Info } from "lucide-react"
 import Link from "next/link"
 
 interface QuestionOption {
@@ -96,7 +96,20 @@ export function DeferredResults({
         </CardContent>
       </Card>
 
-      {/* Per-question breakdown hidden for anti-screenshot protection */}
+      {/* 30-minute review window notice */}
+      <Card className="border-amber-500/20 bg-amber-500/5">
+        <CardContent className="flex items-start gap-3 py-4">
+          <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+              Fereastra de revizuire: 30 minute
+            </p>
+            <p className="text-xs text-amber-600/80 dark:text-amber-400/70">
+              Poti revizui detaliile raspunsurilor in Dashboard &rarr; Istoric doar in primele 30 de minute de la finalizarea testului. Dupa aceasta perioada, doar sumarul ramane vizibil.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Back button */}
       <div className="flex justify-center pb-8">

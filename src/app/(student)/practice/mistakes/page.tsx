@@ -20,12 +20,17 @@ export default async function MistakesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Greselile mele</h1>
+        <h1
+          className="text-2xl font-bold"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Greselile mele
+        </h1>
         <p className="mt-1 text-muted-foreground">
-          Revizuieste intrebarile la care ai gresit si exerseaza-le din nou
+          Statistici si exercitii pentru intrebarile la care ai gresit
         </p>
         {stats.totalMastered > 0 && (
-          <p className="mt-1 text-sm text-green-600 dark:text-green-400">
+          <p className="mt-1 text-sm text-emerald-600 dark:text-emerald-400">
             {stats.totalMastered} intrebari stapanite (eliminate din lista)
           </p>
         )}
