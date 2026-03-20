@@ -28,16 +28,16 @@ export function NavHeader({
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+        <Link href={userEmail ? "/dashboard" : "/"} className="flex items-center gap-2 text-lg font-bold">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
             <GraduationCap className="h-5 w-5 text-white" />
           </div>
           <span>
             <span className="text-foreground">Rezi</span>
-            <span className="bg-gradient-to-r from-primary-500 to-primary-400 bg-clip-text text-transparent">NOTE</span>
+            <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">NOTE</span>
           </span>
         </Link>
 

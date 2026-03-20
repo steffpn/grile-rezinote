@@ -37,7 +37,7 @@ export function ExamQuestion({
   isFlagged,
 }: ExamQuestionProps) {
   return (
-    <Card data-protected>
+    <Card data-protected="question">
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
         <div className="flex items-center gap-2">
           <span className="text-base font-bold sm:text-lg">

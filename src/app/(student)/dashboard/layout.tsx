@@ -15,7 +15,7 @@ export default function DashboardLayout({
       </Suspense>
       <main className="flex-1 overflow-auto">
         {/* Mobile header with menu trigger is inside DashboardSidebar */}
-        <div className="p-4 lg:p-6">{children}</div>
+        <div className="p-4 lg:p-6 lg:pl-2">{children}</div>
       </main>
     </div>
   )

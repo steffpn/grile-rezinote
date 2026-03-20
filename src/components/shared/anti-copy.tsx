@@ -90,8 +90,9 @@ export function AntiCopy() {
     }
 
     // Blur content when window loses visibility (screenshot protection)
+    // Only blurs elements with data-protected="question" to avoid resetting dashboard
     function handleVisibilityChange() {
-      const questionElements = document.querySelectorAll("[data-protected]")
+      const questionElements = document.querySelectorAll('[data-protected="question"]')
       if (document.hidden) {
         questionElements.forEach((el) => {
           ;(el as HTMLElement).style.filter = "blur(20px)"

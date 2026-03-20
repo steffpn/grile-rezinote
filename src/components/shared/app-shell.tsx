@@ -20,7 +20,7 @@ export function AppShell({
   showMobileTabBar = false,
 }: AppShellProps) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <NavHeader links={links} userEmail={userEmail} />
 
       <main
@@ -32,7 +32,7 @@ export function AppShell({
       </main>
 
       <footer
-        className={`border-t border-border ${
+        className={`border-t border-white/[0.06] ${
           showMobileTabBar ? "hidden md:block" : ""
         }`}
       >

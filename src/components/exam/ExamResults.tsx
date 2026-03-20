@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,7 +15,6 @@ import {
 import { Check, X, Clock } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { ExamReviewQuestion } from "./ExamReviewQuestion"
 
 interface QuestionOption {
   label: string
@@ -69,8 +67,6 @@ function formatDuration(seconds: number): string {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
 }
 
-type FilterType = "all" | "incorrect" | "correct" | "unanswered"
-
 export function ExamResults({
   attempt,
   questions,
@@ -78,8 +74,6 @@ export function ExamResults({
   correctOptions,
   chapterBreakdown,
 }: ExamResultsProps) {
-  const [filter, setFilter] = useState<FilterType>("all")
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   const score = attempt.score ?? 0
   const maxScore = attempt.maxScore ?? 950
@@ -125,47 +119,6 @@ export function ExamResults({
     0,
     (attempt.timeLimit ?? 14400) - timeTakenSeconds
   )
-
-  // Filtered questions
-  const filteredQuestions = useMemo(() => {
-    switch (filter) {
-      case "incorrect":
-        return questions.filter(
-          (q) => answers.get(q.id)?.isCorrect === false
-        )
-      case "correct":
-        return questions.filter(
-          (q) => answers.get(q.id)?.isCorrect === true
-        )
-      case "unanswered":
-        return questions.filter((q) => {
-          const ans = answers.get(q.id)
-          return !ans || ans.isCorrect === null
-        })
-      default:
-        return questions
-    }
-  }, [questions, answers, filter])
-
-  function toggleExpand(questionId: string) {
-    setExpandedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(questionId)) {
-        next.delete(questionId)
-      } else {
-        next.add(questionId)
-      }
-      return next
-    })
-  }
-
-  function toggleAll() {
-    if (expandedIds.size === filteredQuestions.length) {
-      setExpandedIds(new Set())
-    } else {
-      setExpandedIds(new Set(filteredQuestions.map((q) => q.id)))
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -305,65 +258,7 @@ export function ExamResults({
         </CardContent>
       </Card>
 
-      {/* Question Review */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>
-              Revizuire intrebari ({filteredQuestions.length})
-            </CardTitle>
-            <Button variant="outline" size="sm" onClick={toggleAll}>
-              {expandedIds.size === filteredQuestions.length
-                ? "Ascunde toate"
-                : "Arata toate"}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Filter buttons */}
-          <div className="flex flex-wrap gap-2">
-            {(
-              [
-                { key: "all", label: "Toate", count: questions.length },
-                { key: "incorrect", label: "Gresite", count: incorrectCount },
-                { key: "correct", label: "Corecte", count: correctCount },
-                {
-                  key: "unanswered",
-                  label: "Neraspunse",
-                  count: unansweredCount,
-                },
-              ] as const
-            ).map((f) => (
-              <Button
-                key={f.key}
-                variant={filter === f.key ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilter(f.key)}
-              >
-                {f.label} ({f.count})
-              </Button>
-            ))}
-          </div>
-
-          {/* Question list */}
-          <div className="space-y-2">
-            {filteredQuestions.map((question, index) => {
-              const originalIndex = questions.indexOf(question)
-              return (
-                <ExamReviewQuestion
-                  key={question.id}
-                  question={question}
-                  questionNumber={originalIndex + 1}
-                  answer={answers.get(question.id) ?? null}
-                  correctOptions={correctOptions.get(question.id) ?? []}
-                  isExpanded={expandedIds.has(question.id)}
-                  onToggle={() => toggleExpand(question.id)}
-                />
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Question review hidden for anti-screenshot protection */}
 
       {/* Back button */}
       <div className="flex justify-center pb-8">

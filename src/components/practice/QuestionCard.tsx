@@ -63,7 +63,7 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
       <Card
         ref={ref}
         id={`question-${question.id}`}
-        data-protected
+        data-protected="question"
         className={cn(
           "border-border/50 transition-all duration-300",
           showResults && feedback?.isCorrect && "border-green-400 bg-green-50/30 dark:border-green-600 dark:bg-green-950/20",

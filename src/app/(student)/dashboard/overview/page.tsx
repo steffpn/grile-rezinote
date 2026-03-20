@@ -52,7 +52,7 @@ export default async function OverviewPage({
       {/* Header with filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Dashboard</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Progresul tau in pregatirea pentru rezidentiat
           </p>
@@ -69,10 +69,10 @@ export default async function OverviewPage({
 
       {!hasData ? (
         /* Empty state */
-        <Card className="border-dashed border-2 border-primary/20">
+        <Card className="border-dashed border-2 border-emerald-500/20">
           <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10">
-              <Sparkles className="h-10 w-10 text-primary" />
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10">
+              <Sparkles className="h-10 w-10 text-emerald-400" />
             </div>
             <h2 className="text-xl font-bold">
               Incepe-ti aventura!
@@ -93,21 +93,21 @@ export default async function OverviewPage({
               <StatCard
                 label="Acuratete"
                 value={`${overview.stats.accuracyPct}%`}
-                icon={<Target className="h-6 w-6 text-primary" />}
+                icon={<Target className="h-6 w-6 text-emerald-400" />}
               />
             </AnimatedStatItem>
             <AnimatedStatItem>
               <StatCard
                 label="Intrebari"
                 value={overview.stats.totalQuestions}
-                icon={<FileQuestion className="h-6 w-6 text-primary" />}
+                icon={<FileQuestion className="h-6 w-6 text-teal-400" />}
               />
             </AnimatedStatItem>
             <AnimatedStatItem>
               <StatCard
                 label="Teste"
                 value={overview.stats.totalTests}
-                icon={<ClipboardCheck className="h-6 w-6 text-primary" />}
+                icon={<ClipboardCheck className="h-6 w-6 text-cyan-400" />}
               />
             </AnimatedStatItem>
             <AnimatedStatItem>
@@ -128,7 +128,7 @@ export default async function OverviewPage({
 
           {/* Charts Grid */}
           <AnimatedSection delay={0.4} className="grid gap-6 lg:grid-cols-2">
-            <Card className="border-border/50 shadow-sm">
+            <Card className="border-white/[0.06] shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">Evolutia Acuratetii</CardTitle>
               </CardHeader>
@@ -137,7 +137,7 @@ export default async function OverviewPage({
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-sm">
+            <Card className="border-white/[0.06] shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">Puncte Forte per Capitol</CardTitle>
               </CardHeader>

@@ -155,13 +155,15 @@ export function AnswerHistoryTable({
                   <TableCell className="text-xs text-muted-foreground">
                     {format(new Date(row.answeredAt), "dd MMM yyyy")}
                   </TableCell>
-                  <TableCell className="max-w-xs">
-                    <span title={row.questionText}>
-                      {truncateText(row.questionText)}
+                  <TableCell className="max-w-[200px] whitespace-normal">
+                    <span className="line-clamp-2 text-sm" title={row.questionText}>
+                      {row.questionText}
                     </span>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
-                    {row.chapterName}
+                  <TableCell className="hidden sm:table-cell max-w-[150px] whitespace-normal">
+                    <span className="line-clamp-1 text-sm text-muted-foreground">
+                      {row.chapterName}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">

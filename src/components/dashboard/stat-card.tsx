@@ -20,12 +20,12 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <Card className={cn(
-      "group relative overflow-hidden border-border/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 animate-in fade-in",
+      "group relative overflow-hidden border-white/[0.06] transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/5 hover:-translate-y-0.5 animate-in fade-in",
       className
     )}>
       <div className="absolute inset-0 gradient-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <CardContent className="relative flex items-center gap-4 p-5">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/5">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/10">
           {icon}
         </div>
         <div className="flex-1 space-y-0.5">

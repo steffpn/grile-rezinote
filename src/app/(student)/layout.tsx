@@ -50,7 +50,7 @@ export default async function StudentLayout({
       {/* Trial banner */}
       {subscriptionAccess?.status === "trialing" &&
         subscriptionAccess.trialDaysRemaining !== undefined && (
-          <div className="border-b bg-blue-50 px-4 py-2 text-center text-sm text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+          <div className="border-b border-emerald-500/20 bg-emerald-50 px-4 py-2 text-center text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
             Trial gratuit:{" "}
             <strong>
               {subscriptionAccess.trialDaysRemaining}{" "}
