@@ -9,7 +9,7 @@ import { AuroraBackground } from "./aurora-background"
 import { Spotlight } from "./spotlight"
 
 // Lazy-load Spline (heavy, client-only)
-const Spline = dynamic(() => import("@splinetool/react-spline"), {
+const Spline = dynamic(() => import("@splinetool/react-spline/next"), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full animate-pulse rounded-3xl bg-gradient-to-br from-emerald-500/[0.04] to-teal-500/[0.04]" />
