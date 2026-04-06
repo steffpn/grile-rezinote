@@ -331,6 +331,9 @@ export async function getAnswerHistory(
     (countResult as unknown as Array<Record<string, unknown>>)[0]?.total ?? 0
   )
 
+  // Anti-cheat: history shows the question text and what the user picked,
+  // but never the correct answers or the full option contents — those would
+  // turn the history page into a permanent answer key.
   const rows: AnswerHistoryRow[] = (
     rowsResult as unknown as Array<Record<string, unknown>>
   ).map((row) => ({
@@ -340,8 +343,8 @@ export async function getAnswerHistory(
     chapterName: String(row.chapter_name),
     chapterId: String(row.chapter_id),
     selectedOptions: (row.selected_options as string[]) ?? [],
-    correctOptions: (row.correct_options as string[]) ?? [],
-    allOptions: (row.all_options as { label: string; text: string }[]) ?? [],
+    correctOptions: [],
+    allOptions: [],
     isCorrect: row.is_correct as boolean | null,
     score: row.score as number | null,
     answeredAt: new Date(row.answered_at as string).toISOString(),
