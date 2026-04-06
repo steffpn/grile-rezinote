@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     headersList.get("x-real-ip") ??
     "unknown"
-  if (!webhookLimiter.check(ip)) {
+  if (!(await webhookLimiter.check(ip))) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 })
   }
 

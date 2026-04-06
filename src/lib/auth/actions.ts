@@ -43,7 +43,7 @@ export async function signup(
   formData: FormData
 ): Promise<AuthState> {
   const key = await getClientKey("signup")
-  if (!signupLimiter.check(key)) {
+  if (!(await signupLimiter.check(key))) {
     return { error: "Prea multe incercari. Te rugam sa astepti si sa reincerci mai tarziu." }
   }
 
@@ -109,7 +109,7 @@ export async function login(
   formData: FormData
 ): Promise<AuthState> {
   const key = await getClientKey("login")
-  if (!authLimiter.check(key)) {
+  if (!(await authLimiter.check(key))) {
     return { error: "Prea multe incercari de autentificare. Te rugam sa astepti 15 minute." }
   }
 
@@ -145,7 +145,7 @@ export async function forgotPassword(
   formData: FormData
 ): Promise<AuthState> {
   const key = await getClientKey("forgot")
-  if (!passwordResetLimiter.check(key)) {
+  if (!(await passwordResetLimiter.check(key))) {
     // Always return success to not reveal limiter state to attackers
     return { success: true }
   }
@@ -193,7 +193,7 @@ export async function updatePassword(
 ): Promise<AuthState> {
   // Rate-limit token submission to defeat token brute-force.
   const key = await getClientKey("update-password")
-  if (!passwordResetLimiter.check(key)) {
+  if (!(await passwordResetLimiter.check(key))) {
     return { error: "Prea multe incercari. Te rugam sa astepti si sa reincerci." }
   }
 

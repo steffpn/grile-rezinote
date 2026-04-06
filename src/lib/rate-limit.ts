@@ -1,91 +1,64 @@
 /**
- * In-memory sliding-window rate limiter.
+ * Distributed rate limiter backed by Upstash Redis.
  *
- * Suitable for single-instance deployments and development. For multi-instance
- * production, replace the Map below with a Redis-backed store (Upstash, etc.).
+ * All limiters share a single Redis client. Sliding-window algorithm.
+ * Safe across multiple Next.js instances / serverless invocations.
  *
  * Usage:
- *   const limiter = createRateLimiter({ windowMs: 60_000, max: 5 })
- *   if (!limiter.check(key)) throw new Error("Too many requests")
+ *   if (!(await authLimiter.check(key))) {
+ *     return { error: "Too many requests" }
+ *   }
+ *
+ * Required env:
+ *   UPSTASH_REDIS_REST_URL
+ *   UPSTASH_REDIS_REST_TOKEN
  */
 
-type Bucket = number[]
+import { Ratelimit } from "@upstash/ratelimit"
+import { Redis } from "@upstash/redis"
 
-const stores = new Map<string, Map<string, Bucket>>()
-
-export interface RateLimitOptions {
-  /** Window length in milliseconds. */
-  windowMs: number
-  /** Max requests allowed per key inside the window. */
-  max: number
-  /** Logical namespace so different limiters do not collide. */
-  namespace: string
-}
+const redis = Redis.fromEnv()
 
 export interface RateLimiter {
-  check(key: string): boolean
-  remaining(key: string): number
-  reset(key: string): void
+  check(key: string): Promise<boolean>
 }
 
-export function createRateLimiter(opts: RateLimitOptions): RateLimiter {
-  if (!stores.has(opts.namespace)) {
-    stores.set(opts.namespace, new Map())
-  }
-  const store = stores.get(opts.namespace)!
-
-  function prune(bucket: Bucket, now: number): Bucket {
-    const cutoff = now - opts.windowMs
-    while (bucket.length > 0 && bucket[0] < cutoff) {
-      bucket.shift()
-    }
-    return bucket
-  }
+function makeLimiter(
+  prefix: string,
+  max: number,
+  windowSeconds: number
+): RateLimiter {
+  const rl = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(max, `${windowSeconds} s`),
+    prefix,
+    analytics: true,
+  })
 
   return {
-    check(key: string): boolean {
-      const now = Date.now()
-      const bucket = prune(store.get(key) ?? [], now)
-      if (bucket.length >= opts.max) {
-        store.set(key, bucket)
-        return false
+    async check(key: string): Promise<boolean> {
+      try {
+        const { success } = await rl.limit(key)
+        return success
+      } catch (err) {
+        // Fail-open on Redis outage so legitimate users are not locked out.
+        // The outage itself is logged for ops follow-up.
+        console.error(`[rate-limit] redis error in ${prefix}:`, err)
+        return true
       }
-      bucket.push(now)
-      store.set(key, bucket)
-      return true
-    },
-    remaining(key: string): number {
-      const now = Date.now()
-      const bucket = prune(store.get(key) ?? [], now)
-      return Math.max(0, opts.max - bucket.length)
-    },
-    reset(key: string): void {
-      store.delete(key)
     },
   }
 }
 
-// Pre-configured limiters for the most attacked surfaces.
-export const authLimiter = createRateLimiter({
-  namespace: "auth",
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
-})
+// Login attempts: 10 per 15 minutes per IP.
+export const authLimiter = makeLimiter("auth", 10, 15 * 60)
 
-export const signupLimiter = createRateLimiter({
-  namespace: "signup",
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,
-})
+// Account creation: 5 per hour per IP.
+export const signupLimiter = makeLimiter("signup", 5, 60 * 60)
 
-export const passwordResetLimiter = createRateLimiter({
-  namespace: "password-reset",
-  windowMs: 60 * 60 * 1000,
-  max: 5,
-})
+// Forgot/update password: 5 per hour per IP.
+export const passwordResetLimiter = makeLimiter("password-reset", 5, 60 * 60)
 
-export const webhookLimiter = createRateLimiter({
-  namespace: "webhook",
-  windowMs: 60 * 1000,
-  max: 100,
-})
+// Stripe webhook: 100 per minute per source IP — well above legitimate volume,
+// but caps invalid-signature spam DoS.
+export const webhookLimiter = makeLimiter("webhook", 100, 60)
