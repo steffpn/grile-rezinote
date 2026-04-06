@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>grile-ReziNOTE — Vercel Deployment Guide</title>
+<style>
+  :root {
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --teal-dark: #065f56;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --amber: #d97706;
+    --amber-light: #fffbeb;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --blue: #2563eb;
+    --blue-light: #eff6ff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--gray-900);
+    background: var(--gray-50);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+    color: white;
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  .header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .header p { font-size: 1.1rem; opacity: 0.9; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* Table of Contents */
+  .toc {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+  }
+  .toc h2 { font-size: 1rem; text-transform: uppercase; color: var(--gray-500); letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .toc ol { padding-left: 1.5rem; }
+  .toc li { margin-bottom: 0.4rem; }
+  .toc a { color: var(--teal); text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* Phases / Sections */
+  .phase {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--gray-200);
+    cursor: default;
+  }
+  .phase-number {
+    background: var(--teal);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .phase-title { font-size: 1.15rem; font-weight: 600; }
+  .phase-body { padding: 1.5rem; }
+
+  /* Steps */
+  .step {
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--gray-200);
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    color: var(--teal-dark);
+  }
+  .step p, .step li { color: var(--gray-700); }
+
+  /* Code blocks */
+  .code-block {
+    position: relative;
+    background: var(--gray-900);
+    color: #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 0.75rem 0;
+    font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .code-block .comment { color: #6b7280; }
+  .code-block .keyword { color: #93c5fd; }
+  .code-block .string { color: #86efac; }
+  .code-block .label { color: #fbbf24; }
+
+  .copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255,255,255,0.1);
+    color: #d1d5db;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+  .copy-btn.copied { background: var(--green); color: white; border-color: var(--green); }
+
+  /* Inline code */
+  code {
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 0.85em;
+    color: var(--teal-dark);
+  }
+
+  /* Alert boxes */
+  .alert {
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 0.75rem 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .alert-critical { background: var(--red-light); border-left: 4px solid var(--red); }
+  .alert-critical strong { color: var(--red); }
+  .alert-warning { background: var(--amber-light); border-left: 4px solid var(--amber); }
+  .alert-warning strong { color: var(--amber); }
+  .alert-info { background: var(--blue-light); border-left: 4px solid var(--blue); }
+  .alert-info strong { color: var(--blue); }
+  .alert-success { background: var(--green-light); border-left: 4px solid var(--green); }
+  .alert-success strong { color: var(--green); }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  th { background: var(--gray-100); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--gray-500); }
+  td { color: var(--gray-700); }
+  td code { font-size: 0.8rem; }
+
+  /* Checklist */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.4rem 0;
+    color: var(--gray-700);
+  }
+  .checklist input[type="checkbox"] {
+    margin-top: 0.3rem;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--teal);
+    flex-shrink: 0;
+  }
+
+  /* Numbered list */
+  ol.steps { padding-left: 1.5rem; }
+  ol.steps li { margin-bottom: 0.75rem; color: var(--gray-700); }
+  ul.plain { padding-left: 1.5rem; }
+  ul.plain li { margin-bottom: 0.4rem; color: var(--gray-700); }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--gray-200); margin: 1.5rem 0; }
+
+  /* Env var table special */
+  .env-table td:first-child { font-weight: 600; white-space: nowrap; }
+
+  /* Section within phase */
+  .sub-section { margin-top: 1.5rem; }
+  .sub-section:first-child { margin-top: 0; }
+  .sub-section h3 { font-size: 1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--gray-100); }
+
+  p { margin-bottom: 0.75rem; }
+  strong { color: var(--gray-900); }
+
+  /* Progress tracker */
+  .progress-bar {
+    display: flex;
+    gap: 4px;
+    margin: 1.5rem 0;
+  }
+  .progress-segment {
+    flex: 1;
+    height: 6px;
+    background: var(--gray-200);
+    border-radius: 3px;
+  }
+  .progress-segment.done { background: var(--teal); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>grile-ReziNOTE</h1>
+  <p>Complete Vercel Deployment Guide</p>
+</div>
+
+<div class="container">
+
+<div class="toc">
+  <h2>Steps</h2>
+  <ol>
+    <li><a href="#step1">Create Supabase Project & Collect Keys</a></li>
+    <li><a href="#step2">Push Database Schema</a></li>
+    <li><a href="#step3">Configure Supabase Auth & Database Trigger</a></li>
+    <li><a href="#step4">Set Up Stripe Products & Webhook</a></li>
+    <li><a href="#step5">Deploy to Vercel</a></li>
+    <li><a href="#step6">Connect Everything (URLs & Webhook)</a></li>
+    <li><a href="#step7">Create Your Superadmin Account</a></li>
+    <li><a href="#step8">Verify Everything Works</a></li>
+    <li><a href="#step9">Production Hardening</a></li>
+  </ol>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-segment"></div>
+  <div class="progress-segment"></div>
+  <div class="progress-segment"></div>
+  <div class="progress-segment"></div>
+  <div class="progress-segment"></div>
+  <div class="progress-segment"></div>
+  <div class="progress-segment"></div>
+  <div class="progress-segment"></div>
+  <div class="progress-segment"></div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 1: SUPABASE -->
+<!-- ============================================== -->
+<div class="phase" id="step1">
+  <div class="phase-header">
+    <div class="phase-number">1</div>
+    <div class="phase-title">Create Supabase Project & Collect Keys</div>
+  </div>
+  <div class="phase-body">
+
+    <ol class="steps">
+      <li>Go to <a href="https://supabase.com" target="_blank">supabase.com</a> and create a new project.</li>
+      <li>Choose region <strong>EU West (Ireland)</strong> or <strong>EU Central (Frankfurt)</strong> for best latency from Romania.</li>
+      <li>Set a <strong>database password</strong> — use only letters and numbers (no special characters like <code>!</code> <code>@</code> <code>#</code> to avoid URL-encoding issues).</li>
+      <li>Wait ~2 minutes for provisioning to complete.</li>
+    </ol>
+
+    <div class="alert alert-warning">
+      <strong>Password tip:</strong> Use a simple alphanumeric password like <code>MySecurePass2026abc</code>. Special characters in the password break the connection string URL format and cause "Failed to retrieve database credentials" errors.
+    </div>
+
+    <div class="sub-section">
+      <h3>Collect These Values</h3>
+      <p>Save all of these — you'll need them for Vercel environment variables.</p>
+      <table>
+        <tr><th>Variable</th><th>Where to Find</th></tr>
+        <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>Settings &gt; API &gt; <strong>Project URL</strong></td></tr>
+        <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>Settings &gt; API &gt; <strong>anon public</strong> key</td></tr>
+        <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>Settings &gt; API &gt; <strong>service_role</strong> secret key</td></tr>
+        <tr><td><code>DATABASE_URL</code></td><td>Settings &gt; Database &gt; Connection string &gt; <strong>URI</strong> tab &gt; <strong>Transaction</strong> pooler (port 6543)</td></tr>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>DATABASE_URL format:</strong><br>
+      <code>postgresql://postgres.YOURPROJECT:PASSWORD@aws-0-eu-central-1.pooler.supabase.com:6543/postgres</code><br><br>
+      Use the <strong>Transaction pooler</strong> (port 6543), not the direct connection (port 5432). The app is configured for transaction pooling.
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 2: PUSH SCHEMA -->
+<!-- ============================================== -->
+<div class="phase" id="step2">
+  <div class="phase-header">
+    <div class="phase-number">2</div>
+    <div class="phase-title">Push Database Schema</div>
+  </div>
+  <div class="phase-body">
+
+    <p>This creates all 12 database tables in your Supabase project. Run this from the project root on your local machine:</p>
+
+    <div class="sub-section">
+      <h3>Windows (PowerShell)</h3>
+      <div class="code-block" id="code-dbpush-win"><button class="copy-btn" onclick="copyCode('code-dbpush-win')">Copy</button><span class="label">$env:</span>DATABASE_URL=<span class="string">"postgresql://postgres.YOURPROJECT:PASSWORD@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"</span>; pnpm db:push</div>
+    </div>
+
+    <div class="sub-section">
+      <h3>macOS / Linux (Bash)</h3>
+      <div class="code-block" id="code-dbpush-mac"><button class="copy-btn" onclick="copyCode('code-dbpush-mac')">Copy</button>DATABASE_URL=<span class="string">"postgresql://postgres.YOURPROJECT:PASSWORD@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"</span> pnpm db:push</div>
+    </div>
+
+    <p>Replace the connection string with your actual <code>DATABASE_URL</code> from Step 1.</p>
+
+    <div class="alert alert-success">
+      <strong>Expected output:</strong> Drizzle Kit will show all tables being created (users, chapters, questions, options, attempts, attempt_answers, subscriptions, specialties, admission_data, audit_logs, webhook_events, site_settings) and several enums.
+    </div>
+
+    <div class="sub-section">
+      <h3>Seed Default Settings</h3>
+      <p>Go to <strong>Supabase Dashboard &gt; SQL Editor</strong> and run:</p>
+      <div class="code-block" id="code-seed"><button class="copy-btn" onclick="copyCode('code-seed')">Copy</button>INSERT INTO site_settings (key, value, updated_at)
+VALUES ('exam_duration_seconds', '14400', now())
+ON CONFLICT (key) DO NOTHING;</div>
+      <p>This sets the default exam duration to 4 hours (14400 seconds).</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 3: SUPABASE AUTH + TRIGGER -->
+<!-- ============================================== -->
+<div class="phase" id="step3">
+  <div class="phase-header">
+    <div class="phase-number">3</div>
+    <div class="phase-title">Configure Supabase Auth & Database Trigger</div>
+  </div>
+  <div class="phase-body">
+
+    <div class="sub-section">
+      <h3>3A. Auth Settings</h3>
+      <p>In the Supabase dashboard:</p>
+      <ol class="steps">
+        <li><strong>Authentication &gt; Providers &gt; Email</strong> — make sure it's enabled (it is by default).</li>
+        <li><strong>Authentication &gt; URL Configuration</strong>:
+          <ul class="plain">
+            <li><strong>Site URL:</strong> <code>https://your-vercel-domain.vercel.app</code> (set this after Step 5 when you know your Vercel URL, or use a placeholder for now)</li>
+            <li><strong>Redirect URLs:</strong> Add <code>https://your-vercel-domain.vercel.app/auth/confirm</code></li>
+            <li>Also add <code>http://localhost:3000/auth/confirm</code> for local development</li>
+          </ul>
+        </li>
+        <li><strong>Authentication &gt; Email Templates</strong> — the defaults are fine. Just verify that the Confirm and Recovery templates contain <code>{{ .ConfirmationURL }}</code>.</li>
+      </ol>
+    </div>
+
+    <div class="sub-section">
+      <h3>3B. Create Database Trigger</h3>
+
+      <div class="alert alert-critical">
+        <strong>CRITICAL:</strong> Without this trigger, signup will appear to succeed but users will be stuck in an infinite redirect loop. The app requires a row in <code>public.users</code> for every authenticated user, and this trigger creates it automatically on signup.
+      </div>
+
+      <p>Go to <strong>SQL Editor</strong> and run this entire block:</p>
+      <div class="code-block" id="code-trigger"><button class="copy-btn" onclick="copyCode('code-trigger')">Copy</button><span class="comment">-- Function: create a public.users row when a new auth user signs up</span>
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
+AS $$
+BEGIN
+  INSERT INTO public.users (id, email, full_name, year_of_study, role, is_superadmin)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', 'Utilizator'),
+    (NEW.raw_user_meta_data->>'year_of_study')::integer,
+    'student',
+    false
+  );
+  RETURN NEW;
+END;
+$$;
+
+<span class="comment">-- Trigger: fire after every new auth user insert</span>
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();</div>
+    </div>
+
+    <div class="sub-section">
+      <h3>3C. Enable Row-Level Security</h3>
+
+      <p>This prevents users from reading each other's data through the Supabase API. Run in <strong>SQL Editor</strong>:</p>
+
+      <div class="code-block" id="code-rls"><button class="copy-btn" onclick="copyCode('code-rls')">Copy</button><span class="comment">-- Enable RLS on all tables</span>
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chapters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.options ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.attempt_answers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.specialties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admission_data ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
+
+<span class="comment">-- Users: can read own row</span>
+CREATE POLICY "Users can read own profile"
+  ON public.users FOR SELECT
+  USING (auth.uid() = id);
+
+<span class="comment">-- Subscriptions: can read own row</span>
+CREATE POLICY "Users can read own subscription"
+  ON public.subscriptions FOR SELECT
+  USING (auth.uid() = user_id);
+
+<span class="comment">-- Chapters: all authenticated users can read</span>
+CREATE POLICY "Authenticated users can read chapters"
+  ON public.chapters FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+<span class="comment">-- Questions: all authenticated users can read</span>
+CREATE POLICY "Authenticated users can read questions"
+  ON public.questions FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+<span class="comment">-- Options: all authenticated users can read</span>
+CREATE POLICY "Authenticated users can read options"
+  ON public.options FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+<span class="comment">-- Attempts: can read own attempts</span>
+CREATE POLICY "Users can read own attempts"
+  ON public.attempts FOR SELECT
+  USING (auth.uid() = user_id);
+
+<span class="comment">-- Attempt answers: can read own answers</span>
+CREATE POLICY "Users can read own answers"
+  ON public.attempt_answers FOR SELECT
+  USING (
+    attempt_id IN (
+      SELECT id FROM public.attempts WHERE user_id = auth.uid()
+    )
+  );
+
+<span class="comment">-- Specialties: all authenticated can read</span>
+CREATE POLICY "Authenticated users can read specialties"
+  ON public.specialties FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+<span class="comment">-- Admission data: all authenticated can read</span>
+CREATE POLICY "Authenticated users can read admission data"
+  ON public.admission_data FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+<span class="comment">-- Site settings: all authenticated can read</span>
+CREATE POLICY "Authenticated users can read site settings"
+  ON public.site_settings FOR SELECT
+  USING (auth.role() = 'authenticated');</div>
+
+      <div class="alert alert-info">
+        <strong>Note:</strong> Server-side code (Server Actions, API routes) connects via <code>DATABASE_URL</code> using the Postgres driver directly, which bypasses RLS. These policies only affect the Supabase JS client used in middleware for session-aware queries.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 4: STRIPE -->
+<!-- ============================================== -->
+<div class="phase" id="step4">
+  <div class="phase-header">
+    <div class="phase-number">4</div>
+    <div class="phase-title">Set Up Stripe Products & Webhook</div>
+  </div>
+  <div class="phase-body">
+
+    <div class="sub-section">
+      <h3>4A. Create Products</h3>
+      <p>Go to <a href="https://dashboard.stripe.com" target="_blank">dashboard.stripe.com</a>. Make sure you're in <strong>Test Mode</strong> (toggle in top-right) for initial setup.</p>
+
+      <ol class="steps">
+        <li>Go to <strong>Products &gt; + Add product</strong></li>
+        <li>
+          <strong>Product 1: Abonament Lunar</strong> (Monthly)
+          <ul class="plain">
+            <li>Name: <code>Abonament Lunar</code></li>
+            <li>Pricing model: Recurring</li>
+            <li>Amount: <strong>49 RON / month</strong></li>
+            <li>Save &rarr; copy the <strong>Price ID</strong> (starts with <code>price_...</code>)</li>
+            <li>This is your <code>STRIPE_MONTHLY_PRICE_ID</code></li>
+          </ul>
+        </li>
+        <li>
+          <strong>Product 2: Abonament Anual</strong> (Annual)
+          <ul class="plain">
+            <li>Name: <code>Abonament Anual</code></li>
+            <li>Pricing model: Recurring</li>
+            <li>Amount: <strong>396 RON / year</strong> (33 RON/month)</li>
+            <li>Save &rarr; copy the <strong>Price ID</strong></li>
+            <li>This is your <code>STRIPE_ANNUAL_PRICE_ID</code></li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <div class="sub-section">
+      <h3>4B. Collect API Keys</h3>
+      <p>Go to <strong>Developers &gt; API keys</strong>:</p>
+      <table>
+        <tr><th>Variable</th><th>Where</th></tr>
+        <tr><td><code>STRIPE_SECRET_KEY</code></td><td>Secret key (starts with <code>sk_test_</code>)</td></tr>
+        <tr><td><code>STRIPE_PUBLISHABLE_KEY</code></td><td>Publishable key (starts with <code>pk_test_</code>)</td></tr>
+      </table>
+    </div>
+
+    <div class="sub-section">
+      <h3>4C. Create Webhook Endpoint</h3>
+
+      <div class="alert alert-warning">
+        <strong>Do this after Step 5</strong> — you need your Vercel URL first. Come back to this step after deploying.
+      </div>
+
+      <ol class="steps">
+        <li>Go to <strong>Developers &gt; Webhooks &gt; + Add endpoint</strong></li>
+        <li>Endpoint URL: <code>https://your-vercel-domain.vercel.app/api/webhooks/stripe</code></li>
+        <li>Click <strong>"Select events"</strong> and check these 5 events:
+          <ul class="plain">
+            <li><code>customer.subscription.created</code></li>
+            <li><code>customer.subscription.updated</code></li>
+            <li><code>customer.subscription.deleted</code></li>
+            <li><code>invoice.payment_succeeded</code></li>
+            <li><code>invoice.payment_failed</code></li>
+          </ul>
+        </li>
+        <li>Click <strong>"Add endpoint"</strong></li>
+        <li>Click into the endpoint &rarr; <strong>Reveal</strong> the Signing secret</li>
+        <li>Copy it (starts with <code>whsec_...</code>) &rarr; this is your <code>STRIPE_WEBHOOK_SECRET</code></li>
+      </ol>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 5: VERCEL -->
+<!-- ============================================== -->
+<div class="phase" id="step5">
+  <div class="phase-header">
+    <div class="phase-number">5</div>
+    <div class="phase-title">Deploy to Vercel</div>
+  </div>
+  <div class="phase-body">
+
+    <div class="sub-section">
+      <h3>5A. Push Code to GitHub</h3>
+      <p>Make sure your code is on the <code>main</code> branch and pushed:</p>
+      <div class="code-block" id="code-push"><button class="copy-btn" onclick="copyCode('code-push')">Copy</button>git push origin main</div>
+    </div>
+
+    <div class="sub-section">
+      <h3>5B. Import to Vercel</h3>
+      <ol class="steps">
+        <li>Go to <a href="https://vercel.com" target="_blank">vercel.com</a> &gt; <strong>Add New Project</strong></li>
+        <li>Import your GitHub repository</li>
+        <li>Framework: <strong>Next.js</strong> (auto-detected)</li>
+        <li><strong>Before clicking Deploy</strong>, set up environment variables (next step)</li>
+      </ol>
+    </div>
+
+    <div class="sub-section">
+      <h3>5C. Set Environment Variables</h3>
+      <p>In the Vercel import screen (or Settings &gt; Environment Variables after import), add <strong>all 11 variables</strong>:</p>
+
+      <table class="env-table">
+        <tr><th>Variable</th><th>Value</th><th>Source</th></tr>
+        <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>https://xxx.supabase.co</td><td>Step 1</td></tr>
+        <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>eyJ...anon-key</td><td>Step 1</td></tr>
+        <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>eyJ...service-role</td><td>Step 1</td></tr>
+        <tr><td><code>DATABASE_URL</code></td><td>postgresql://...pooler:6543/postgres</td><td>Step 1</td></tr>
+        <tr><td><code>NEXT_PUBLIC_SITE_URL</code></td><td>https://your-app.vercel.app</td><td>Your Vercel domain</td></tr>
+        <tr><td><code>NEXT_PUBLIC_APP_URL</code></td><td>https://your-app.vercel.app</td><td>Same as above</td></tr>
+        <tr><td><code>STRIPE_SECRET_KEY</code></td><td>sk_test_...</td><td>Step 4B</td></tr>
+        <tr><td><code>STRIPE_PUBLISHABLE_KEY</code></td><td>pk_test_...</td><td>Step 4B</td></tr>
+        <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td>whsec_...</td><td>Step 4C (after deploy)</td></tr>
+        <tr><td><code>STRIPE_MONTHLY_PRICE_ID</code></td><td>price_...</td><td>Step 4A</td></tr>
+        <tr><td><code>STRIPE_ANNUAL_PRICE_ID</code></td><td>price_...</td><td>Step 4A</td></tr>
+      </table>
+
+      <div class="alert alert-warning">
+        <strong>Chicken-and-egg:</strong> For <code>NEXT_PUBLIC_SITE_URL</code>, <code>NEXT_PUBLIC_APP_URL</code>, and <code>STRIPE_WEBHOOK_SECRET</code> — you need the Vercel URL first. Use a placeholder for the first deploy, then update after you have the URL. Set <code>STRIPE_WEBHOOK_SECRET</code> to a dummy value like <code>whsec_placeholder</code> for now.
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <h3>5D. Deploy</h3>
+      <p>Click <strong>Deploy</strong>. Wait for the build to complete (~2-3 minutes).</p>
+      <p>Note your production URL, e.g. <code>https://grile-rezinote.vercel.app</code></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 6: CONNECT -->
+<!-- ============================================== -->
+<div class="phase" id="step6">
+  <div class="phase-header">
+    <div class="phase-number">6</div>
+    <div class="phase-title">Connect Everything (URLs & Webhook)</div>
+  </div>
+  <div class="phase-body">
+
+    <p>Now that you have your Vercel URL, wire everything together:</p>
+
+    <div class="sub-section">
+      <h3>6A. Update Vercel Environment Variables</h3>
+      <p>Go to <strong>Vercel &gt; Project Settings &gt; Environment Variables</strong> and update:</p>
+      <ul class="plain">
+        <li><code>NEXT_PUBLIC_SITE_URL</code> &rarr; <code>https://your-app.vercel.app</code></li>
+        <li><code>NEXT_PUBLIC_APP_URL</code> &rarr; <code>https://your-app.vercel.app</code></li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>6B. Create Stripe Webhook</h3>
+      <p>Go back to <strong>Step 4C</strong> and create the webhook endpoint now that you have your URL.</p>
+      <p>Then update the Vercel env var:</p>
+      <ul class="plain">
+        <li><code>STRIPE_WEBHOOK_SECRET</code> &rarr; <code>whsec_...</code> (the real signing secret)</li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>6C. Update Supabase Auth URLs</h3>
+      <p>Go to <strong>Supabase &gt; Authentication &gt; URL Configuration</strong>:</p>
+      <ul class="plain">
+        <li><strong>Site URL:</strong> <code>https://your-app.vercel.app</code></li>
+        <li><strong>Redirect URLs:</strong> Add <code>https://your-app.vercel.app/auth/confirm</code></li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>6D. Redeploy</h3>
+      <p>Go to <strong>Vercel &gt; Deployments</strong> &rarr; click <strong>...</strong> on the latest deployment &rarr; <strong>Redeploy</strong>.</p>
+      <p>This picks up the updated environment variables.</p>
+    </div>
+
+    <div class="alert alert-success">
+      <strong>After redeploy:</strong> Your app should be live and functional at your Vercel URL.
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 7: SUPERADMIN -->
+<!-- ============================================== -->
+<div class="phase" id="step7">
+  <div class="phase-header">
+    <div class="phase-number">7</div>
+    <div class="phase-title">Create Your Superadmin Account</div>
+  </div>
+  <div class="phase-body">
+
+    <div class="alert alert-info">
+      <strong>There is no admin registration UI.</strong> You sign up as a normal user, then promote yourself via SQL. This is intentional for security.
+    </div>
+
+    <ol class="steps">
+      <li>Go to <code>https://your-app.vercel.app/signup</code></li>
+      <li>Create an account with your email. Fill in name and year of study (any value is fine for admin).</li>
+      <li>Check your email for the verification link. Click it to verify.</li>
+      <li>
+        Open <strong>Supabase Dashboard &gt; SQL Editor</strong> and run:
+        <div class="code-block" id="code-superadmin"><button class="copy-btn" onclick="copyCode('code-superadmin')">Copy</button>UPDATE users
+SET is_superadmin = true
+WHERE email = 'your-email@example.com';</div>
+        <p>Replace <code>your-email@example.com</code> with the exact email you signed up with.</p>
+      </li>
+      <li>Refresh the app or navigate to <code>/admin</code>. You should see the admin panel.</li>
+    </ol>
+
+    <div class="sub-section">
+      <h3>Admin Panel Routes</h3>
+      <table>
+        <tr><th>URL</th><th>Purpose</th></tr>
+        <tr><td><code>/admin</code></td><td>Admin dashboard</td></tr>
+        <tr><td><code>/admin/chapters</code></td><td>Create, edit, reorder, delete chapters</td></tr>
+        <tr><td><code>/admin/questions</code></td><td>Manage questions (CS/CM types, source references)</td></tr>
+        <tr><td><code>/admin/import-export</code></td><td>Bulk import/export questions from CSV or Excel</td></tr>
+        <tr><td><code>/admin/specialties</code></td><td>Manage dental specialties</td></tr>
+        <tr><td><code>/admin/admission-data</code></td><td>Manage historical admission threshold data</td></tr>
+        <tr><td><code>/admin/settings</code></td><td>Configure exam duration</td></tr>
+      </table>
+    </div>
+
+    <div class="sub-section">
+      <h3>Troubleshooting</h3>
+      <ul class="plain">
+        <li><strong>Redirected to /dashboard instead of /admin?</strong> — The email in your SQL didn't match. Run <code>SELECT email FROM users;</code> in SQL Editor to see the exact email stored.</li>
+        <li><strong>Stuck on "Se creeaza contul..."?</strong> — The database trigger might not be set up. Go back to Step 3B.</li>
+        <li><strong>No verification email?</strong> — Check Supabase &gt; Authentication &gt; Logs. If rate-limited, wait an hour or temporarily disable email confirmation in Providers &gt; Email.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 8: VERIFY -->
+<!-- ============================================== -->
+<div class="phase" id="step8">
+  <div class="phase-header">
+    <div class="phase-number">8</div>
+    <div class="phase-title">Verify Everything Works</div>
+  </div>
+  <div class="phase-body">
+
+    <p>Run through this checklist to confirm the deployment is functional:</p>
+
+    <div class="sub-section">
+      <h3>Authentication</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"> Sign up with a new email &rarr; receive verification email</li>
+        <li><input type="checkbox"> Click verification link &rarr; redirected to <code>/dashboard</code></li>
+        <li><input type="checkbox"> Log out &rarr; redirected to <code>/login</code></li>
+        <li><input type="checkbox"> Log in again &rarr; back to <code>/dashboard</code></li>
+        <li><input type="checkbox"> Forgot password &rarr; receive reset email &rarr; set new password</li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>Admin Panel</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"> Superadmin can access <code>/admin</code></li>
+        <li><input type="checkbox"> Regular user cannot access <code>/admin</code> (redirected to dashboard)</li>
+        <li><input type="checkbox"> Create a chapter</li>
+        <li><input type="checkbox"> Create a CS question and a CM question</li>
+        <li><input type="checkbox"> Import questions from a CSV file</li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>Practice & Exams</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"> Start a chapter practice test &rarr; answer &rarr; see results</li>
+        <li><input type="checkbox"> Start a mixed practice test</li>
+        <li><input type="checkbox"> Start an exam simulation &rarr; timer counting down</li>
+        <li><input type="checkbox"> Close browser and return &rarr; answers preserved</li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>Payments (Stripe Test Mode)</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"> Visit <code>/pricing</code> &rarr; see monthly and annual plans</li>
+        <li><input type="checkbox"> Click subscribe &rarr; Stripe Checkout opens</li>
+        <li><input type="checkbox"> Use test card <code>4242 4242 4242 4242</code> (any expiry, any CVC)</li>
+        <li><input type="checkbox"> Payment succeeds &rarr; redirected to <code>/checkout/success</code></li>
+        <li><input type="checkbox"> <code>/subscription</code> shows active subscription</li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>Dashboard</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"> After a test, dashboard shows updated stats</li>
+        <li><input type="checkbox"> Charts render (trend chart, radar chart)</li>
+        <li><input type="checkbox"> Answer history shows completed answers</li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>PWA (Mobile)</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"> On mobile, browser shows "Add to Home Screen"</li>
+        <li><input type="checkbox"> After installing, app opens without browser chrome</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- STEP 9: PRODUCTION HARDENING -->
+<!-- ============================================== -->
+<div class="phase" id="step9">
+  <div class="phase-header">
+    <div class="phase-number">9</div>
+    <div class="phase-title">Production Hardening (Before Real Users)</div>
+  </div>
+  <div class="phase-body">
+
+    <div class="sub-section">
+      <h3>Go-Live Checklist</h3>
+      <ul class="checklist">
+        <li><input type="checkbox"> Switch Stripe to <strong>live keys</strong> (<code>sk_live_</code>, <code>pk_live_</code>)</li>
+        <li><input type="checkbox"> Create <strong>live</strong> Stripe products/prices (test ones don't work in live mode)</li>
+        <li><input type="checkbox"> Create a <strong>live</strong> webhook endpoint with the production URL</li>
+        <li><input type="checkbox"> Update all Vercel env vars with live Stripe keys and webhook secret</li>
+        <li><input type="checkbox"> Re-enable <strong>email confirmation</strong> in Supabase Auth if you disabled it</li>
+        <li><input type="checkbox"> Set up a <strong>custom domain</strong> in Vercel (optional but professional)</li>
+        <li><input type="checkbox"> Update Supabase Site URL and Redirect URLs to custom domain</li>
+        <li><input type="checkbox"> Redeploy after all env var changes</li>
+      </ul>
+    </div>
+
+    <div class="sub-section">
+      <h3>Security Fixes (from audit)</h3>
+
+      <div class="alert alert-critical">
+        <strong>3 Critical Issues</strong> found by security audit. Fix these before allowing real users:
+      </div>
+
+      <table>
+        <tr><th>#</th><th>Issue</th><th>Impact</th><th>Fix</th></tr>
+        <tr>
+          <td>1</td>
+          <td>SQL injection in <code>practice.ts</code></td>
+          <td>Attacker could read/modify database</td>
+          <td>Replace <code>sql.raw()</code> with <code>sql.join()</code> in the wrongAnswersOnly code path (~line 144)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>No rate limiting on auth</td>
+          <td>Brute-force login attacks possible</td>
+          <td>Add <code>@upstash/ratelimit</code> or Vercel WAF rate limiting to login/signup/forgot-password</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Missing security headers</td>
+          <td>Clickjacking, MIME sniffing</td>
+          <td>Add X-Frame-Options, CSP, HSTS headers in <code>next.config.ts</code></td>
+        </tr>
+      </table>
+
+      <p>Full audit report at <code>.planning/security/audit-report.md</code> in the repository.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- ENV VAR REFERENCE -->
+<!-- ============================================== -->
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-number" style="background: var(--gray-500);">&hellip;</div>
+    <div class="phase-title">Quick Reference: All Environment Variables</div>
+  </div>
+  <div class="phase-body">
+    <div class="code-block" id="code-allenv"><button class="copy-btn" onclick="copyCode('code-allenv')">Copy</button><span class="comment"># Supabase</span>
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+DATABASE_URL=
+
+<span class="comment"># App URLs</span>
+NEXT_PUBLIC_SITE_URL=
+NEXT_PUBLIC_APP_URL=
+
+<span class="comment"># Stripe</span>
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_MONTHLY_PRICE_ID=
+STRIPE_ANNUAL_PRICE_ID=</div>
+    <p><strong>11 total:</strong> 6 public/shared + 5 secret. All are required for the app to function.</p>
+  </div>
+</div>
+
+</div> <!-- /container -->
+
+<script>
+function copyCode(id) {
+  const block = document.getElementById(id);
+  // Get text content, stripping the "Copy" button text
+  let text = block.textContent.replace(/^Copy\n?/, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>

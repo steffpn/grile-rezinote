@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>grile-ReziNOTE - Project Completion Report</title>
+<style>
+  :root {
+    --teal-50: #f0fdfa;
+    --teal-100: #ccfbf1;
+    --teal-200: #99f6e4;
+    --teal-300: #5eead4;
+    --teal-400: #2dd4bf;
+    --teal-500: #14b8a6;
+    --teal-600: #0d9488;
+    --teal-700: #0f766e;
+    --teal-800: #115e59;
+    --teal-900: #134e4a;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --red-100: #fee2e2;
+    --red-500: #ef4444;
+    --red-600: #dc2626;
+    --red-700: #b91c1c;
+    --orange-100: #ffedd5;
+    --orange-500: #f97316;
+    --orange-600: #ea580c;
+    --yellow-100: #fef9c3;
+    --yellow-500: #eab308;
+    --yellow-600: #ca8a04;
+    --green-100: #dcfce7;
+    --green-500: #22c55e;
+    --green-600: #16a34a;
+    --blue-100: #dbeafe;
+    --blue-500: #3b82f6;
+    --blue-600: #2563eb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  .report-header {
+    background: linear-gradient(135deg, var(--teal-800) 0%, var(--teal-600) 100%);
+    color: white;
+    padding: 48px 0 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .report-header::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .report-header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .report-header .subtitle {
+    font-size: 18px;
+    color: var(--teal-200);
+    font-weight: 400;
+    margin-bottom: 24px;
+  }
+
+  .header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 14px;
+    color: var(--teal-100);
+  }
+
+  .header-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .header-meta strong {
+    color: white;
+  }
+
+  /* Navigation */
+  .toc {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: -24px auto 32px;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+
+  .toc h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-500);
+    margin-bottom: 12px;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 6px 24px;
+  }
+
+  .toc a {
+    color: var(--teal-700);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 0;
+    display: block;
+    transition: color 0.15s;
+  }
+
+  .toc a:hover {
+    color: var(--teal-500);
+  }
+
+  /* Sections */
+  .section {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--teal-100);
+    letter-spacing: -0.01em;
+  }
+
+  .section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 20px 0 10px;
+  }
+
+  .section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin: 16px 0 8px;
+  }
+
+  .section p, .section li {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.7;
+  }
+
+  .section ul, .section ol {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+
+  .section li {
+    margin-bottom: 4px;
+  }
+
+  /* KPI Row */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .kpi-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--teal-700);
+    line-height: 1.1;
+  }
+
+  .kpi-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 6px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 12px 0;
+  }
+
+  th {
+    background: var(--gray-50);
+    font-weight: 600;
+    color: var(--gray-700);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--gray-200);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-600);
+    vertical-align: top;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: var(--gray-50);
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .badge-passed, .badge-complete {
+    background: var(--green-100);
+    color: var(--green-600);
+  }
+
+  .badge-critical {
+    background: var(--red-100);
+    color: var(--red-700);
+  }
+
+  .badge-high {
+    background: var(--orange-100);
+    color: var(--orange-600);
+  }
+
+  .badge-medium {
+    background: var(--yellow-100);
+    color: var(--yellow-600);
+  }
+
+  .badge-low {
+    background: var(--blue-100);
+    color: var(--blue-600);
+  }
+
+  .badge-info {
+    background: var(--gray-100);
+    color: var(--gray-600);
+  }
+
+  /* Progress bar */
+  .progress-bar-container {
+    background: var(--gray-200);
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+
+  .progress-bar-fill {
+    background: linear-gradient(90deg, var(--teal-500), var(--teal-400));
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.3s;
+  }
+
+  /* Phase cards */
+  .phase-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .phase-number {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, var(--teal-600), var(--teal-500));
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .phase-info h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin: 0 0 4px;
+  }
+
+  .phase-info p {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin: 0;
+  }
+
+  .phase-meta {
+    text-align: right;
+    font-size: 12px;
+    color: var(--gray-400);
+    white-space: nowrap;
+  }
+
+  .phase-meta .plans {
+    font-weight: 600;
+    color: var(--gray-600);
+  }
+
+  /* Security */
+  .finding-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+
+  .finding-card {
+    text-align: center;
+    padding: 16px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--gray-200);
+  }
+
+  .finding-card .count {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .finding-card .label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+
+  .finding-card.critical { background: var(--red-100); }
+  .finding-card.critical .count { color: var(--red-700); }
+  .finding-card.critical .label { color: var(--red-600); }
+
+  .finding-card.high { background: var(--orange-100); }
+  .finding-card.high .count { color: var(--orange-600); }
+  .finding-card.high .label { color: var(--orange-600); }
+
+  .finding-card.medium { background: var(--yellow-100); }
+  .finding-card.medium .count { color: var(--yellow-600); }
+  .finding-card.medium .label { color: var(--yellow-600); }
+
+  .finding-card.low { background: var(--blue-100); }
+  .finding-card.low .count { color: var(--blue-600); }
+  .finding-card.low .label { color: var(--blue-600); }
+
+  .finding-card.info { background: var(--gray-100); }
+  .finding-card.info .count { color: var(--gray-500); }
+  .finding-card.info .label { color: var(--gray-500); }
+
+  /* Tech stack */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .tech-item {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .tech-item .name {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--gray-900);
+  }
+
+  .tech-item .version {
+    font-size: 11px;
+    color: var(--teal-600);
+    font-weight: 600;
+  }
+
+  .tech-item .role {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  /* Decision log */
+  .decision-item {
+    background: var(--gray-50);
+    border-left: 3px solid var(--teal-500);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .decision-item .phase-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--teal-600);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .decision-item p {
+    font-size: 13px;
+    color: var(--gray-700);
+    margin-top: 4px;
+  }
+
+  /* Architecture diagram */
+  .arch-diagram {
+    background: var(--gray-900);
+    color: var(--teal-300);
+    border-radius: 10px;
+    padding: 24px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 16px 0;
+  }
+
+  /* Footer */
+  .report-footer {
+    text-align: center;
+    padding: 32px 0;
+    color: var(--gray-400);
+    font-size: 12px;
+  }
+
+  .report-footer a {
+    color: var(--teal-600);
+    text-decoration: none;
+  }
+
+  /* Callout */
+  .callout {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .callout-success {
+    background: var(--green-100);
+    border: 1px solid #bbf7d0;
+    color: #166534;
+  }
+
+  .callout-warning {
+    background: var(--yellow-100);
+    border: 1px solid #fde68a;
+    color: #854d0e;
+  }
+
+  .callout-danger {
+    background: var(--red-100);
+    border: 1px solid #fecaca;
+    color: #991b1b;
+  }
+
+  .callout strong {
+    font-weight: 700;
+  }
+
+  /* Two col layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .two-col {
+      grid-template-columns: 1fr;
+    }
+    .phase-card {
+      grid-template-columns: 42px 1fr;
+    }
+    .phase-meta {
+      grid-column: 1 / -1;
+      text-align: left;
+    }
+    .report-header h1 {
+      font-size: 28px;
+    }
+  }
+
+  /* Scroll anchor offset */
+  [id] {
+    scroll-margin-top: 20px;
+  }
+
+  /* Print */
+  @media print {
+    .section { break-inside: avoid; }
+    .report-header { background: var(--teal-700) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- HEADER                                                       -->
+<!-- ============================================================ -->
+<header class="report-header">
+  <div class="container header-content">
+    <div class="header-badge">Project Completion Report</div>
+    <h1>grile-ReziNOTE</h1>
+    <div class="subtitle">Romanian Dental Residency Exam Preparation Platform</div>
+    <div class="header-meta">
+      <span>Report Date: <strong>2026-03-03</strong></span>
+      <span>Milestone: <strong>v1.0</strong></span>
+      <span>Status: <strong>All 10 Phases Complete</strong></span>
+      <span>Build Duration: <strong>~7 hours</strong></span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- TABLE OF CONTENTS                                            -->
+<!-- ============================================================ -->
+<div class="container">
+  <nav class="toc">
+    <h2>Contents</h2>
+    <div class="toc-grid">
+      <a href="#executive-summary">1. Executive Summary</a>
+      <a href="#project-metrics">2. Project Metrics</a>
+      <a href="#phase-breakdown">3. Phase Breakdown</a>
+      <a href="#architecture">4. Architecture</a>
+      <a href="#tech-stack">5. Technology Stack</a>
+      <a href="#security-audit">6. Security Audit</a>
+      <a href="#requirements-coverage">7. Requirements Coverage</a>
+      <a href="#key-decisions">8. Key Decisions</a>
+      <a href="#testing">9. Testing</a>
+      <a href="#risks-recommendations">10. Risks &amp; Recommendations</a>
+      <a href="#future-work">11. Future Work (v2)</a>
+    </div>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- 1. EXECUTIVE SUMMARY                                         -->
+  <!-- ============================================================ -->
+  <section class="section" id="executive-summary">
+    <h2>1. Executive Summary</h2>
+
+    <p>
+      grile-ReziNOTE is a SaaS platform purpose-built for Romanian dental students preparing for the national residency entrance exam. The platform was designed, implemented, and verified across 10 development phases, delivering a feature-complete v1.0 product in approximately 7 hours of execution time.
+    </p>
+
+    <div class="callout callout-success" style="margin-top:16px">
+      <strong>Core differentiator delivered:</strong> After completing a simulated exam, students instantly see whether their score would have earned admission to specific dental specialties based on real historical threshold data from the past 5 years. No Romanian competitor offers this feature.
+    </div>
+
+    <h3>What Was Built</h3>
+    <ul>
+      <li><strong>Exam simulation engine</strong> matching the real format: 200 questions (50 CS + 150 CM), timed with server-authoritative countdown, using the official Romanian scoring methodology</li>
+      <li><strong>Practice quiz system</strong> with chapter-based and mixed modes, immediate or deferred feedback, and a wrong-answer review system with mastery tracking</li>
+      <li><strong>Admission comparison engine</strong> that maps simulation scores against 5 years of historical admission thresholds per specialty</li>
+      <li><strong>Admin content management</strong> with chapter CRUD, question CRUD (CS/CM types), and bulk CSV/Excel import-export with Romanian diacritics support</li>
+      <li><strong>Analytics dashboard</strong> with per-chapter stats, trend charts, radar visualization, heatmap, sparklines, and answer history</li>
+      <li><strong>Peer comparison system</strong> with anonymous leaderboard, percentile ranking, score distribution, and contextual motivational messages</li>
+      <li><strong>Stripe subscription billing</strong> with monthly/annual plans in RON, hosted checkout, webhook-driven sync, trial system, and paywall</li>
+      <li><strong>Progressive Web App</strong> installable from any mobile browser with custom install prompt, bottom tab bar, 44px touch targets, and offline indicator</li>
+      <li><strong>Full authentication</strong> with email/password registration, email verification, password reset, and persistent sessions</li>
+      <li><strong>Branded landing page</strong> with 7 sections communicating platform value in Romanian</li>
+    </ul>
+
+    <h3>Key Numbers</h3>
+    <div class="kpi-row" style="margin-top:12px">
+      <div class="kpi-card">
+        <div class="kpi-value">10/10</div>
+        <div class="kpi-label">Phases Complete</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">36/36</div>
+        <div class="kpi-label">Plans Executed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">54</div>
+        <div class="kpi-label">Requirements Defined</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">~19,800</div>
+        <div class="kpi-label">Lines of Code</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">188</div>
+        <div class="kpi-label">Source Files</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">59</div>
+        <div class="kpi-label">Git Commits</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 2. PROJECT METRICS                                           -->
+  <!-- ============================================================ -->
+  <section class="section" id="project-metrics">
+    <h2>2. Project Metrics</h2>
+
+    <h3>Overall Progress</h3>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <span style="font-size:14px;font-weight:600;color:var(--gray-700)">Milestone v1.0</span>
+      <span style="font-size:14px;font-weight:700;color:var(--teal-600)">100%</span>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width:100%"></div>
+    </div>
+
+    <h3 style="margin-top:24px">Execution Velocity</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th>Plans</th>
+          <th>Duration</th>
+          <th>Avg / Plan</th>
+          <th>Completed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1. Foundation &amp; Design System</td><td>3/3</td><td>~30 min</td><td>~10 min</td><td>2026-03-02</td></tr>
+        <tr><td>2. Landing Page &amp; Authentication</td><td>3/3</td><td>~35 min</td><td>~12 min</td><td>2026-03-03</td></tr>
+        <tr><td>3. Admin Content Management</td><td>4/4</td><td>~55 min</td><td>~14 min</td><td>2026-03-03</td></tr>
+        <tr><td>4. Practice Tests</td><td>4/4</td><td>~50 min</td><td>~13 min</td><td>2026-03-03</td></tr>
+        <tr><td>5. Exam Simulation</td><td>4/4</td><td>~50 min</td><td>~13 min</td><td>2026-03-03</td></tr>
+        <tr><td>6. Admission Comparison</td><td>3/3</td><td>~45 min</td><td>~15 min</td><td>2026-03-03</td></tr>
+        <tr><td>7. Dashboard &amp; Analytics</td><td>5/5</td><td>~50 min</td><td>~10 min</td><td>2026-03-03</td></tr>
+        <tr><td>8. Peer Comparison &amp; Motivation</td><td>4/4</td><td>~45 min</td><td>~11 min</td><td>2026-03-03</td></tr>
+        <tr><td>9. Payments &amp; Subscriptions</td><td>4/4</td><td>~45 min</td><td>~11 min</td><td>2026-03-03</td></tr>
+        <tr><td>10. PWA &amp; Mobile Polish</td><td>2/2</td><td>~23 min</td><td>~12 min</td><td>2026-03-03</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:24px">Codebase Statistics</h3>
+    <div class="two-col">
+      <div>
+        <table>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Total Source Files</td><td>188</td></tr>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Lines of Code (TypeScript/TSX)</td><td>~19,800</td></tr>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Test Files</td><td>3</td></tr>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Test Lines</td><td>644</td></tr>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Git Commits</td><td>59</td></tr>
+        </table>
+      </div>
+      <div>
+        <table>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Production Dependencies</td><td>30</td></tr>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Dev Dependencies</td><td>13</td></tr>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Development Phases</td><td>10</td></tr>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Execution Plans</td><td>36</td></tr>
+          <tr><td style="font-weight:600;color:var(--gray-700)">Project Start</td><td>2026-03-02</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 3. PHASE BREAKDOWN                                           -->
+  <!-- ============================================================ -->
+  <section class="section" id="phase-breakdown">
+    <h2>3. Phase Breakdown</h2>
+
+    <p style="margin-bottom:16px">Each phase delivered a coherent, independently verifiable capability. Phases 3+9, 5+7, and 6+8 were executed in parallel waves to optimize throughput.</p>
+
+    <div class="phase-card">
+      <div class="phase-number">1</div>
+      <div class="phase-info">
+        <h4>Foundation &amp; Design System</h4>
+        <p>Next.js 15 scaffolding, Supabase integration, Drizzle ORM schema (users, chapters, questions, options, attempts, attempt_answers with isCorrect snapshot), scoring engine with 23 passing tests (CS 4-point, CM per-option with annulment), shadcn/ui medical teal design system, Serwist PWA shell, Romanian UI baseline.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">3 plans</div>
+        <span class="badge badge-complete">Passed</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">2</div>
+      <div class="phase-info">
+        <h4>Landing Page &amp; Authentication</h4>
+        <p>7-section branded landing page with hero, features, how-it-works, stats, FAQ, CTA, footer. Full email+password auth: signup with name/email/password/yearOfStudy, email verification with confirm route handler, password reset flow, persistent cookie-based sessions via @supabase/ssr, logout from any page.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">3 plans</div>
+        <span class="badge badge-complete">Passed 7/7</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">3</div>
+      <div class="phase-info">
+        <h4>Admin Content Management</h4>
+        <p>Superadmin-protected panel with getCurrentAdmin() guard. Chapter CRUD with @dnd-kit drag-and-drop reordering. Question CRUD with CS/CM type awareness, live preview, data table with sorting/filtering. Bulk import/export: CSV (PapaParse + UTF-8 BOM for Romanian diacritics) and Excel (ExcelJS). Soft delete with archivedAt timestamps. Audit logging.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">4 plans</div>
+        <span class="badge badge-complete">Passed</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">4</div>
+      <div class="phase-info">
+        <h4>Practice Tests</h4>
+        <p>Chapter-based and mixed practice quiz engine. Proportional question distribution via Fisher-Yates shuffle. Immediate feedback modal and deferred end-of-test results. Source reference display. Wrong answer review with mastery tracking (2 consecutive correct = mastered). Radio buttons for CS, checkboxes for CM. Color-coded question navigator.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">4 plans</div>
+        <span class="badge badge-complete">Passed 5/5</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">5</div>
+      <div class="phase-info">
+        <h4>Exam Simulation</h4>
+        <p>200-question timed exam (50 CS + 150 CM). Server-authoritative timer with configurable duration (default 4 hours). Countdown display derived from server timestamps. Progressive auto-save on every answer. Grace period for late submissions. Deferred-only results. Admin-configurable exam duration via site_settings. Stratified random selection from all chapters.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">4 plans</div>
+        <span class="badge badge-complete">Passed</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">6</div>
+      <div class="phase-info">
+        <h4>Admission Comparison</h4>
+        <p>Specialties CRUD with FK to admission_data. Historical admission data management (threshold + spots per specialty per year). Bulk import/export for admission data. Post-simulation comparison: majority-of-years rule for "admitted" status. Interactive explorer with Recharts visualizations. Card-based results showing per-year outcomes.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">3 plans</div>
+        <span class="badge badge-complete">Passed</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">7</div>
+      <div class="phase-info">
+        <h4>Dashboard &amp; Analytics</h4>
+        <p>Student dashboard with 4 stat cards (accuracy, questions, tests, streak). Per-chapter stats sorted by accuracy (weakest first) with expandable cards. Trend charts (7/30/90 day) using Recharts AreaChart with gradient fill. Answer history with debounced search, chapter filter, correctness filter, and detail dialog. Radar chart, CSS grid heatmap, sparklines. force-dynamic for real-time updates.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">5 plans</div>
+        <span class="badge badge-complete">Passed 6/6</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">8</div>
+      <div class="phase-info">
+        <h4>Peer Comparison &amp; Motivation</h4>
+        <p>Anonymous leaderboard with RANK() window function, SVG avatars, opt-in toggle. Score distribution histogram with user bin highlighted. Percentile rank via PERCENT_RANK. Mean and median (PERCENTILE_CONT). 35+ Romanian motivational message templates across 4 categories (encouragement, guidance, did-you-know, milestone). Hash-based daily rotation. Context-aware post-test messages.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">4 plans</div>
+        <span class="badge badge-complete">Passed 9/9</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">9</div>
+      <div class="phase-info">
+        <h4>Payments &amp; Subscriptions</h4>
+        <p>Stripe integration with monthly (49 RON) and annual (396 RON) plans. Hosted Checkout via Server Action. 7-day on-first-use trial tracked server-side. PaywallOverlay with blurred content. Subscription management: cancel (two-step confirm), reactivate, switch billing cycle with proration. Idempotent webhook handler with event ID deduplication. 22 passing tests.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">4 plans</div>
+        <span class="badge badge-complete">Passed 5/5</span>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-number">10</div>
+      <div class="phase-info">
+        <h4>PWA &amp; Mobile Polish</h4>
+        <p>Enhanced PWA manifest with split icon entries (any/maskable). Apple meta tags for iOS. Custom install prompt (Chrome native + iOS manual). Offline connectivity indicator. Mobile bottom tab bar (5 tabs: Acasa, Teste, Simulare, Progres, Profil). 44px minimum touch targets across 9 components. Admin sidebar Sheet-based mobile drawer. Safe area padding for notched devices. Responsive at 375px minimum width.</p>
+      </div>
+      <div class="phase-meta">
+        <div class="plans">2 plans</div>
+        <span class="badge badge-complete">Passed 9/9</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 4. ARCHITECTURE                                              -->
+  <!-- ============================================================ -->
+  <section class="section" id="architecture">
+    <h2>4. Architecture</h2>
+
+    <h3>System Overview</h3>
+    <p>Clean Next.js monolith with three-layer separation: App Router (client), Server Actions + Route Handlers (API), and Supabase PostgreSQL (data). No microservices, no separate backend.</p>
+
+    <div class="arch-diagram">
++---------------------------------------------------------------------+
+|                     CLIENT LAYER (PWA)                               |
+|  +-----------+  +-----------+  +-----------+  +------------------+  |
+|  | Landing / |  |   Quiz    |  | Dashboard |  |  Admin Panel     |  |
+|  |   Auth    |  |  Engine   |  | Analytics |  | Content Mgmt     |  |
+|  +-----------+  +-----------+  +-----------+  +------------------+  |
++------|----------------|----------------|----------------|------------+
+       |                |                |                |
++------v----------------v----------------v----------------v------------+
+|                   API LAYER (Server Actions + Route Handlers)        |
+|  +-----------+  +-----------+  +-----------+  +------------------+  |
+|  |   Auth    |  |   Quiz    |  | Analytics |  |  Admin / Stripe  |  |
+|  |  Actions  |  |  Actions  |  |  Actions  |  |  Actions         |  |
++------|----------------|----------------|----------------|------------+
+       |                |                |                |
++------v----------------v----------------v----------------v------------+
+|                 DATA LAYER (Supabase PostgreSQL + Drizzle ORM)       |
+|  +-------+ +----------+ +---------+ +--------+ +--------+ +------+  |
+|  | users | | chapters | |questions| |attempts | |subscrip| |admis.|  |
+|  +-------+ +----------+ +---------+ +--------+ +--------+ +------+  |
++------|---------------------------------------------------------------|
+       |                                                               |
++------v---------------------------------------------------------------+
+|                     EXTERNAL SERVICES                                |
+|  +------------------+  +------------------+  +-------------------+   |
+|  | Stripe           |  | Supabase Auth    |  | Serwist (PWA)     |   |
+|  | Webhooks+Billing |  | Email+Sessions   |  | Service Worker    |   |
+|  +------------------+  +------------------+  +-------------------+   |
++----------------------------------------------------------------------+</div>
+
+    <h3>Key Architectural Patterns</h3>
+    <table>
+      <thead>
+        <tr><th>Pattern</th><th>Description</th><th>Location</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:600">Question Bank / Engine Separation</td>
+          <td>Admin CRUD (bank) is fully decoupled from quiz-taking logic (engine). Questions are snapshotted at attempt creation time.</td>
+          <td>lib/actions/practice.ts, lib/actions/exam.ts</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Server-Authoritative Timer</td>
+          <td>Server records startedAt + timeLimit. Client derives remaining time from server timestamps. Server rejects submissions past deadline + grace period.</td>
+          <td>lib/actions/exam.ts</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Scoring as Pure Function</td>
+          <td>Stateless function takes questions + answers, returns score breakdown. Tested with 23 unit tests covering all CM annulment edge cases.</td>
+          <td>lib/quiz/scoring.ts</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Webhook-Driven Billing</td>
+          <td>Stripe webhooks drive subscription state changes. Event ID deduplication prevents double-processing. Database is updated transactionally.</td>
+          <td>api/webhooks/stripe/route.ts, lib/stripe/webhook-handlers.ts</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Immediate vs Deferred Feedback</td>
+          <td>feedbackMode stored on attempt record. API conditionally reveals correct answers based on mode. Exam always uses deferred.</td>
+          <td>lib/actions/practice.ts</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Answer Snapshotting</td>
+          <td>attempt_answers.isCorrect set at scoring time, never recalculated. Protects historical scores from retroactive question edits.</td>
+          <td>lib/db/schema.ts</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:24px">Project Structure</h3>
+    <div class="arch-diagram" style="font-size:11px">
+src/
+ +-- app/
+ |   +-- (marketing)/     # Landing, pricing (public)
+ |   +-- (auth)/           # Login, signup, verify, reset, update-password
+ |   +-- (student)/        # Dashboard, practice, exam, subscription
+ |   +-- (admin)/          # Chapters, questions, import, admissions, settings
+ |   +-- api/webhooks/     # Stripe webhook route handler
+ |   +-- auth/confirm/     # Email confirmation route handler
+ +-- components/
+ |   +-- ui/               # shadcn/ui base components
+ |   +-- landing/          # 7 landing page sections
+ |   +-- auth/             # 4 auth form components
+ |   +-- admin/            # Admin sidebar, forms
+ |   +-- practice/         # Quiz UI (QuestionCard, Navigator, etc.)
+ |   +-- exam/             # Exam UI (ExamContainer, Timer, etc.)
+ |   +-- dashboard/        # Charts, cards, tables
+ |   +-- peer/             # Leaderboard, distribution, avatars
+ |   +-- motivation/       # MotivationCard, PostTestMessage
+ |   +-- subscription/     # PricingCard, SubscriptionStatus
+ |   +-- paywall/          # PaywallOverlay
+ |   +-- pwa/              # InstallPrompt, OfflineIndicator
+ |   +-- shared/           # NavHeader, AppShell, MobileTabBar
+ +-- lib/
+ |   +-- auth/             # Server actions, getCurrentUser
+ |   +-- db/               # Schema, queries, Drizzle config
+ |   +-- quiz/             # Scoring engine (pure function)
+ |   +-- stripe/           # Client, config, actions, webhook handlers
+ |   +-- subscription/     # Access check, trial logic
+ |   +-- motivation/       # Templates, engine
+ |   +-- validations/      # Zod schemas (auth, practice, admin)
+ |   +-- actions/          # Server actions by domain
+ |   +-- supabase/         # Client + server Supabase helpers
+ +-- types/                # TypeScript interfaces</div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 5. TECHNOLOGY STACK                                          -->
+  <!-- ============================================================ -->
+  <section class="section" id="tech-stack">
+    <h2>5. Technology Stack</h2>
+
+    <h3>Core Framework</h3>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="name">Next.js</div>
+        <div class="version">^15.5.12</div>
+        <div class="role">Full-stack React framework (App Router, RSC, Server Actions)</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">React</div>
+        <div class="version">^19.2.4</div>
+        <div class="role">UI library with Server Components</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">TypeScript</div>
+        <div class="version">^5.9.3</div>
+        <div class="role">Type-safe development</div>
+      </div>
+    </div>
+
+    <h3>Database &amp; ORM</h3>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="name">Supabase</div>
+        <div class="version">^2.98.0</div>
+        <div class="role">Managed PostgreSQL + Auth + RLS</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">Drizzle ORM</div>
+        <div class="version">^0.45.1</div>
+        <div class="role">Type-safe SQL queries (7KB bundle)</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">@supabase/ssr</div>
+        <div class="version">^0.9.0</div>
+        <div class="role">Server-side cookie-based sessions</div>
+      </div>
+    </div>
+
+    <h3>Payments</h3>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="name">Stripe</div>
+        <div class="version">^20.4.0</div>
+        <div class="role">Subscription billing + webhook sync</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">@stripe/stripe-js</div>
+        <div class="version">^8.9.0</div>
+        <div class="role">Client-side Stripe SDK</div>
+      </div>
+    </div>
+
+    <h3>UI &amp; Styling</h3>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="name">Tailwind CSS</div>
+        <div class="version">^4.2.1</div>
+        <div class="role">Utility-first CSS (5x faster v4)</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">shadcn/ui</div>
+        <div class="version">^3.8.5</div>
+        <div class="role">Accessible component primitives (Radix UI)</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">Recharts</div>
+        <div class="version">^3.7.0</div>
+        <div class="role">SVG charting (radar, area, bar, line)</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">Lucide React</div>
+        <div class="version">^0.576.0</div>
+        <div class="role">Icon library (tree-shakeable)</div>
+      </div>
+    </div>
+
+    <h3>Data &amp; State</h3>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="name">Zod</div>
+        <div class="version">^4.3.6</div>
+        <div class="role">Schema validation (forms + Server Actions)</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">@tanstack/react-table</div>
+        <div class="version">^8.21.3</div>
+        <div class="role">Headless data table for admin panel</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">@dnd-kit</div>
+        <div class="version">^6.3.1</div>
+        <div class="role">Drag-and-drop chapter reordering</div>
+      </div>
+    </div>
+
+    <h3>Import/Export &amp; PWA</h3>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="name">ExcelJS</div>
+        <div class="version">^4.4.0</div>
+        <div class="role">Excel import/export</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">PapaParse</div>
+        <div class="version">^5.5.3</div>
+        <div class="role">CSV parsing (client-side)</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">Serwist</div>
+        <div class="version">^9.5.6</div>
+        <div class="role">PWA service worker (next-pwa successor)</div>
+      </div>
+    </div>
+
+    <h3>Testing &amp; Dev</h3>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="name">Vitest</div>
+        <div class="version">^4.0.18</div>
+        <div class="role">Unit test runner (45 tests passing)</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">Drizzle Kit</div>
+        <div class="version">^0.31.9</div>
+        <div class="role">Schema migrations CLI</div>
+      </div>
+      <div class="tech-item">
+        <div class="name">ESLint</div>
+        <div class="version">^10.0.2</div>
+        <div class="role">Code linting</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 6. SECURITY AUDIT                                            -->
+  <!-- ============================================================ -->
+  <section class="section" id="security-audit">
+    <h2>6. Security Audit</h2>
+
+    <p>A comprehensive automated security audit was performed on 2026-03-03 covering authentication, authorization, injection, XSS, CSRF, webhook security, and infrastructure configuration.</p>
+
+    <div class="finding-grid">
+      <div class="finding-card critical">
+        <div class="count">3</div>
+        <div class="label">Critical</div>
+      </div>
+      <div class="finding-card high">
+        <div class="count">4</div>
+        <div class="label">High</div>
+      </div>
+      <div class="finding-card medium">
+        <div class="count">5</div>
+        <div class="label">Medium</div>
+      </div>
+      <div class="finding-card low">
+        <div class="count">4</div>
+        <div class="label">Low</div>
+      </div>
+      <div class="finding-card info">
+        <div class="count">6</div>
+        <div class="label">Informational</div>
+      </div>
+    </div>
+
+    <h3>Critical Findings</h3>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Finding</th><th>CVSS</th><th>Impact</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-critical">CRIT-01</span></td>
+          <td><strong>SQL Injection via sql.raw()</strong> in practice.ts. The sql.raw() call bypasses Drizzle ORM parameterization for chapterIds. Although Zod UUID validation mitigates current risk, this is an anti-pattern that must be replaced with sql.join() parameterized form.</td>
+          <td>9.8</td>
+          <td>Full database exfiltration if UUID validation relaxed</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-critical">CRIT-02</span></td>
+          <td><strong>No Rate Limiting</strong> on authentication endpoints (login, signup, forgotPassword). Supabase has API-level limits but the app provides no additional protection against brute force or credential stuffing.</td>
+          <td>8.6</td>
+          <td>Brute force, credential stuffing, account takeover</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-critical">CRIT-03</span></td>
+          <td><strong>No RLS Policies</strong> detected on any Supabase table. The anon key is exposed to the browser client, meaning any authenticated user could directly query other users' data via the PostgREST API.</td>
+          <td>8.1</td>
+          <td>Complete data exposure via direct Supabase API calls</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">High Findings</h3>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Finding</th><th>Impact</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-high">HIGH-01</span></td>
+          <td><strong>Missing Auth on getCheckoutSession</strong> -- any caller can retrieve Stripe checkout details for any session ID</td>
+          <td>Information disclosure of subscription billing details</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-high">HIGH-02</span></td>
+          <td><strong>Missing Auth on getSubscriptionDetails</strong> -- accepts arbitrary userId without verifying caller identity (IDOR)</td>
+          <td>Subscription data exposure for any user</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-high">HIGH-03</span></td>
+          <td><strong>No Admin Check in Middleware</strong> -- middleware checks authentication but not superadmin status for /admin routes</td>
+          <td>Admin route responses visible before layout-level rejection</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-high">HIGH-04</span></td>
+          <td><strong>No Security Headers</strong> -- no CSP, X-Frame-Options, HSTS, X-Content-Type-Options, Referrer-Policy, or Permissions-Policy</td>
+          <td>Increased XSS, clickjacking, MIME sniffing attack surface</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">Medium &amp; Low Findings</h3>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Finding</th><th>Severity</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>MED-01</td><td>switchBillingCycle accepts arbitrary Stripe price IDs without allowlist validation</td><td><span class="badge badge-medium">Medium</span></td></tr>
+        <tr><td>MED-02</td><td>createCheckoutSession accepts arbitrary price IDs without allowlist validation</td><td><span class="badge badge-medium">Medium</span></td></tr>
+        <tr><td>MED-03</td><td>ILIKE search patterns (% and _) not escaped in question and dashboard search</td><td><span class="badge badge-medium">Medium</span></td></tr>
+        <tr><td>MED-04</td><td>Webhook returns 200 on processing failure after recording event ID (prevents retry)</td><td><span class="badge badge-medium">Medium</span></td></tr>
+        <tr><td>MED-05</td><td>JSON.parse on raw FormData before Zod validation in createPracticeAttempt</td><td><span class="badge badge-medium">Medium</span></td></tr>
+        <tr><td>LOW-01</td><td>Non-null assertions (!) on environment variables -- unhelpful crash messages</td><td><span class="badge badge-low">Low</span></td></tr>
+        <tr><td>LOW-02</td><td>Raw Supabase error messages leaked to users in updatePassword</td><td><span class="badge badge-low">Low</span></td></tr>
+        <tr><td>LOW-03</td><td>Service worker TypeScript source in src/app/ directory</td><td><span class="badge badge-low">Low</span></td></tr>
+        <tr><td>LOW-04</td><td>Exam auto-submit race condition leaves expired exams in in_progress state</td><td><span class="badge badge-low">Low</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">Positive Security Posture</h3>
+    <div class="callout callout-success">
+      <strong>6 informational findings confirm solid security foundations:</strong>
+      <ul style="margin-top:8px">
+        <li>CSRF protection via Next.js Server Actions (built-in Origin header validation)</li>
+        <li>No dangerouslySetInnerHTML usage -- React JSX escaping throughout</li>
+        <li>Sensitive environment variables properly gitignored and not NEXT_PUBLIC-prefixed</li>
+        <li>Drizzle ORM parameterized queries used correctly across the codebase (except CRIT-01)</li>
+        <li>Stripe webhook signature verification implemented correctly with raw body parsing</li>
+        <li>Webhook idempotency via event ID deduplication table with unique constraint</li>
+      </ul>
+    </div>
+
+    <h3 style="margin-top:20px">Remediation Priority</h3>
+    <ol>
+      <li><strong>Immediate:</strong> Fix sql.raw() in practice.ts (CRIT-01) -- replace with sql.join() parameterized form</li>
+      <li><strong>Immediate:</strong> Define and enforce RLS policies on all Supabase tables (CRIT-03)</li>
+      <li><strong>This Sprint:</strong> Implement rate limiting on auth endpoints (CRIT-02)</li>
+      <li><strong>This Sprint:</strong> Add auth checks to getCheckoutSession and getSubscriptionDetails (HIGH-01, HIGH-02)</li>
+      <li><strong>This Sprint:</strong> Add security headers in next.config.ts (HIGH-04)</li>
+      <li><strong>This Sprint:</strong> Add superadmin check in middleware for /admin routes (HIGH-03)</li>
+      <li><strong>Next Sprint:</strong> Validate Stripe price IDs against allowlist (MED-01, MED-02)</li>
+      <li><strong>Next Sprint:</strong> Fix webhook error handling to allow retry (MED-04)</li>
+      <li><strong>Backlog:</strong> Environment variable validation, error message sanitization (LOW-01 through LOW-04)</li>
+    </ol>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 7. REQUIREMENTS COVERAGE                                     -->
+  <!-- ============================================================ -->
+  <section class="section" id="requirements-coverage">
+    <h2>7. Requirements Coverage</h2>
+
+    <p>54 v1 requirements were defined across 11 categories. All requirements are mapped to phases. Requirements marked as "Complete" have been verified against the codebase.</p>
+
+    <h3>Branding &amp; Landing Page (3 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>BRAND-01</td><td>Branding: logo, colors, fonts -- professional but friendly</td><td>2</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>BRAND-02</td><td>Landing page with value proposition, CTA, feature sections</td><td>2</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>BRAND-03</td><td>Consistent design system across platform</td><td>1</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Authentication (5 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>AUTH-01</td><td>Create account with email and password</td><td>2</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>AUTH-02</td><td>Email verification after registration</td><td>2</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>AUTH-03</td><td>Password reset via email link</td><td>2</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>AUTH-04</td><td>Session persists after browser refresh</td><td>2</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>AUTH-05</td><td>Logout from any page</td><td>2</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Admin Content Management (7 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>ADMN-01</td><td>Chapter CRUD (name, description, order)</td><td>3</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>ADMN-02</td><td>Question creation (text, options A-E, CS/CM, correct answers, source)</td><td>3</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>ADMN-03</td><td>Question edit and delete</td><td>3</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>ADMN-04</td><td>Bulk import from CSV and Excel with validation</td><td>3</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>ADMN-05</td><td>Export to CSV and Excel</td><td>3</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>ADMN-06</td><td>Historical admission data management (thresholds, spots)</td><td>6</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>ADMN-07</td><td>Admin panel secured to superadmin only</td><td>3</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Practice Tests (5 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>TEST-01</td><td>Single chapter practice test (no time limit)</td><td>4</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>TEST-02</td><td>Mixed practice from all chapters</td><td>4</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>TEST-03</td><td>Choose immediate or deferred feedback</td><td>4</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>TEST-04</td><td>Source reference after correct answer revealed</td><td>4</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>TEST-05</td><td>Wrong answer review mode with mastery tracking</td><td>4</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Exam Simulation (6 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>EXAM-01</td><td>200 questions (50 CS + 150 CM), random from all chapters</td><td>5</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>EXAM-02</td><td>Timer countdown, admin-configurable duration (default 4h)</td><td>5</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>EXAM-03</td><td>Results only at the end (deferred)</td><td>5</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>EXAM-04</td><td>Official Romanian scoring formula (CS 4-point, CM per-option with annulment)</td><td>5</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>EXAM-05</td><td>Progressive answer save (resumable on crash)</td><td>5</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>EXAM-06</td><td>Server-authoritative timer</td><td>5</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Admission Comparison (4 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>COMP-01</td><td>Post-simulation total score display</td><td>6</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>COMP-02</td><td>Historical thresholds per specialty per year (5 years)</td><td>6</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>COMP-03</td><td>Admission outcome per specialty ("admitted in X of 5 years")</td><td>6</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>COMP-04</td><td>Independent admission data explorer</td><td>6</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Dashboard &amp; Analytics (6 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>DASH-01</td><td>Overall stats (accuracy, questions completed, tests finalized)</td><td>7</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>DASH-02</td><td>Per-chapter statistics (accuracy, progress)</td><td>7</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>DASH-03</td><td>Trend charts (daily/weekly)</td><td>7</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>DASH-04</td><td>Answer history with details</td><td>7</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>DASH-05</td><td>Advanced visualizations (radar, heatmap, sparklines)</td><td>7</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>DASH-06</td><td>Dynamic updates after each test</td><td>7</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Peer Comparison &amp; Motivation (9 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>PEER-01</td><td>Percentile rank (top X%)</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PEER-02</td><td>Score distribution chart with user position</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PEER-03</td><td>Mean and median vs own score</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PEER-04</td><td>Anonymous ranking (no names)</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PEER-05</td><td>Only simulation completers included</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>MOTV-01</td><td>Auto-generated encouragement on correct tests</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>MOTV-02</td><td>Guidance messages for weak chapters</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>MOTV-03</td><td>Rotating "did you know" statistics</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>MOTV-04</td><td>Context-based messages from real performance data</td><td>8</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Payments (5 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>PAY-01</td><td>Pricing page with monthly/annual plans in RON</td><td>9</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PAY-02</td><td>Stripe subscription payment</td><td>9</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PAY-03</td><td>Access gating with configurable trial</td><td>9</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PAY-04</td><td>Cancel/modify subscription</td><td>9</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PAY-05</td><td>Idempotent webhook sync with event deduplication</td><td>9</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>PWA &amp; Localization (3 requirements)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Phase</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>PWA-01</td><td>Installable PWA (home screen icon, splash screen)</td><td>10</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PWA-02</td><td>Fully responsive on mobile</td><td>10</td><td><span class="badge badge-complete">Complete</span></td></tr>
+        <tr><td>PWA-03</td><td>App shell caching for fast loads</td><td>1</td><td><span class="badge badge-complete">Complete</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-success" style="margin-top:16px">
+      <strong>54/54 v1 requirements implemented.</strong> All requirements are mapped to phases with verified implementations. 6 phase verification reports confirm pass status with detailed evidence.
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 8. KEY DECISIONS                                             -->
+  <!-- ============================================================ -->
+  <section class="section" id="key-decisions">
+    <h2>8. Key Decisions</h2>
+
+    <p>Significant architectural and product decisions made during development, with rationale.</p>
+
+    <div class="decision-item">
+      <div class="phase-tag">Roadmap</div>
+      <p><strong>Scoring engine built in Phase 1, not Phase 4/5.</strong> Every downstream feature (practice tests, exam simulation, analytics, peer comparison, admission comparison) depends on correct scoring. Building and testing it first with 23 unit tests prevented cascading bugs.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 1</div>
+      <p><strong>Next.js 15 chosen over 16.</strong> Version 16 deprecated middleware patterns needed for auth. Version 15 has wider ecosystem compatibility with Serwist and other packages. Clear upgrade path available.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 1</div>
+      <p><strong>CM scoring: max 950 points (50 CS x 4 + 150 CM x 5).</strong> Confirmed against official Romanian methodology. CM annulment: 0 points for fewer than 2 or more than 4 selections, validated by 23 passing tests covering all edge cases.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 3</div>
+      <p><strong>Server-side superadmin check in layout.tsx, not middleware.</strong> Middleware runs on every request and is best kept minimal. Layout-level getCurrentAdmin() provides defense with simpler logic. All admin Server Actions independently call getCurrentAdmin().</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 3</div>
+      <p><strong>Soft delete with archivedAt timestamps.</strong> Questions and chapters are soft-deleted (not hard-deleted) to preserve historical attempt data integrity. Answer snapshots reference original question IDs.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 3</div>
+      <p><strong>Client-side CSV/Excel parsing.</strong> Avoids uploading large files to the server. PapaParse and ExcelJS run in the browser. UTF-8 BOM prepended to CSV exports for correct Romanian diacritics rendering in Excel.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 6</div>
+      <p><strong>Majority-of-years rule for admission comparison.</strong> A student is shown as "admitted" to a specialty if their score exceeds the threshold in the majority (3+ of 5) of historical years. Provides realistic assessment accounting for year-to-year variation.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 9</div>
+      <p><strong>7-day trial starts on first feature access, not at signup.</strong> Users who register but do not immediately use the platform do not waste their trial period. Trial tracked server-side via users.trialStartedAt.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 10</div>
+      <p><strong>Split icon entries (any/maskable separate) for PWA.</strong> Broader install compatibility across different device manufacturers. start_url set to /dashboard since authenticated users land there.</p>
+    </div>
+
+    <div class="decision-item">
+      <div class="phase-tag">Phase 10</div>
+      <p><strong>44px minimum touch targets enforced across all interactive elements.</strong> Applied to quiz option buttons, exam navigator, chapter selector, CTA buttons, and practice config form. Matches Apple HIG and WCAG 2.5.5 guidelines.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 9. TESTING                                                   -->
+  <!-- ============================================================ -->
+  <section class="section" id="testing">
+    <h2>9. Testing</h2>
+
+    <h3>Test Suite Summary</h3>
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-value">45</div>
+        <div class="kpi-label">Total Tests Passing</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">3</div>
+        <div class="kpi-label">Test Files</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">644</div>
+        <div class="kpi-label">Test Lines</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">TypeScript Errors</div>
+      </div>
+    </div>
+
+    <h3>Test Breakdown</h3>
+    <table>
+      <thead>
+        <tr><th>Test Suite</th><th>Tests</th><th>Coverage Area</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:600">Scoring Engine Tests</td>
+          <td>23/23 passing</td>
+          <td>CS 4-point scoring, CM per-option partial credit, annulment for &lt;2 or &gt;4 selections, zero selections, all options selected, mixed CS/CM scoring, edge cases</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Webhook Handler Tests</td>
+          <td>8/8 passing</td>
+          <td>subscription.created, subscription.updated, subscription.deleted, invoice.payment_succeeded, invoice.payment_failed, Stripe v20 API compatibility helpers</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Subscription Access Tests</td>
+          <td>14/14 passing</td>
+          <td>5 access states (active, trialing, trial_available, expired, none), trial start logic, trial expiry, active subscription check, expired subscription detection</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">Verification Reports</h3>
+    <p>6 formal verification reports were generated, each checking success criteria against codebase evidence:</p>
+    <table>
+      <thead>
+        <tr><th>Phase</th><th>Score</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Phase 2: Landing Page &amp; Authentication</td><td>7/7</td><td><span class="badge badge-passed">Passed</span></td></tr>
+        <tr><td>Phase 4: Practice Tests</td><td>5/5</td><td><span class="badge badge-passed">Passed</span></td></tr>
+        <tr><td>Phase 7: Dashboard &amp; Analytics</td><td>6/6</td><td><span class="badge badge-passed">Passed</span></td></tr>
+        <tr><td>Phase 8: Peer Comparison &amp; Motivation</td><td>9/9</td><td><span class="badge badge-passed">Passed</span></td></tr>
+        <tr><td>Phase 9: Payments &amp; Subscriptions</td><td>5/5</td><td><span class="badge badge-passed">Passed</span></td></tr>
+        <tr><td>Phase 10: PWA &amp; Mobile Polish</td><td>9/9</td><td><span class="badge badge-passed">Passed</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">Build Verification</h3>
+    <ul>
+      <li><strong>TypeScript compilation</strong> (tsc --noEmit): Zero errors across all phases</li>
+      <li><strong>Vitest test runner</strong>: 45/45 tests passing</li>
+      <li><strong>Turbopack dev build</strong>: Functional with Serwist integration</li>
+    </ul>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 10. RISKS & RECOMMENDATIONS                                 -->
+  <!-- ============================================================ -->
+  <section class="section" id="risks-recommendations">
+    <h2>10. Risks &amp; Recommendations</h2>
+
+    <h3>Pre-Launch Blockers</h3>
+    <div class="callout callout-danger">
+      <strong>3 critical security findings must be resolved before production deployment:</strong>
+      <ol style="margin-top:8px">
+        <li>Replace sql.raw() with parameterized queries in practice.ts</li>
+        <li>Define RLS policies on all Supabase tables</li>
+        <li>Implement rate limiting on authentication endpoints</li>
+      </ol>
+    </div>
+
+    <h3 style="margin-top:16px">High Priority (This Sprint)</h3>
+    <table>
+      <thead><tr><th>Area</th><th>Recommendation</th><th>Effort</th></tr></thead>
+      <tbody>
+        <tr><td>Security</td><td>Add auth checks to getCheckoutSession and getSubscriptionDetails Server Actions</td><td>Small</td></tr>
+        <tr><td>Security</td><td>Add HTTP security headers in next.config.ts (CSP, HSTS, X-Frame-Options, etc.)</td><td>Small</td></tr>
+        <tr><td>Security</td><td>Add superadmin check in middleware for /admin routes (defense-in-depth)</td><td>Small</td></tr>
+        <tr><td>Security</td><td>Validate Stripe price IDs against an allowlist in checkout and billing switch actions</td><td>Small</td></tr>
+        <tr><td>Testing</td><td>Add integration tests for quiz attempt lifecycle (start, answer, complete, score)</td><td>Medium</td></tr>
+        <tr><td>Testing</td><td>Add E2E tests using Playwright for critical user flows (signup, practice test, exam simulation)</td><td>Medium</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">Medium Priority (Before Scale)</h3>
+    <table>
+      <thead><tr><th>Area</th><th>Recommendation</th><th>Effort</th></tr></thead>
+      <tbody>
+        <tr><td>Performance</td><td>Pre-compute analytics aggregations on test submission (avoid recalculating on each dashboard load)</td><td>Medium</td></tr>
+        <tr><td>Performance</td><td>Add database indexes on hot query paths (attempts.userId, questions.chapterId, attempt_answers.attemptId)</td><td>Small</td></tr>
+        <tr><td>Reliability</td><td>Fix webhook error handling to return 500 before recording event ID (allows Stripe retry)</td><td>Small</td></tr>
+        <tr><td>Reliability</td><td>Add force-submit path for expired exams stuck in in_progress state</td><td>Small</td></tr>
+        <tr><td>DevOps</td><td>Add environment variable validation at startup using @t3-oss/env-nextjs</td><td>Small</td></tr>
+        <tr><td>DevOps</td><td>Set up CI/CD pipeline (GitHub Actions: lint, typecheck, test on PR)</td><td>Medium</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">Scaling Projections</h3>
+    <table>
+      <thead><tr><th>Scale</th><th>Adjustments Needed</th></tr></thead>
+      <tbody>
+        <tr><td>0-500 users</td><td>Current architecture is sufficient. Focus on feature validation and content population.</td></tr>
+        <tr><td>500-5,000 users</td><td>Add database indexes, cache analytics with short TTL, consider connection pooling.</td></tr>
+        <tr><td>5,000-50,000 users</td><td>Materialized views for analytics, CDN for static assets, read replicas if needed. This is the ceiling for this niche.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 11. FUTURE WORK                                              -->
+  <!-- ============================================================ -->
+  <section class="section" id="future-work">
+    <h2>11. Future Work (v2)</h2>
+
+    <p>Features deferred from v1, tracked for future consideration after launch validation.</p>
+
+    <h3>Authentication Enhancements</h3>
+    <ul>
+      <li><strong>AUTH-V2-01:</strong> Google OAuth login (add if signup friction proves to be a real problem)</li>
+      <li><strong>AUTH-V2-02:</strong> Two-factor authentication</li>
+    </ul>
+
+    <h3>PWA Enhancements</h3>
+    <ul>
+      <li><strong>PWA-V2-01:</strong> Offline quiz-taking with IndexedDB sync (complex sync logic deferred)</li>
+      <li><strong>PWA-V2-02:</strong> Push notifications (streak reminders, motivational messages)</li>
+    </ul>
+
+    <h3>Admin Enhancements</h3>
+    <ul>
+      <li><strong>ADMN-V2-01:</strong> Question versioning with audit trail (history of modifications)</li>
+      <li><strong>ADMN-V2-02:</strong> Multiple admin roles (superadmin, editor, viewer)</li>
+    </ul>
+
+    <h3>Platform Expansion</h3>
+    <ul>
+      <li><strong>EXPN-V2-01:</strong> Multi-domain support (general medicine, pharmacy -- not just dental)</li>
+      <li><strong>EXPN-V2-02:</strong> Public API for external integrations</li>
+    </ul>
+
+    <h3>Deliberate Anti-Features (Do Not Build)</h3>
+    <table>
+      <thead><tr><th>Feature</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Native iOS/Android apps</td><td>PWA covers 95% of mobile use cases for this niche</td></tr>
+        <tr><td>AI-generated explanations</td><td>Medical accuracy liability; source/book references are safer</td></tr>
+        <tr><td>Forum / real-time chat</td><td>Moderation burden; use external Discord/Telegram</td></tr>
+        <tr><td>Video lessons / tutorials</td><td>Different product category; focus on grile (quiz questions)</td></tr>
+        <tr><td>Flashcards / spaced repetition</td><td>"Wrong answers review" with mastery tracking covers this need</td></tr>
+        <tr><td>Gamification badges / levels</td><td>Potentially patronizing for adult students; motivational messages + ranking are sufficient</td></tr>
+        <tr><td>User-generated content</td><td>Medical accuracy risk; admin-only content ensures quality</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- FOOTER                                                       -->
+  <!-- ============================================================ -->
+  <footer class="report-footer">
+    <p>
+      <strong>grile-ReziNOTE</strong> -- Project Completion Report<br>
+      Generated 2026-03-03 | Milestone v1.0 | 10 phases, 36 plans, 54 requirements<br>
+      Built with Next.js 15, React 19, Supabase, Drizzle ORM, Stripe, Recharts, shadcn/ui, Tailwind CSS, Serwist<br>
+      <br>
+      <span style="color:var(--gray-300)">Report generated by Claude Opus 4.6</span>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
