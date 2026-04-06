@@ -331,35 +331,22 @@ export async function getAnswerHistory(
     (countResult as unknown as Array<Record<string, unknown>>)[0]?.total ?? 0
   )
 
-  // Server-side enforcement of the 30-minute review window: after expiry the
-  // server stops sending question text, the user's selections, the correct
-  // answers, and option contents. Only metadata used for listings remains.
-  const REVIEW_WINDOW_MS = 30 * 60 * 1000
-  const nowMs = Date.now()
-
   const rows: AnswerHistoryRow[] = (
     rowsResult as unknown as Array<Record<string, unknown>>
-  ).map((row) => {
-    const answeredAt = new Date(row.answered_at as string)
-    const expired = nowMs - answeredAt.getTime() > REVIEW_WINDOW_MS
-
-    return {
-      answerId: String(row.answer_id),
-      questionText: expired ? "" : String(row.question_text),
-      questionType: row.question_type as "CS" | "CM",
-      chapterName: String(row.chapter_name),
-      chapterId: String(row.chapter_id),
-      selectedOptions: expired ? [] : ((row.selected_options as string[]) ?? []),
-      correctOptions: expired ? [] : ((row.correct_options as string[]) ?? []),
-      allOptions: expired
-        ? []
-        : ((row.all_options as { label: string; text: string }[]) ?? []),
-      isCorrect: row.is_correct as boolean | null,
-      score: row.score as number | null,
-      answeredAt: answeredAt.toISOString(),
-      attemptType: String(row.attempt_type),
-    }
-  })
+  ).map((row) => ({
+    answerId: String(row.answer_id),
+    questionText: String(row.question_text),
+    questionType: row.question_type as "CS" | "CM",
+    chapterName: String(row.chapter_name),
+    chapterId: String(row.chapter_id),
+    selectedOptions: (row.selected_options as string[]) ?? [],
+    correctOptions: (row.correct_options as string[]) ?? [],
+    allOptions: (row.all_options as { label: string; text: string }[]) ?? [],
+    isCorrect: row.is_correct as boolean | null,
+    score: row.score as number | null,
+    answeredAt: new Date(row.answered_at as string).toISOString(),
+    attemptType: String(row.attempt_type),
+  }))
 
   return { rows, total, page: opts.page, pageSize: opts.pageSize }
 }

@@ -12,7 +12,7 @@ import type { AnswerHistoryRow } from "@/types/dashboard"
 import { format } from "date-fns"
 import { ro } from "date-fns/locale"
 import { cn } from "@/lib/utils"
-import { Check, X, Clock } from "lucide-react"
+import { Check, X } from "lucide-react"
 
 interface AnswerDetailDialogProps {
   answer: AnswerHistoryRow | null
@@ -28,12 +28,6 @@ export function AnswerDetailDialog({
   if (!answer) return null
 
   const isCorrect = answer.isCorrect === true
-
-  // 30-minute expiry: hide question details if answer is older than 30 minutes
-  const answeredAt = new Date(answer.answeredAt)
-  const now = new Date()
-  const minutesAgo = (now.getTime() - answeredAt.getTime()) / (1000 * 60)
-  const isExpired = minutesAgo > 30
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -53,30 +47,7 @@ export function AnswerDetailDialog({
           </DialogTitle>
         </DialogHeader>
 
-        {isExpired ? (
-          <div className="space-y-4 py-6 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-              <Clock className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-lg font-semibold">Detalii expirate</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Detaliile raspunsurilor sunt disponibile doar 30 de minute dupa finalizarea testului.
-              </p>
-            </div>
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <div>
-                <span>Capitol: </span>
-                <span className="font-medium text-foreground">{answer.chapterName}</span>
-              </div>
-              <div>
-                <span>Tip: </span>
-                <span className="font-medium text-foreground">{answer.questionType}</span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
+        <div className="space-y-4">
             {/* Question info */}
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -170,13 +141,7 @@ export function AnswerDetailDialog({
               </div>
             )}
 
-            {/* Expiry warning */}
-            <div className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
-              <Clock className="h-3.5 w-3.5 shrink-0" />
-              Detaliile expira la {Math.max(0, Math.ceil(30 - minutesAgo))} minute dupa finalizare
-            </div>
           </div>
-        )}
       </DialogContent>
     </Dialog>
   )
