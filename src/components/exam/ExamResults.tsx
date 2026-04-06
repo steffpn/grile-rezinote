@@ -1,20 +1,15 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Check, X, Clock, Info } from "lucide-react"
+import { Check, X, Clock } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { NumberTicker } from "@/components/practice/NumberTicker"
+import { Confetti } from "@/components/practice/Confetti"
 
 interface QuestionOption {
   label: string
@@ -120,24 +115,39 @@ export function ExamResults({
     (attempt.timeLimit ?? 14400) - timeTakenSeconds
   )
 
+  const celebrate = percentage >= 70
+
   return (
     <div className="space-y-6">
+      <Confetti show={celebrate} />
       {/* Score Summary */}
       <Card>
         <CardHeader>
           <CardTitle className="text-center">Rezultate Simulare</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="text-center">
-            <p className="text-5xl font-bold">
-              {score}/{maxScore}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center"
+          >
+            <p className="text-5xl font-bold tabular-nums">
+              <NumberTicker value={score} />
+              <span className="text-muted-foreground">/{maxScore}</span>
             </p>
             <p className="mt-1 text-2xl text-muted-foreground">
-              {percentage}% puncte
+              <NumberTicker value={percentage} />% puncte
             </p>
-          </div>
+          </motion.div>
 
-          <Progress value={percentage} className="h-3" />
+          <motion.div
+            initial={{ scaleX: 0, transformOrigin: "left" }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+          >
+            <Progress value={percentage} className="h-3" />
+          </motion.div>
 
           {/* CS / CM breakdown */}
           <div className="grid gap-3 sm:grid-cols-2">
@@ -209,52 +219,43 @@ export function ExamResults({
         <CardHeader>
           <CardTitle>Rezultate pe capitole</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Capitol</TableHead>
-                <TableHead className="text-center">Intrebari</TableHead>
-                <TableHead className="text-center">Corecte</TableHead>
-                <TableHead className="text-center">Scor</TableHead>
-                <TableHead className="text-center">Acuratete</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {chapterBreakdown.map((chapter) => (
-                <TableRow key={chapter.chapterId}>
-                  <TableCell className="font-medium">
-                    {chapter.chapterName}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {chapter.totalQuestions}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {chapter.correctCount}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {chapter.score}/{chapter.maxScore}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span
-                      className={cn(
-                        "font-medium",
-                        chapter.percentage >= 80 &&
-                          "text-green-600 dark:text-green-400",
-                        chapter.percentage >= 50 &&
-                          chapter.percentage < 80 &&
-                          "text-yellow-600 dark:text-yellow-400",
-                        chapter.percentage < 50 &&
-                          "text-red-600 dark:text-red-400"
-                      )}
-                    >
-                      {chapter.percentage}%
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent className="space-y-4">
+          {chapterBreakdown.map((chapter, idx) => {
+            const tone =
+              chapter.percentage >= 80
+                ? "from-emerald-500 to-teal-400"
+                : chapter.percentage >= 50
+                  ? "from-amber-500 to-yellow-400"
+                  : "from-rose-500 to-red-400"
+            const txt =
+              chapter.percentage >= 80
+                ? "text-emerald-600 dark:text-emerald-400"
+                : chapter.percentage >= 50
+                  ? "text-amber-600 dark:text-amber-400"
+                  : "text-rose-600 dark:text-rose-400"
+            return (
+              <div key={chapter.chapterId} className="space-y-1.5">
+                <div className="flex items-baseline justify-between gap-2 text-sm">
+                  <span className="font-medium truncate">{chapter.chapterName}</span>
+                  <span className={cn("font-semibold tabular-nums", txt)}>
+                    {chapter.correctCount}/{chapter.totalQuestions} · {chapter.percentage}%
+                  </span>
+                </div>
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${chapter.percentage}%` }}
+                    transition={{
+                      duration: 1.1,
+                      delay: 0.15 + idx * 0.05,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    className={cn("h-full rounded-full bg-gradient-to-r", tone)}
+                  />
+                </div>
+              </div>
+            )
+          })}
         </CardContent>
       </Card>
 

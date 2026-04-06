@@ -2,127 +2,162 @@
 
 import { motion } from "framer-motion"
 import {
-  BookOpen,
-  Target,
-  Clock,
+  BookOpenCheck,
   BarChart3,
-  Award,
-  Brain,
+  Users,
+  Timer,
+  WifiOff,
+  Lightbulb,
 } from "lucide-react"
+import { BentoCard } from "./bento-card"
 
 const features = [
   {
-    icon: BookOpen,
-    title: "Grile CS & CM",
+    icon: BookOpenCheck,
+    title: "Grile actualizate",
     description:
-      "Intrebari cu complement simplu si complement multiplu, exact ca la examenul real de rezidentiat.",
-    gradient: "from-emerald-500/20 to-emerald-500/5",
-    iconColor: "text-emerald-400",
-    borderColor: "hover:border-emerald-500/20",
-  },
-  {
-    icon: Target,
-    title: "Punctaj oficial",
-    description:
-      "Calculare automata a scorului cu formula oficiala romaneasca, inclusiv reguli de anulare CM.",
-    gradient: "from-teal-500/20 to-teal-500/5",
-    iconColor: "text-teal-400",
-    borderColor: "hover:border-teal-500/20",
-  },
-  {
-    icon: Clock,
-    title: "Simulare examen",
-    description:
-      "200 de intrebari cu cronometru in conditii identice cu examenul real. Pregatire autentica.",
-    gradient: "from-cyan-500/20 to-cyan-500/5",
-    iconColor: "text-cyan-400",
-    borderColor: "hover:border-cyan-500/20",
+      "Banca de intrebari revizuita constant, in pas cu programa oficiala de rezidentiat.",
+    span: "md:col-span-2 md:row-span-2",
+    hero: true,
   },
   {
     icon: BarChart3,
-    title: "Statistici detaliate",
+    title: "Statistici personale",
     description:
-      "Urmareste-ti progresul pe capitole, identifica punctele slabe si vezi evolutia in timp.",
-    gradient: "from-sky-500/20 to-sky-500/5",
-    iconColor: "text-sky-400",
-    borderColor: "hover:border-sky-500/20",
+      "Vezi exact unde stai pe fiecare capitol, cu evolutie in timp si recomandari.",
+    span: "md:col-span-2",
+    hero: false,
   },
   {
-    icon: Award,
-    title: "Comparatie admitere",
-    description:
-      "Afla daca ai fi fost admis pe baza datelor istorice reale de admitere pe ultimii 5 ani.",
-    gradient: "from-violet-500/20 to-violet-500/5",
-    iconColor: "text-violet-400",
-    borderColor: "hover:border-violet-500/20",
+    icon: Users,
+    title: "Comparare cu colegii",
+    description: "Top anonim si percentile pentru fiecare simulare.",
+    span: "md:col-span-1",
+    hero: false,
   },
   {
-    icon: Brain,
-    title: "Exersare pe capitole",
-    description:
-      "Practica intrebari dintr-un singur capitol sau amestecate din toate, fara limita de timp.",
-    gradient: "from-amber-500/20 to-amber-500/5",
-    iconColor: "text-amber-400",
-    borderColor: "hover:border-amber-500/20",
+    icon: Timer,
+    title: "Simulari examen",
+    description: "Conditii reale de timp si scoring identic celui oficial.",
+    span: "md:col-span-1",
+    hero: false,
   },
-]
+  {
+    icon: WifiOff,
+    title: "Mod offline (PWA)",
+    description: "Instaleaza aplicatia si invata oriunde, chiar si fara internet.",
+    span: "md:col-span-2",
+    hero: false,
+  },
+  {
+    icon: Lightbulb,
+    title: "Explicatii detaliate",
+    description:
+      "Fiecare raspuns vine cu rationamentul complet si referinte din bibliografie.",
+    span: "md:col-span-2",
+    hero: false,
+  },
+] as const
+
+function HeroVisual() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+      <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-gradient-to-br from-emerald-500/30 via-teal-500/15 to-transparent blur-3xl" />
+      <div className="absolute -bottom-32 -left-10 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl" />
+
+      <svg className="absolute inset-0 h-full w-full opacity-[0.18]" aria-hidden>
+        <defs>
+          <pattern
+            id="dots-feat"
+            x="0"
+            y="0"
+            width="22"
+            height="22"
+            patternUnits="userSpaceOnUse"
+          >
+            <circle cx="1" cy="1" r="1" fill="white" />
+          </pattern>
+          <radialGradient id="dot-mask-feat" cx="70%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="white" stopOpacity="1" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+          <mask id="dots-mask-feat">
+            <rect width="100%" height="100%" fill="url(#dot-mask-feat)" />
+          </mask>
+        </defs>
+        <rect
+          width="100%"
+          height="100%"
+          fill="url(#dots-feat)"
+          mask="url(#dots-mask-feat)"
+        />
+      </svg>
+
+      <motion.div
+        className="absolute right-6 top-6 rounded-full border border-emerald-300/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-200 backdrop-blur-sm"
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      >
+        peste 12.000 grile
+      </motion.div>
+    </div>
+  )
+}
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="relative py-28 sm:py-36">
-      {/* Subtle glow */}
-      <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[400px] w-[600px] rounded-full bg-emerald-500/[0.03] blur-[100px]" />
+    <section className="relative py-32">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-1/3 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-emerald-500/[0.04] blur-[120px]" />
+      </div>
 
       <div className="relative mx-auto max-w-6xl px-6">
-        <motion.div
-          className="mb-20 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
-            style={{ fontFamily: "var(--font-display)" }}
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
           >
-            Tot ce ai nevoie pentru{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-              pregatire
-            </span>
-          </h2>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-white/40">
-            Instrumente complete pentru a-ti maximiza sansele la admitere
-          </p>
-        </motion.div>
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-white/60 backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              Tot ce ai nevoie pentru rezidentiat
+            </div>
+            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              Construit pentru{" "}
+              <span className="bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                rezultate reale
+              </span>
+            </h2>
+            <p className="mt-4 text-pretty text-base text-white/50 sm:text-lg">
+              Instrumentele de care ai nevoie ca sa intri pregatit in sala de
+              examen, intr-un singur loc.
+            </p>
+          </motion.div>
+        </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-            >
-              <div
-                className={`group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-7 transition-all duration-300 hover:bg-white/[0.04] ${feature.borderColor}`}
-              >
-                {/* Icon */}
-                <div
-                  className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient}`}
-                >
-                  <feature.icon className={`h-5 w-5 ${feature.iconColor}`} />
+        <div className="grid auto-rows-[180px] grid-cols-1 gap-4 md:grid-cols-4">
+          {features.map((f, i) => {
+            const Icon = f.icon
+            return (
+              <BentoCard key={f.title} index={i} className={f.span}>
+                {f.hero && <HeroVisual />}
+                <div className="relative flex h-full flex-col">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400/15 to-teal-500/15 ring-1 ring-emerald-300/20">
+                    <Icon className="h-5 w-5 text-emerald-300" />
+                  </div>
+                  <div className="mt-auto pt-6">
+                    <h3 className="text-lg font-semibold text-white">
+                      {f.title}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-white/50">
+                      {f.description}
+                    </p>
+                  </div>
                 </div>
-
-                <h3 className="mb-2 text-lg font-semibold text-white">
-                  {feature.title}
-                </h3>
-                <p className="text-[15px] leading-relaxed text-white/40">
-                  {feature.description}
-                </p>
-              </div>
-            </motion.div>
-          ))}
+              </BentoCard>
+            )
+          })}
         </div>
       </div>
     </section>

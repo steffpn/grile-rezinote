@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { AnswerDetailDialog } from "@/components/dashboard/answer-detail-dialog"
+import { EmptyTableState } from "@/components/dashboard/empty-state"
 import type { AnswerHistoryResult, AnswerHistoryRow } from "@/types/dashboard"
 import { format } from "date-fns"
 
@@ -128,14 +129,15 @@ export function AnswerHistoryTable({
 
       {/* Table */}
       {data.rows.length === 0 ? (
-        <div className="flex h-40 items-center justify-center text-muted-foreground">
-          Niciun rezultat
-        </div>
+        <EmptyTableState
+          title="Niciun rezultat"
+          description="Incearca alti termeni de cautare sau alte filtre."
+        />
       ) : (
-        <div className="rounded-md border">
+        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-white/[0.06] hover:bg-transparent">
                 <TableHead className="w-24">Data</TableHead>
                 <TableHead>Intrebare</TableHead>
                 <TableHead className="hidden sm:table-cell w-32">
@@ -149,7 +151,7 @@ export function AnswerHistoryTable({
               {data.rows.map((row) => (
                 <TableRow
                   key={row.answerId}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="group/row cursor-pointer border-white/[0.04] transition-colors duration-200 hover:bg-emerald-500/[0.04] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.15)]"
                   onClick={() => handleRowClick(row)}
                 >
                   <TableCell className="text-xs text-muted-foreground">

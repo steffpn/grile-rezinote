@@ -1,10 +1,13 @@
 "use client"
 
+import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Check, X, Clock, Info } from "lucide-react"
+import { Check, X, Clock } from "lucide-react"
 import Link from "next/link"
+import { NumberTicker } from "./NumberTicker"
+import { Confetti } from "./Confetti"
 
 interface QuestionOption {
   label: string
@@ -59,24 +62,39 @@ export function DeferredResults({
 
   const unansweredCount = questions.length - correctCount - incorrectCount
 
+  const celebrate = percentage >= 70
+
   return (
     <div className="space-y-6">
+      <Confetti show={celebrate} />
       {/* Score Summary */}
       <Card>
         <CardHeader>
           <CardTitle>Rezultate</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="text-center">
-            <p className="text-4xl font-bold">
-              {score}/{maxScore}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center"
+          >
+            <p className="text-5xl font-bold tabular-nums">
+              <NumberTicker value={score} />
+              <span className="text-muted-foreground">/{maxScore}</span>
             </p>
-            <p className="text-lg text-muted-foreground">
-              {percentage}% puncte
+            <p className="mt-1 text-lg text-muted-foreground">
+              <NumberTicker value={percentage} />% puncte
             </p>
-          </div>
+          </motion.div>
 
-          <Progress value={percentage} className="h-3" />
+          <motion.div
+            initial={{ scaleX: 0, transformOrigin: "left" }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+          >
+            <Progress value={percentage} className="h-3" />
+          </motion.div>
 
           <div className="flex justify-center gap-6 text-sm">
             <div className="flex items-center gap-1.5">

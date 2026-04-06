@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ExternalLink } from "lucide-react"
+import { EmptyTableState } from "@/components/dashboard/empty-state"
 import type { TestHistoryResult, TestHistoryRow } from "@/types/dashboard"
 import { format } from "date-fns"
 import { ro } from "date-fns/locale"
@@ -106,14 +107,15 @@ export function TestHistoryTable({ data }: TestHistoryTableProps) {
 
       {/* Table */}
       {data.rows.length === 0 ? (
-        <div className="flex h-40 items-center justify-center text-muted-foreground">
-          Niciun test gasit
-        </div>
+        <EmptyTableState
+          title="Niciun test gasit"
+          description="Ajusteaza filtrele sau incepe un test nou pentru a popula istoricul."
+        />
       ) : (
-        <div className="rounded-md border">
+        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-white/[0.06] hover:bg-transparent">
                 <TableHead className="w-28">Data</TableHead>
                 <TableHead className="w-24">Tip</TableHead>
                 <TableHead className="hidden sm:table-cell">Capitole</TableHead>
@@ -125,7 +127,10 @@ export function TestHistoryTable({ data }: TestHistoryTableProps) {
             </TableHeader>
             <TableBody>
               {data.rows.map((row) => (
-                <TableRow key={row.attemptId}>
+                <TableRow
+                  key={row.attemptId}
+                  className="group/row border-white/[0.04] transition-colors duration-200 hover:bg-emerald-500/[0.04] hover:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.15)]"
+                >
                   <TableCell className="text-sm text-muted-foreground">
                     <div>{format(new Date(row.completedAt), "dd MMM yyyy", { locale: ro })}</div>
                     <div className="text-xs">{format(new Date(row.completedAt), "HH:mm")}</div>

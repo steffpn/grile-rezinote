@@ -1,69 +1,128 @@
 "use client"
 
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Sparkles } from "lucide-react"
 
 export function CtaSection() {
+  const reduce = useReducedMotion()
+
   return (
-    <section className="relative py-28 sm:py-36">
-      {/* Separator line */}
-      <div className="absolute inset-x-0 top-0 mx-auto h-px max-w-4xl bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-
-      <div className="mx-auto max-w-4xl px-6">
+    <section className="relative px-6 py-32">
+      <div className="relative mx-auto max-w-6xl">
         <motion.div
-          className="relative overflow-hidden rounded-3xl border border-white/[0.06]"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="relative overflow-hidden rounded-[2.5rem] border border-white/[0.08]"
         >
-          {/* Background glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.08] via-transparent to-teal-500/[0.06]" />
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.08] blur-[100px]" />
+          {/* Multi-layer gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-teal-600/15 to-cyan-600/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-          {/* Grid pattern */}
+          {/* Floating orbs */}
+          <motion.div
+            className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-emerald-400/30 blur-3xl"
+            animate={
+              reduce
+                ? undefined
+                : { x: [0, 40, 0], y: [0, 20, 0], scale: [1, 1.1, 1] }
+            }
+            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute -bottom-40 -right-20 h-[28rem] w-[28rem] rounded-full bg-cyan-400/25 blur-3xl"
+            animate={
+              reduce
+                ? undefined
+                : { x: [0, -30, 0], y: [0, -20, 0], scale: [1, 1.15, 1] }
+            }
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Noise / grain texture */}
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.12] mix-blend-overlay"
+            aria-hidden
+          >
+            <filter id="cta-noise">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.9"
+                numOctaves="2"
+                stitchTiles="stitch"
+              />
+              <feColorMatrix type="saturate" values="0" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#cta-noise)" />
+          </svg>
+
+          {/* Grid overlay */}
           <div
-            className="pointer-events-none absolute inset-0 opacity-[0.03]"
+            className="pointer-events-none absolute inset-0 opacity-[0.05]"
             style={{
-              backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-              backgroundSize: "48px 48px",
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)`,
+              backgroundSize: "56px 56px",
             }}
           />
 
-          <div className="relative p-12 text-center sm:p-20">
-            <h2
-              className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
-              style={{ fontFamily: "var(--font-display)" }}
+          {/* Content */}
+          <div className="relative px-6 py-24 text-center sm:px-12 sm:py-32">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-4 py-1.5 text-xs font-medium text-white backdrop-blur-md"
             >
-              Incepe pregatirea{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-                acum
+              <Sparkles className="h-3.5 w-3.5 text-emerald-200" />
+              45 de zile gratuite, fara card
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.25 }}
+              className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-6xl"
+            >
+              Pregateste-te ca un{" "}
+              <span className="bg-gradient-to-r from-emerald-200 via-teal-100 to-cyan-200 bg-clip-text text-transparent">
+                viitor medic
               </span>
-            </h2>
+            </motion.h2>
 
-            <p className="mx-auto mt-5 max-w-xl text-lg text-white/40">
-              Nu lasa examenul de rezidentiat la voia intamplarii. Pregateste-te
-              cu grile reale, scoring oficial si date istorice de admitere.
-            </p>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.35 }}
+              className="mx-auto mt-6 max-w-2xl text-pretty text-base text-white/70 sm:text-lg"
+            >
+              Acces complet la grile, simulari si statistici. Anuleaza oricand,
+              fara intrebari.
+            </motion.p>
 
-            <div className="mt-10">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.45 }}
+              className="mt-10 flex justify-center"
+            >
               <Button
-                size="lg"
                 asChild
-                className="group min-h-[56px] min-w-[280px] rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 border-0 text-base font-semibold text-white shadow-2xl shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+                size="lg"
+                className="group h-14 rounded-full bg-white px-8 text-base font-semibold text-emerald-900 shadow-xl shadow-emerald-500/20 hover:bg-emerald-50"
               >
-                <Link href="/signup">
-                  Creeaza cont gratuit
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <Link href="/register">
+                  Incepe gratuit
+                  <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-            </div>
-
-            <p className="mt-5 text-sm text-white/25">
-              Fara card de credit &middot; Acces instant
-            </p>
+            </motion.div>
           </div>
         </motion.div>
       </div>

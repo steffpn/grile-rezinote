@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { AnimatePresence, motion } from "framer-motion"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { QuestionCard } from "./QuestionCard"
 import { ImmediateFeedbackModal } from "./ImmediateFeedbackModal"
@@ -114,8 +116,10 @@ export function QuizContainer({
 
       if ("error" in result) {
         console.error("Submit answer error:", result.error)
+        toast.error("Nu am putut salva raspunsul")
         return
       }
+      toast.success("Raspuns salvat")
 
       setAnsweredIds((prev) => {
         const next = new Set(prev)
@@ -197,8 +201,10 @@ export function QuizContainer({
       const result = await completePracticeAttempt(attemptId)
       if (result && "error" in result) {
         console.error("Complete error:", result.error)
+        toast.error("Eroare la finalizare")
         return
       }
+      toast.success("Test trimis cu succes")
 
       startTransition(() => {
         router.push(`/practice/${attemptId}/results`)
@@ -243,9 +249,17 @@ export function QuizContainer({
       </div>
 
       {/* Current question only */}
-      {currentQuestion && (
-        <div className="px-2 sm:px-0">
-          <QuestionCard
+      <AnimatePresence mode="wait">
+        {currentQuestion && (
+          <motion.div
+            key={currentQuestion.id}
+            initial={{ opacity: 0, x: 32 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -32 }}
+            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            className="px-2 sm:px-0"
+          >
+            <QuestionCard
             question={{
               id: currentQuestion.id,
               text: currentQuestion.text,
@@ -282,10 +296,11 @@ export function QuizContainer({
                   }
                 : undefined
             }
-            showResults={feedbackMode === "immediate" && feedbackData.has(currentQuestion.id)}
-          />
-        </div>
-      )}
+              showResults={feedbackMode === "immediate" && feedbackData.has(currentQuestion.id)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Forward-only navigation */}
       <div className="flex justify-end px-2 pb-20 sm:px-0 md:pb-4">

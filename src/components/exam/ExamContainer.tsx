@@ -2,6 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { AnimatePresence, motion } from "framer-motion"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { ExamTimer } from "./ExamTimer"
 import { ExamQuestion } from "./ExamQuestion"
@@ -193,11 +195,13 @@ export function ExamContainer({
       const result = await submitExam(attemptId)
       if (result && "error" in result) {
         console.error("Submit error:", result.error)
+        toast.error("Eroare la trimitere")
         setIsSubmitting(false)
         setShowSubmitModal(false)
         return
       }
 
+      toast.success("Examen trimis cu succes")
       router.push(`/exam/${attemptId}/results`)
     } catch {
       setIsSubmitting(false)
@@ -250,19 +254,28 @@ export function ExamContainer({
       </div>
 
       {/* Current question */}
-      {currentQuestion && (
-        <div className="px-2 sm:px-0">
-          <ExamQuestion
+      <AnimatePresence mode="wait">
+        {currentQuestion && (
+          <motion.div
+            key={currentQuestion.id}
+            initial={{ opacity: 0, x: 32 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -32 }}
+            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            className="px-2 sm:px-0"
+          >
+            <ExamQuestion
             question={currentQuestion}
             questionNumber={currentIndex + 1}
             totalQuestions={questions.length}
             selected={answers.get(currentQuestion.id) ?? []}
             onAnswer={handleAnswer}
             onFlag={handleFlag}
-            isFlagged={flaggedIds.has(currentQuestion.id)}
-          />
-        </div>
-      )}
+              isFlagged={flaggedIds.has(currentQuestion.id)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Forward-only navigation */}
       <div className="flex justify-end px-2 pb-20 sm:px-0 md:pb-4">

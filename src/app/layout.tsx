@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next"
 import { Inter, Sora } from "next/font/google"
 import { ThemeProvider } from "next-themes"
+import { Toaster } from "sonner"
 import { OfflineIndicator } from "@/components/pwa/offline-indicator"
+import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider"
+import { CommandPalette } from "@/components/command/command-palette"
 import "./globals.css"
 
 const inter = Inter({
@@ -51,7 +54,23 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SmoothScrollProvider>
+            {children}
+            <CommandPalette />
+            <Toaster
+              theme="dark"
+              position="bottom-right"
+              richColors
+              closeButton
+              toastOptions={{
+                style: {
+                  background: "rgba(10, 14, 20, 0.92)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(12px)",
+                },
+              }}
+            />
+          </SmoothScrollProvider>
         </ThemeProvider>
       </body>
     </html>

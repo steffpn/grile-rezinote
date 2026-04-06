@@ -1,6 +1,7 @@
 "use client"
 
 import { Check } from "lucide-react"
+import { motion } from "framer-motion"
 import { createCheckoutSession } from "@/lib/stripe/actions"
 import { useTransition } from "react"
 
@@ -34,11 +35,16 @@ export function PricingCard({
   }
 
   return (
-    <div
-      className={`relative flex flex-col rounded-lg border p-8 ${
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -4 }}
+      className={`relative flex flex-col rounded-lg border p-8 transition-shadow ${
         popular
-          ? "border-primary shadow-lg ring-1 ring-primary"
-          : "border-border"
+          ? "border-primary shadow-lg ring-1 ring-primary hover:shadow-xl hover:shadow-primary/15"
+          : "border-border hover:shadow-lg"
       }`}
     >
       {popular && (
@@ -91,6 +97,6 @@ export function PricingCard({
           {isPending ? "Se incarca..." : "Aboneaza-te"}
         </button>
       </form>
-    </div>
+    </motion.div>
   )
 }

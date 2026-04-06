@@ -1,115 +1,97 @@
 "use client"
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Plus } from "lucide-react"
+import { motion } from "framer-motion"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 const faqs = [
   {
-    question: "Ce tip de intrebari sunt disponibile?",
-    answer:
-      "Platforma contine intrebari cu complement simplu (CS) si complement multiplu (CM), exact ca la examenul real de rezidentiat stomatologie. Fiecare intrebare are 5 variante de raspuns (A-E).",
+    q: "Cat costa accesul la platforma?",
+    a: "Primesti 45 de zile complet gratuite, fara sa introduci niciun card. Dupa perioada de proba, abonamentul este accesibil si poate fi anulat oricand din contul tau.",
   },
   {
-    question: "Cum se calculeaza scorul?",
-    answer:
-      "Folosim formula oficiala romaneasca de punctare. Pentru CS: 4 puncte per raspuns corect. Pentru CM: punctaj per optiune (1 punct pentru fiecare optiune corecta selectata SAU optiune gresita neselectata), cu anulare la sub 2 sau peste 4 selectii. Scorul maxim este 950 puncte.",
+    q: "Grilele sunt actualizate dupa programa oficiala?",
+    a: "Da. Banca de intrebari este revizuita constant de echipa noastra in pas cu programa oficiala de rezidentiat si cu schimbarile anuale ale Ministerului Sanatatii.",
   },
   {
-    question: "Pot vedea daca as fi fost admis?",
-    answer:
-      "Da! Dupa fiecare simulare completa, platforma compara scorul tau cu pragurile istorice de admitere pe ultimii 5 ani, pe fiecare specialitate. Vei vedea exact la ce specialitati ai fi fost admis.",
+    q: "Pot folosi platforma pe telefon, fara internet?",
+    a: "Absolut. Aplicatia este o PWA (Progressive Web App) si poate fi instalata direct pe iOS sau Android. Odata instalata, poti rezolva grile chiar si offline.",
   },
   {
-    question: "Functioneaza pe telefon?",
-    answer:
-      "Da, platforma este optimizata complet pentru dispozitive mobile. Poti instala aplicatia direct din browser pe ecranul principal al telefonului pentru acces rapid.",
+    q: "Cat de aproape sunt simularile de examenul real?",
+    a: "Simularile respecta exact formatul oficial: numar de intrebari, timp alocat si sistemul de scoring. Vei intra in sala de examen stiind exact la ce sa te astepti.",
   },
   {
-    question: "Cate intrebari sunt intr-o simulare?",
-    answer:
-      "O simulare completa contine 200 de intrebari, exact ca la examenul real: primele 50 sunt CS (complement simplu), iar urmatoarele 150 sunt CM (complement multiplu).",
+    q: "Pot sa imi compar progresul cu al colegilor?",
+    a: "Da. Vei vedea percentile anonime pentru fiecare simulare si pozitia ta in topul general, fara sa expui datele tale personale.",
   },
   {
-    question: "Pot exersa pe capitole individuale?",
-    answer:
-      "Da! Pe langa simularea completa a examenului, poti exersa intrebari dintr-un singur capitol sau amestecate din mai multe capitole, fara limita de timp.",
+    q: "Cum functioneaza explicatiile detaliate?",
+    a: "Dupa fiecare grila ai acces la rationamentul complet, raspunsul corect motivat si referinte din bibliografia oficiala, ca sa poti aprofunda subiectul.",
   },
-]
+  {
+    q: "Pot sa imi anulez abonamentul oricand?",
+    a: "Sigur ca da. Anularea se face cu un click din contul tau si nu trebuie sa contactezi suportul. Iti pastrezi accesul pana la finalul perioadei platite.",
+  },
+  {
+    q: "Cum imi protejati datele personale?",
+    a: "Datele tale sunt stocate criptat si nu sunt impartasite cu terti. Suntem complet conformi GDPR si poti solicita oricand stergerea contului si a datelor asociate.",
+  },
+] as const
 
 export function FaqSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
-
   return (
-    <section id="faq" className="relative py-28 sm:py-36">
-      {/* Separator line */}
-      <div className="absolute inset-x-0 top-0 mx-auto h-px max-w-4xl bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+    <section className="relative py-32">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/3 top-1/2 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
+      </div>
 
-      <div className="mx-auto max-w-3xl px-6">
-        <motion.div
-          className="mb-16 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
-            style={{ fontFamily: "var(--font-display)" }}
+      <div className="relative mx-auto max-w-3xl px-6">
+        <div className="mb-16 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
           >
-            Intrebari frecvente
-          </h2>
-          <p className="mt-5 text-lg text-white/40">
-            Raspunsuri la cele mai comune intrebari
-          </p>
-        </motion.div>
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-white/60 backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              Intrebari frecvente
+            </div>
+            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              Tot ce vrei sa stii
+            </h2>
+            <p className="mt-4 text-pretty text-base text-white/50 sm:text-lg">
+              Daca nu gasesti raspunsul, scrie-ne — raspundem in cel mai scurt
+              timp.
+            </p>
+          </motion.div>
+        </div>
 
-        <div className="space-y-2">
-          {faqs.map((faq, index) => (
+        <Accordion type="single" collapsible className="flex flex-col gap-3">
+          {faqs.map((faq, i) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 10 }}
+              key={faq.q}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{
+                duration: 0.5,
+                delay: i * 0.05,
+                ease: [0.21, 0.47, 0.32, 0.98],
+              }}
             >
-              <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] transition-colors hover:bg-white/[0.03]">
-                <button
-                  onClick={() =>
-                    setOpenIndex(openIndex === index ? null : index)
-                  }
-                  className="flex w-full items-center justify-between px-6 py-5 text-left"
-                >
-                  <span className="pr-4 text-[15px] font-medium text-white/90">
-                    {faq.question}
-                  </span>
-                  <Plus
-                    className={`h-4 w-4 shrink-0 text-white/30 transition-transform duration-300 ${
-                      openIndex === index ? "rotate-45" : ""
-                    }`}
-                  />
-                </button>
-                <AnimatePresence initial={false}>
-                  {openIndex === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="overflow-hidden"
-                    >
-                      <div className="border-t border-white/[0.04] px-6 pb-5 pt-4">
-                        <p className="text-[15px] leading-relaxed text-white/40">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <AccordionItem value={`item-${i}`}>
+                <AccordionTrigger>{faq.q}</AccordionTrigger>
+                <AccordionContent>{faq.a}</AccordionContent>
+              </AccordionItem>
             </motion.div>
           ))}
-        </div>
+        </Accordion>
       </div>
     </section>
   )
