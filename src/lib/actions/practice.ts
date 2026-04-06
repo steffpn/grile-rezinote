@@ -6,6 +6,7 @@ import { attempts, attemptAnswers, questions, options } from "@/lib/db/schema"
 import { eq, and, inArray, isNull, sql } from "drizzle-orm"
 import { getCurrentUser } from "@/lib/auth/get-user"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { assertSameOrigin } from "@/lib/security/csrf"
 import { scoreQuestion } from "@/lib/scoring/engine"
 import type { QuestionType } from "@/lib/scoring/types"
 import {
@@ -91,6 +92,7 @@ function selectQuestionsProportional(
  * REQUIRES: Active subscription or valid trial period.
  */
 export async function createPracticeAttempt(formData: FormData) {
+  await assertSameOrigin()
   const user = await getCurrentUser()
 
   // Verify subscription/trial access
@@ -150,7 +152,7 @@ export async function createPracticeAttempt(formData: FormData) {
       JOIN questions q ON mc.question_id = q.id
       WHERE mc.is_mastered = false
         AND q.archived_at IS NULL
-        ${config.chapterIds.length > 0 ? sql`AND q.chapter_id IN ${sql.raw(`('${config.chapterIds.join("','")}')`)}` : sql``}
+        ${config.chapterIds.length > 0 ? sql`AND q.chapter_id IN (${sql.join(config.chapterIds.map((id) => sql`${id}`), sql`, `)})` : sql``}
     `
 
     const wrongResults = await db.execute(wrongAnswerQuery)

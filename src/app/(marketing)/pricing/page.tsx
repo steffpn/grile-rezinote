@@ -1,5 +1,6 @@
 import { PricingCard } from "@/components/subscription/PricingCard"
 import { STRIPE_CONFIG } from "@/lib/stripe/config"
+import { stripe } from "@/lib/stripe/client"
 
 const features = [
   "Acces la toate grilele",
@@ -10,7 +11,36 @@ const features = [
   "Revizuire intrebari gresite",
 ]
 
-export default function PricingPage() {
+// Server component — prices are fetched from Stripe on the server, not hardcoded
+// in the client bundle, so a tampered client cannot misrepresent pricing.
+export const revalidate = 3600 // refresh hourly
+
+async function fetchPrice(priceId: string) {
+  try {
+    const price = await stripe.prices.retrieve(priceId)
+    if (!price.unit_amount) return null
+    return {
+      amount: Math.round(price.unit_amount / 100),
+      currency: price.currency.toUpperCase(),
+      interval: price.recurring?.interval ?? null,
+    }
+  } catch {
+    return null
+  }
+}
+
+export default async function PricingPage() {
+  const [monthly, annual] = await Promise.all([
+    fetchPrice(STRIPE_CONFIG.monthlyPriceId),
+    fetchPrice(STRIPE_CONFIG.annualPriceId),
+  ])
+
+  // Annual price displayed as monthly equivalent
+  const monthlyPrice = monthly?.amount?.toString() ?? "—"
+  const annualMonthlyEquivalent = annual?.amount
+    ? Math.round(annual.amount / 12).toString()
+    : "—"
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
       <div className="text-center">
@@ -26,20 +56,20 @@ export default function PricingPage() {
       <div className="mt-12 grid gap-8 md:grid-cols-2">
         <PricingCard
           name="Lunar"
-          price="49"
+          price={monthlyPrice}
           period="/luna"
           priceId={STRIPE_CONFIG.monthlyPriceId}
           features={features}
         />
         <PricingCard
           name="Anual"
-          price="33"
+          price={annualMonthlyEquivalent}
           period="/luna, platit anual"
           priceId={STRIPE_CONFIG.annualPriceId}
           features={features}
           popular
           discount="4 luni gratuite"
-          originalPrice="49"
+          originalPrice={monthlyPrice}
         />
       </div>
 
@@ -52,9 +82,9 @@ export default function PricingPage() {
               Ce se intampla dupa perioada de trial?
             </h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Dupa cele 7 zile de trial gratuit, vei avea nevoie de un
-              abonament activ pentru a continua sa folosesti platforma. Alege
-              planul lunar sau anual.
+              Dupa perioada de trial gratuit, vei avea nevoie de un abonament
+              activ pentru a continua sa folosesti platforma. Alege planul
+              lunar sau anual.
             </p>
           </div>
           <div>

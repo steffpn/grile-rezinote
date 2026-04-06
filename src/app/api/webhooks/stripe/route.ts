@@ -10,12 +10,23 @@ import {
   handlePaymentSucceeded,
   handlePaymentFailed,
 } from "@/lib/stripe/webhook-handlers"
+import { webhookLimiter } from "@/lib/rate-limit"
 import type Stripe from "stripe"
 
 export async function POST(request: Request) {
   const body = await request.text()
   const headersList = await headers()
   const signature = headersList.get("stripe-signature")
+
+  // Per-IP rate limit to defeat invalid-signature spam DoS.
+  // Stripe normally hits us at well under 100 req/min from a small set of IPs.
+  const ip =
+    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    headersList.get("x-real-ip") ??
+    "unknown"
+  if (!webhookLimiter.check(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 })
+  }
 
   if (!signature) {
     return NextResponse.json(

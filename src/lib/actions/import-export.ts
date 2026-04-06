@@ -13,11 +13,26 @@ import {
 import ExcelJS from "exceljs"
 
 const BATCH_SIZE = 50
+const MAX_IMPORT_ROWS = 5000
 
 export async function importQuestions(
   rows: ImportRow[]
 ): Promise<ImportResult> {
   const admin = await getCurrentAdmin()
+
+  // Hard cap on payload size to prevent OOM/DoS via huge imports.
+  if (rows.length > MAX_IMPORT_ROWS) {
+    return {
+      imported: 0,
+      updated: 0,
+      errors: [
+        {
+          row: 0,
+          message: `Maxim ${MAX_IMPORT_ROWS} randuri per import (primit ${rows.length}).`,
+        },
+      ],
+    }
+  }
 
   const errors: { row: number; message: string }[] = []
   const validRows: Array<{ data: ImportRow; rowNum: number }> = []

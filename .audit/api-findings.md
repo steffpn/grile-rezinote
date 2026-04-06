@@ -188,15 +188,17 @@ export async function importQuestions(rows: ImportRow[]): Promise<ImportResult> 
 
 ## Security Positives (No Issues Found)
 
-### ✅ Authentication
+### ✅ Authentication & Authorization
 - **NextAuth configuration:** Properly configured with JWT strategy and secure session timeout (30 days)
 - **Password hashing:** Using bcryptjs with cost factor 12 (appropriate for security)
 - **Authorization checks:** All admin actions call `getCurrentAdmin()` which validates superadmin status
-- **IDOR prevention:** Most operations properly verify user ownership:
+- **Subscription gating:** Both `createExamAttempt()` and `createPracticeAttempt()` properly check subscription via `checkSubscriptionAccess()` before allowing access (exam.ts:39, practice.ts:97)
+- **IDOR prevention:** All operations properly verify user ownership:
   - `submitExam` (line 199): Verifies `eq(attempts.userId, user.id)`
   - `batchSaveAnswers` (line 116): Verifies `eq(attempts.userId, user.id)`
   - `fetchPeerComparison` (line 19): Calls `getCurrentUser()`
   - Dashboard queries use authenticated user ID
+  - All attempt-related actions verify user ownership before modifying
 
 ### ✅ Webhook Security
 - **Stripe signature verification:** Properly validating via `stripe.webhooks.constructEvent()` (line 30)

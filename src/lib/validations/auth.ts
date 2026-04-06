@@ -10,6 +10,7 @@ export const signupSchema = z.object({
   password: z
     .string()
     .min(8, { message: "Parola trebuie sa aiba cel putin 8 caractere" })
+    .max(128, { message: "Parola este prea lunga" })
     .regex(/[a-zA-Z]/, {
       message: "Parola trebuie sa contina cel putin o litera",
     })
@@ -42,6 +43,7 @@ export const updatePasswordSchema = z
     password: z
       .string()
       .min(8, { message: "Parola trebuie sa aiba cel putin 8 caractere" })
+      .max(128, { message: "Parola este prea lunga" })
       .regex(/[a-zA-Z]/, {
         message: "Parola trebuie sa contina cel putin o litera",
       })

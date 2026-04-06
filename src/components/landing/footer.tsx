@@ -17,13 +17,13 @@ export function Footer() {
 
           <div className="flex gap-8 text-sm text-white/30">
             <Link
-              href="#"
+              href="/legal/terms"
               className="transition-colors hover:text-white/60"
             >
               Termeni si conditii
             </Link>
             <Link
-              href="#"
+              href="/legal/privacy"
               className="transition-colors hover:text-white/60"
             >
               Confidentialitate

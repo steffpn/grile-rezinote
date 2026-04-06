@@ -41,6 +41,14 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
+// Persistent record of accounts that have already consumed a free trial.
+// Survives user deletion to prevent trial reset abuse via re-signup with the same email.
+export const trialHistory = pgTable("trial_history", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  emailHash: text("email_hash").notNull().unique(), // SHA-256 of normalized email
+  firstUsedAt: timestamp("first_used_at").defaultNow().notNull(),
+})
+
 export const sessions = pgTable("sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
