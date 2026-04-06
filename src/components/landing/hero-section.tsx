@@ -1,23 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import dynamic from "next/dynamic"
 import { motion, useReducedMotion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { AuroraBackground } from "./aurora-background"
 import { Spotlight } from "./spotlight"
-
-// Lazy-load Spline (heavy, client-only)
-const Spline = dynamic(() => import("@splinetool/react-spline/next"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full w-full animate-pulse rounded-3xl bg-gradient-to-br from-emerald-500/[0.04] to-teal-500/[0.04]" />
-  ),
-})
-
-const SPLINE_SCENE =
-  "https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"
+import { HeroOrb } from "./hero-orb"
 
 const headlineWords = ["Pregateste-te", "pentru"]
 const accentWord = "Rezidentiat"
@@ -148,22 +137,14 @@ export function HeroSection() {
           </motion.p>
         </div>
 
-        {/* RIGHT: Spline 3D scene (desktop only) */}
+        {/* RIGHT: animated orb (desktop only) */}
         <motion.div
           className="relative hidden lg:col-span-5 lg:block"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, delay: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
         >
-          <div className="relative aspect-square w-full">
-            {/* Glow ring behind scene */}
-            <div className="absolute inset-0 -z-10 rounded-full bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent blur-3xl" />
-            <div className="absolute inset-0 overflow-hidden rounded-3xl">
-              <Spline scene={SPLINE_SCENE} />
-            </div>
-            {/* Cover the Spline watermark */}
-            <div className="absolute bottom-3 right-3 h-10 w-32 rounded-lg bg-[#050508]" />
-          </div>
+          <HeroOrb />
         </motion.div>
       </div>
 
