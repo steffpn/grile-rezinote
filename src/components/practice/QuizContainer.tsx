@@ -33,6 +33,7 @@ interface AnswerData {
 
 interface FeedbackData {
   isCorrect: boolean
+  isPartial?: boolean
   correctOptions: string[]
   sourceBook: string | null
   sourcePage: string | null
@@ -130,6 +131,7 @@ export function QuizContainer({
 
       const feedback: FeedbackData = {
         isCorrect: result.isCorrect,
+        isPartial: (result as { isPartial?: boolean }).isPartial,
         correctOptions: result.correctOptions,
         sourceBook: result.sourceBook,
         sourcePage: result.sourcePage,

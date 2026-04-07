@@ -247,6 +247,11 @@ export async function submitAnswer(data: {
     question.correctOptions
   )
 
+  // Strict correctness: ALL correct options picked, ZERO wrong picks.
+  // Anything in between is "partial" and must NOT be reported as correct.
+  const isFullyCorrect = result.score === result.maxScore
+  const isPartial = result.score > 0 && result.score < result.maxScore
+
   // Check if answer already exists (update) or is new (insert)
   const [existing] = await db
     .select({ id: attemptAnswers.id })
@@ -264,7 +269,7 @@ export async function submitAnswer(data: {
       .update(attemptAnswers)
       .set({
         selectedOptions: data.selectedOptions,
-        isCorrect: result.score > 0,
+        isCorrect: isFullyCorrect,
         score: result.score,
         answeredAt: new Date(),
       })
@@ -274,13 +279,14 @@ export async function submitAnswer(data: {
       attemptId: data.attemptId,
       questionId: data.questionId,
       selectedOptions: data.selectedOptions,
-      isCorrect: result.score > 0,
+      isCorrect: isFullyCorrect,
       score: result.score,
     })
   }
 
   return {
-    isCorrect: result.score > 0,
+    isCorrect: isFullyCorrect,
+    isPartial,
     score: result.score,
     maxScore: result.maxScore,
     correctOptions: question.correctOptions,
