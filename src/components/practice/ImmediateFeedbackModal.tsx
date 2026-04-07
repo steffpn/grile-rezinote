@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Check, X, BookOpen, CircleDot } from "lucide-react"
+import { Check, X, BookOpen, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface FeedbackData {
@@ -51,9 +51,9 @@ export function ImmediateFeedbackModal({
       titleClass: "text-green-700 dark:text-green-300",
     },
     partial: {
-      bar: "bg-amber-500",
+      bar: "bg-amber-400",
       bg: "bg-amber-100 dark:bg-amber-900",
-      icon: <CircleDot className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
+      icon: <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />,
       title: "Partial corect",
       titleClass: "text-amber-700 dark:text-amber-300",
     },

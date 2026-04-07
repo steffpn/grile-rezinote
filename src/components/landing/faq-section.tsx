@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { motion } from "framer-motion"
 import {
   Accordion,
@@ -8,7 +9,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 
-const faqs = [
+const REFERENCE_BOOKS_URL = "https://rezidentiat-medicina-dentara.ro/"
+
+interface Faq {
+  q: string
+  a: ReactNode
+}
+
+const faqs: Faq[] = [
   {
     q: "Cat costa accesul la platforma?",
     a: "Primesti 45 de zile complet gratuite, fara sa introduci niciun card. Dupa perioada de proba, abonamentul este accesibil si poate fi anulat oricand din contul tau.",
@@ -34,6 +42,25 @@ const faqs = [
     a: "Dupa fiecare grila ai acces la rationamentul complet, raspunsul corect motivat si referinte din bibliografia oficiala, ca sa poti aprofunda subiectul.",
   },
   {
+    q: "Unde gasesc cartile de referinta pentru intrebarile la care am gresit?",
+    a: (
+      <>
+        Toate intrebarile au mentionata sursa (manualul si pagina) chiar in
+        ecranul de feedback. Cand vrei sa aprofundezi un subiect sau sa
+        comanzi cartea de referinta, le gasesti pe{" "}
+        <a
+          href={REFERENCE_BOOKS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-emerald-300 underline-offset-4 hover:underline"
+        >
+          Rezidentiat Medicina Dentara
+        </a>
+        , partenerul nostru pentru bibliografia oficiala.
+      </>
+    ),
+  },
+  {
     q: "Pot sa imi anulez abonamentul oricand?",
     a: "Sigur ca da. Anularea se face cu un click din contul tau si nu trebuie sa contactezi suportul. Iti pastrezi accesul pana la finalul perioadei platite.",
   },
@@ -41,7 +68,7 @@ const faqs = [
     q: "Cum imi protejati datele personale?",
     a: "Datele tale sunt stocate criptat si nu sunt impartasite cu terti. Suntem complet conformi GDPR si poti solicita oricand stergerea contului si a datelor asociate.",
   },
-] as const
+]
 
 export function FaqSection() {
   return (

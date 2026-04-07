@@ -1,5 +1,7 @@
 import Link from "next/link"
-import { Stethoscope, Github, Twitter, Instagram } from "lucide-react"
+import { Stethoscope, Github, Twitter, Instagram, BookOpen, ExternalLink } from "lucide-react"
+
+const REFERENCE_BOOKS_URL = "https://rezidentiat-medicina-dentara.ro/"
 
 const columns = [
   {
@@ -91,8 +93,35 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Partner CTA — visible on every page */}
+        <a
+          href={REFERENCE_BOOKS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group mt-12 flex flex-col items-start gap-3 rounded-2xl border border-emerald-400/15 bg-gradient-to-r from-emerald-500/[0.08] via-teal-500/[0.05] to-transparent p-5 transition-colors hover:border-emerald-300/30 hover:from-emerald-500/[0.12] sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+        >
+          <div className="flex items-start gap-3 sm:items-center">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-300/20 bg-emerald-500/10 text-emerald-300">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white">
+                Cauti cartile de referinta?
+              </p>
+              <p className="mt-0.5 text-xs text-white/50">
+                Comanda manualele oficiale de pe Rezidentiat Medicina Dentara,
+                partenerul nostru pentru bibliografie.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-xs font-medium text-emerald-300 transition-colors group-hover:bg-emerald-500/15">
+            Vezi cartile
+            <ExternalLink className="h-3 w-3" />
+          </span>
+        </a>
+
         {/* Bottom bar */}
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.05] pt-8 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/[0.05] pt-8 sm:flex-row">
           <span className="text-xs text-white/30">
             &copy; {new Date().getFullYear()} ReziNOT. Toate drepturile rezervate.
           </span>
