@@ -20,6 +20,7 @@ interface Question {
   id: string
   text: string
   type: "CS" | "CM"
+  subchapter: string | null
   options: QuestionOption[]
 }
 

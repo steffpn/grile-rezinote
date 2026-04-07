@@ -82,6 +82,7 @@ export default async function ExamAttemptPage({
       id: q.id,
       text: q.text,
       type: q.type,
+      subchapter: q.subchapter,
       options: shuffledOptions,
     }
   })

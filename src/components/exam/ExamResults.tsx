@@ -156,7 +156,7 @@ export function ExamResults({
                 variant="outline"
                 className="mb-1 border-primary/30 bg-primary/5 text-primary rounded-full text-[11px] font-semibold"
               >
-                CS
+                Complement simplu
               </Badge>
               <p className="text-lg font-semibold">
                 {csCorrect}/50 corecte
@@ -170,7 +170,7 @@ export function ExamResults({
                 variant="outline"
                 className="mb-1 border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400 rounded-full text-[11px] font-semibold"
               >
-                CM
+                Complement multiplu
               </Badge>
               <p className="text-lg font-semibold">
                 {cmCorrect}/150 corecte

@@ -19,6 +19,7 @@ interface Question {
   id: string
   text: string
   type: "CS" | "CM"
+  subchapter: string | null
   sourceBook: string | null
   sourcePage: string | null
   options: QuestionOption[]

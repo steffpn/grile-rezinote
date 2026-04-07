@@ -29,6 +29,7 @@ export default async function QuizPage({ params }: QuizPageProps) {
           id: q.id,
           text: q.text,
           type: q.type,
+          subchapter: q.subchapter,
           sourceBook: q.sourceBook,
           sourcePage: q.sourcePage,
           options: q.options.map((o) => ({ label: o.label, text: o.text })),

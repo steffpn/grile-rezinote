@@ -13,6 +13,7 @@ import { format } from "date-fns"
 import { ro } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { Check, X } from "lucide-react"
+import { formatQuestionType } from "@/lib/format/question-type"
 
 interface AnswerDetailDialogProps {
   answer: AnswerHistoryRow | null
@@ -51,7 +52,7 @@ export function AnswerDetailDialog({
             {/* Question info */}
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Intrebare ({answer.questionType})
+                {formatQuestionType(answer.questionType)}
               </p>
               <p className="mt-1 leading-relaxed">{answer.questionText}</p>
             </div>

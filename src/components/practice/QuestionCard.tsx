@@ -8,6 +8,7 @@ import { Toggle } from "@/components/ui/toggle"
 import { Flag, BookOpen, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { QuestionOptionGroup } from "./QuestionOptionGroup"
+import { formatQuestionType } from "@/lib/format/question-type"
 
 interface QuestionOption {
   label: string
@@ -26,6 +27,7 @@ interface QuestionCardProps {
     id: string
     text: string
     type: "CS" | "CM"
+    subchapter?: string | null
     options: QuestionOption[]
   }
   questionNumber: number
@@ -84,7 +86,7 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
                   : "border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400"
               )}
             >
-              {question.type}
+              {formatQuestionType(question.type)}
             </Badge>
             {showResults && feedback && (
               <Badge
@@ -113,6 +115,11 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {question.subchapter && (
+            <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/80">
+              {question.subchapter}
+            </p>
+          )}
           <p className="text-base leading-relaxed">{question.text}</p>
 
           <QuestionOptionGroup

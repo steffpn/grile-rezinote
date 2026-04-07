@@ -100,6 +100,7 @@ export async function getAttemptWithQuestions(
       text: questions.text,
       type: questions.type,
       chapterId: questions.chapterId,
+      subchapter: questions.subchapter,
       sourceBook: questions.sourceBook,
       sourcePage: questions.sourcePage,
     })
@@ -152,6 +153,7 @@ export async function getAttemptWithQuestions(
     text: string
     type: "CS" | "CM"
     chapterId: string
+    subchapter: string | null
     sourceBook: string | null
     sourcePage: string | null
     options: Array<{ id: string; label: string; text: string }>

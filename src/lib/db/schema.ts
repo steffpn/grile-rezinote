@@ -85,6 +85,7 @@ export const questions = pgTable("questions", {
   chapterId: uuid("chapter_id")
     .references(() => chapters.id)
     .notNull(),
+  subchapter: text("subchapter"), // sub-section within chapter (e.g. "Pulpitele acute")
   text: text("text").notNull(),
   type: questionTypeEnum("type").notNull(),
   sourceBook: text("source_book"),

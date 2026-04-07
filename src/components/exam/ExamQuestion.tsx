@@ -6,6 +6,7 @@ import { Toggle } from "@/components/ui/toggle"
 import { Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { QuestionOptionGroup } from "@/components/practice/QuestionOptionGroup"
+import { formatQuestionType } from "@/lib/format/question-type"
 
 interface QuestionOption {
   label: string
@@ -17,6 +18,7 @@ interface ExamQuestionProps {
     id: string
     text: string
     type: "CS" | "CM"
+    subchapter?: string | null
     options: QuestionOption[]
   }
   questionNumber: number
@@ -51,7 +53,7 @@ export function ExamQuestion({
                 : "border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400 rounded-full text-[11px] font-semibold"
             )}
           >
-            {question.type}
+            {formatQuestionType(question.type)}
           </Badge>
         </div>
         <Toggle
@@ -69,6 +71,11 @@ export function ExamQuestion({
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {question.subchapter && (
+          <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/80">
+            {question.subchapter}
+          </p>
+        )}
         <p className="text-base leading-relaxed">{question.text}</p>
 
         <QuestionOptionGroup

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
+import { formatQuestionType } from "@/lib/format/question-type"
 import {
   AlertTriangle,
   BookOpen,
@@ -224,7 +225,7 @@ export function MistakesList({ mistakes, chapters }: MistakesListProps) {
                             : "border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400 rounded-full text-[10px] font-semibold"
                         }
                       >
-                        {m.questionType}
+                        {formatQuestionType(m.questionType)}
                       </Badge>
                       <span className="text-xs text-muted-foreground truncate">
                         {m.chapterName}

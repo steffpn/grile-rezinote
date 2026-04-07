@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { BookOpen, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { QuestionOptionGroup } from "@/components/practice/QuestionOptionGroup"
+import { formatQuestionType } from "@/lib/format/question-type"
 
 interface QuestionOption {
   label: string
@@ -70,7 +71,7 @@ export function ExamReviewQuestion({
                   : "border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400 rounded-full text-[11px] font-semibold"
               )}
             >
-              {question.type}
+              {formatQuestionType(question.type)}
             </Badge>
             {isAnswered ? (
               <Badge

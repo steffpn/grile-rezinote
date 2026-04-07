@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { formatQuestionType } from "@/lib/format/question-type"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -169,7 +170,7 @@ export function AnswerHistoryTable({
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
-                      {row.questionType}
+                      {formatQuestionType(row.questionType)}
                     </Badge>
                   </TableCell>
                   <TableCell>
