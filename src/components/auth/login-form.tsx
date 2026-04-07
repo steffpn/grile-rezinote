@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowRight, Loader2 } from "lucide-react"
+import { GoogleButton } from "./google-button"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -42,6 +43,16 @@ export function LoginForm() {
         <p className="mt-2 text-sm text-white/40">
           Conecteaza-te la contul tau pentru a continua pregatirea
         </p>
+      </div>
+
+      <GoogleButton callbackUrl="/dashboard" />
+
+      <div className="relative my-6 flex items-center">
+        <div className="flex-1 border-t border-white/[0.06]" />
+        <span className="px-3 text-[11px] uppercase tracking-wider text-white/30">
+          sau
+        </span>
+        <div className="flex-1 border-t border-white/[0.06]" />
       </div>
 
       <form action={formAction} className="space-y-5">

@@ -1,12 +1,36 @@
 import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import Google from "next-auth/providers/google"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
+import { hasUsedTrialBefore } from "@/lib/subscription/trial"
+import { STRIPE_CONFIG } from "@/lib/stripe/config"
+
+// =============================================================================
+// TODO PRE-PROD (Google OAuth):
+// Before going live on the production domain (e.g. rezinot.ro), you MUST:
+//   1. Add the production origin to "Authorized JavaScript origins" in the
+//      Google Cloud Console OAuth client (currently only the Railway URL is
+//      configured).
+//   2. Add the production callback URL to "Authorized redirect URIs":
+//        https://<prod-domain>/api/auth/callback/google
+//   3. Set the AUTH_URL env var on the production host to the production
+//      origin so NextAuth generates the correct callback during sign-in.
+//   4. Move the Google OAuth consent screen from "Testing" to "Production"
+//      so users outside the test list can sign in.
+// =============================================================================
 
 export const authConfig: NextAuthConfig = {
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      // We rely on Google's verified email so we can safely link to existing
+      // accounts created via the credentials provider.
+      allowDangerousEmailAccountLinking: true,
+    }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -24,7 +48,7 @@ export const authConfig: NextAuthConfig = {
           .where(eq(users.email, email))
           .limit(1)
 
-        if (!user) return null
+        if (!user || !user.passwordHash) return null
 
         const isValid = await bcrypt.compare(password, user.passwordHash)
         if (!isValid) return null
@@ -46,6 +70,75 @@ export const authConfig: NextAuthConfig = {
     error: "/login",
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Credentials provider already verified the user inside `authorize`.
+      if (account?.provider !== "google") return true
+      if (!user.email) return false
+
+      // Find existing user by email (works for both prior credentials users
+      // and prior Google logins).
+      const [existing] = await db
+        .select({
+          id: users.id,
+          googleId: users.googleId,
+          fullName: users.fullName,
+          image: users.image,
+        })
+        .from(users)
+        .where(eq(users.email, user.email))
+        .limit(1)
+
+      if (existing) {
+        // Backfill googleId / image / name from the OAuth profile if missing.
+        const updates: Partial<typeof users.$inferInsert> = {}
+        if (!existing.googleId && account.providerAccountId) {
+          updates.googleId = account.providerAccountId
+        }
+        if (!existing.image && (user.image ?? null)) {
+          updates.image = user.image as string
+        }
+        if (!existing.fullName && (user.name ?? null)) {
+          updates.fullName = user.name as string
+        }
+        if (Object.keys(updates).length > 0) {
+          await db.update(users).set(updates).where(eq(users.id, existing.id))
+        }
+        // Pin our internal id onto the user object so the jwt callback uses it.
+        ;(user as { id?: string }).id = existing.id
+        return true
+      }
+
+      // Brand new account → create it. Apply trial-history check so users
+      // who already consumed a free trial under this email cannot reset it
+      // by signing in with Google.
+      const alreadyUsedTrial = await hasUsedTrialBefore(user.email)
+      const trialStartedAt = alreadyUsedTrial
+        ? new Date(
+            Date.now() - (STRIPE_CONFIG.trialDays + 1) * 24 * 60 * 60 * 1000
+          )
+        : null
+
+      const fullName =
+        (user.name as string | undefined) ??
+        (profile?.name as string | undefined) ??
+        user.email.split("@")[0]
+
+      const [created] = await db
+        .insert(users)
+        .values({
+          email: user.email,
+          // No local password — Google handles authentication.
+          passwordHash: null,
+          fullName,
+          googleId: account.providerAccountId,
+          image: (user.image as string | undefined) ?? null,
+          trialStartedAt,
+        })
+        .returning({ id: users.id })
+
+      ;(user as { id?: string }).id = created.id
+      return true
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id

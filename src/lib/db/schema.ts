@@ -31,13 +31,17 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
+  // Nullable: users created via Google OAuth have no local password.
+  passwordHash: text("password_hash"),
   fullName: text("full_name").notNull(),
   yearOfStudy: integer("year_of_study"), // 1-6, nullable for admin users
   role: userRoleEnum("role").notNull().default("student"),
   isSuperadmin: boolean("is_superadmin").notNull().default(false),
   peerOptIn: boolean("peer_opt_in").notNull().default(false), // opt-in for anonymous peer rankings
   trialStartedAt: timestamp("trial_started_at"), // set on first paid feature access
+  // OAuth metadata (nullable for credentials-only users)
+  googleId: text("google_id").unique(),
+  image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
