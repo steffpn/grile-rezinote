@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { GripVertical, Pencil, Archive, RotateCcw, Plus } from "lucide-react"
+import { GripVertical, Pencil, Archive, RotateCcw, Plus, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
@@ -38,6 +38,7 @@ interface ChapterData {
   questionCount: number
   csCount: number
   cmCount: number
+  subchapters: { name: string; count: number }[]
 }
 
 interface ChapterListProps {
@@ -53,6 +54,7 @@ function SortableChapterRow({
   onEdit: () => void
   onArchive: () => void
 }) {
+  const [expanded, setExpanded] = useState(false)
   const {
     attributes,
     listeners,
@@ -68,54 +70,100 @@ function SortableChapterRow({
     opacity: isDragging ? 0.5 : 1,
   }
 
+  const hasSubs = chapter.subchapters && chapter.subchapters.length > 0
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 rounded-lg border bg-card p-4 hover:bg-accent/50"
+      className="rounded-lg border bg-card"
     >
-      <button
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="h-5 w-5" />
-      </button>
-
-      <div className="flex-1 min-w-0">
-        <h3 className="font-medium truncate">{chapter.name}</h3>
-        {chapter.description && (
-          <p className="text-sm text-muted-foreground truncate">
-            {chapter.description}
-          </p>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary" className="text-xs">
-          {chapter.questionCount} intrebari
-        </Badge>
-        <Badge variant="outline" className="text-xs">
-          CS: {chapter.csCount}
-        </Badge>
-        <Badge variant="outline" className="text-xs">
-          CM: {chapter.cmCount}
-        </Badge>
-      </div>
-
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" onClick={onEdit} title="Editeaza">
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onArchive}
-          title="Arhiveaza"
+      <div className="flex items-center gap-3 p-4 hover:bg-accent/50">
+        <button
+          className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
+          {...attributes}
+          {...listeners}
+          aria-label="Reordoneaza"
         >
-          <Archive className="h-4 w-4" />
-        </Button>
+          <GripVertical className="h-5 w-5" />
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium truncate">{chapter.name}</h3>
+          {chapter.description && (
+            <p className="text-sm text-muted-foreground truncate">
+              {chapter.description}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            {chapter.questionCount} intrebari
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            CS: {chapter.csCount}
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            CM: {chapter.cmCount}
+          </Badge>
+          {hasSubs && (
+            <Badge variant="outline" className="text-xs">
+              {chapter.subchapters.length} subcapitole
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1">
+          {hasSubs && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setExpanded((e) => !e)}
+              title={expanded ? "Ascunde subcapitole" : "Vezi subcapitole"}
+              aria-expanded={expanded}
+            >
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+              />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" onClick={onEdit} title="Editeaza">
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onArchive}
+            title="Arhiveaza"
+          >
+            <Archive className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+
+      {expanded && hasSubs && (
+        <div className="border-t border-border/60 bg-muted/20 px-4 py-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Subcapitole
+          </p>
+          <ul className="space-y-1">
+            {chapter.subchapters.map((s) => (
+              <li
+                key={s.name}
+                className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-accent/40"
+              >
+                <span className="min-w-0 flex-1 break-words text-foreground/90">
+                  {s.name}
+                </span>
+                <Badge variant="outline" className="shrink-0 text-[10px] tabular-nums">
+                  {s.count}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

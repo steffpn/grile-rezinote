@@ -41,11 +41,39 @@ export async function getChaptersWithStats() {
     ])
   )
 
+  // Per-(chapter, subchapter) breakdown
+  const subRows = await db
+    .select({
+      chapterId: questions.chapterId,
+      subchapter: questions.subchapter,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(questions)
+    .where(isNull(questions.archivedAt))
+    .groupBy(questions.chapterId, questions.subchapter)
+
+  const subsByChapter = new Map<
+    string,
+    Array<{ name: string; count: number }>
+  >()
+  for (const row of subRows) {
+    if (!row.subchapter) continue
+    if (!subsByChapter.has(row.chapterId)) subsByChapter.set(row.chapterId, [])
+    subsByChapter.get(row.chapterId)!.push({
+      name: row.subchapter,
+      count: row.count,
+    })
+  }
+  for (const list of subsByChapter.values()) {
+    list.sort((a, b) => a.name.localeCompare(b.name, "ro"))
+  }
+
   return chapterList.map((ch) => ({
     ...ch,
     questionCount: statsMap.get(ch.id)?.total ?? 0,
     csCount: statsMap.get(ch.id)?.csCount ?? 0,
     cmCount: statsMap.get(ch.id)?.cmCount ?? 0,
+    subchapters: subsByChapter.get(ch.id) ?? [],
   }))
 }
 
