@@ -266,6 +266,7 @@ export function QuizContainer({
               id: currentQuestion.id,
               text: currentQuestion.text,
               type: currentQuestion.type,
+              subchapter: currentQuestion.subchapter,
               options: currentQuestion.options.map((o) => ({
                 label: o.label,
                 text: o.text,
