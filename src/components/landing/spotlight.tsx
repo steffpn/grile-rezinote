@@ -37,7 +37,7 @@ export function Spotlight({
       onMouseLeave={onLeave}
       className={`inline-block ${className}`}
     >
-      <motion.div style={{ x: sx, y: sy }}>{children}</motion.div>
+      <motion.div style={{ x: sx, y: sy }} className="h-full w-full">{children}</motion.div>
     </div>
   )
 }

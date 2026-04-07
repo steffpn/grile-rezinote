@@ -34,7 +34,7 @@ export function Footer() {
       {/* Gradient top border */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
 
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="grid gap-12 lg:grid-cols-[1.5fr_2fr]">
           {/* Brand */}
           <div>
@@ -59,7 +59,7 @@ export function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-white/40 transition-colors hover:border-emerald-300/30 hover:bg-emerald-500/[0.06] hover:text-emerald-300"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-white/40 transition-colors hover:border-emerald-300/30 hover:bg-emerald-500/[0.06] hover:text-emerald-300"
                 >
                   <Icon className="h-4 w-4" />
                 </a>
@@ -79,7 +79,7 @@ export function Footer() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-sm text-white/60 transition-colors hover:text-white"
+                        className="inline-flex min-h-[36px] items-center text-sm text-white/60 transition-colors hover:text-white"
                       >
                         {link.label}
                       </Link>

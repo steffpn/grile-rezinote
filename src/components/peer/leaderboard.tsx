@@ -34,9 +34,9 @@ export function Leaderboard({ rankings }: LeaderboardProps) {
 
   return (
     <div className="max-h-[500px] overflow-auto">
-      <div className="space-y-1">
+      <div className="space-y-1 min-w-[20rem]">
         {/* Header */}
-        <div className="sticky top-0 z-10 grid grid-cols-[3rem_2.5rem_1fr_5rem_5rem] items-center gap-2 border-b bg-background px-3 py-2 text-xs font-medium text-muted-foreground">
+        <div className="sticky top-0 z-10 grid grid-cols-[2.25rem_2rem_1fr_3.5rem_3rem] sm:grid-cols-[3rem_2.5rem_1fr_5rem_5rem] items-center gap-2 border-b bg-background px-3 py-2 text-xs font-medium text-muted-foreground">
           <span>#</span>
           <span></span>
           <span>Participant</span>
@@ -49,7 +49,7 @@ export function Leaderboard({ rankings }: LeaderboardProps) {
           <div
             key={entry.userId}
             ref={entry.isCurrentUser ? currentUserRef : undefined}
-            className={`grid grid-cols-[3rem_2.5rem_1fr_5rem_5rem] items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+            className={`grid grid-cols-[2.25rem_2rem_1fr_3.5rem_3rem] sm:grid-cols-[3rem_2.5rem_1fr_5rem_5rem] items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
               entry.isCurrentUser
                 ? "border-l-2 border-primary bg-primary/10 font-medium"
                 : "hover:bg-muted/50"

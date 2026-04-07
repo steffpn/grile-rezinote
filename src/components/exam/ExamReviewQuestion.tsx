@@ -59,9 +59,9 @@ export function ExamReviewQuestion({
       <CardHeader className="pb-2">
         <button
           onClick={onToggle}
-          className="flex w-full items-center justify-between text-left"
+          className="flex w-full items-center justify-between gap-2 text-left"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
             <span className="font-bold">Intrebarea {questionNumber}</span>
             <Badge
               variant="outline"
@@ -97,7 +97,7 @@ export function ExamReviewQuestion({
 
       {isExpanded && (
         <CardContent className="space-y-3 pt-0">
-          <p className="text-base leading-relaxed">{question.text}</p>
+          <p className="text-base leading-relaxed break-words">{question.text}</p>
 
           <QuestionOptionGroup
             questionType={question.type}

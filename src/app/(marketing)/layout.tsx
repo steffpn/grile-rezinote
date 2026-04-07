@@ -21,7 +21,7 @@ export default function MarketingLayout({
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#050508] text-white">
+    <div className="min-h-screen overflow-x-hidden bg-[#050508] text-white">
       {/* Navigation */}
       <header
         className={`fixed top-0 z-50 w-full transition-all duration-500 ${
@@ -30,7 +30,7 @@ export default function MarketingLayout({
             : "bg-transparent"
         }`}
       >
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <nav className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/20 transition-shadow group-hover:shadow-emerald-500/40">
               <Stethoscope className="h-5 w-5 text-white" />
@@ -83,7 +83,8 @@ export default function MarketingLayout({
           {/* Mobile toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-white/70 hover:bg-white/[0.06] md:hidden"
+            aria-label={mobileOpen ? "Inchide meniul" : "Deschide meniul"}
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-white/70 hover:bg-white/[0.06] md:hidden"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -98,33 +99,33 @@ export default function MarketingLayout({
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden border-t border-white/[0.06] bg-[#050508]/95 backdrop-blur-2xl md:hidden"
             >
-              <div className="flex flex-col gap-1 px-6 py-4">
+              <div className="flex flex-col gap-1 px-4 py-4 sm:px-6">
                 <Link
                   href="#features"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-xl px-4 py-3 text-sm text-white/60 hover:bg-white/[0.04] hover:text-white"
+                  className="rounded-xl px-4 py-3.5 text-base text-white/70 hover:bg-white/[0.04] hover:text-white min-h-[44px] flex items-center"
                 >
                   Functionalitati
                 </Link>
                 <Link
                   href="#how-it-works"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-xl px-4 py-3 text-sm text-white/60 hover:bg-white/[0.04] hover:text-white"
+                  className="rounded-xl px-4 py-3.5 text-base text-white/70 hover:bg-white/[0.04] hover:text-white min-h-[44px] flex items-center"
                 >
                   Cum functioneaza
                 </Link>
                 <Link
                   href="#faq"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-xl px-4 py-3 text-sm text-white/60 hover:bg-white/[0.04] hover:text-white"
+                  className="rounded-xl px-4 py-3.5 text-base text-white/70 hover:bg-white/[0.04] hover:text-white min-h-[44px] flex items-center"
                 >
                   FAQ
                 </Link>
                 <div className="mt-3 flex flex-col gap-2">
-                  <Button variant="outline" asChild className="rounded-xl border-white/10 text-white hover:bg-white/[0.06]">
+                  <Button variant="outline" asChild className="min-h-[48px] rounded-xl border-white/10 text-white hover:bg-white/[0.06]">
                     <Link href="/login">Autentificare</Link>
                   </Button>
-                  <Button asChild className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 border-0 text-white">
+                  <Button asChild className="min-h-[48px] rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 border-0 text-white">
                     <Link href="/signup">Incepe gratuit</Link>
                   </Button>
                 </div>

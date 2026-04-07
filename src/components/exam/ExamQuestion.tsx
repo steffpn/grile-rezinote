@@ -76,7 +76,7 @@ export function ExamQuestion({
             {question.subchapter}
           </p>
         )}
-        <p className="text-base leading-relaxed">{question.text}</p>
+        <p className="text-base leading-relaxed break-words">{question.text}</p>
 
         <QuestionOptionGroup
           questionType={question.type}

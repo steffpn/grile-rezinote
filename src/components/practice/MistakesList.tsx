@@ -102,10 +102,10 @@ export function MistakesList({ mistakes, chapters }: MistakesListProps) {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Card className="border-white/[0.06]">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 ring-1 ring-red-500/10">
+          <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 ring-1 ring-red-500/10 sm:h-12 sm:w-12">
               <AlertTriangle className="h-6 w-6 text-red-400" />
             </div>
             <div>
@@ -118,8 +118,8 @@ export function MistakesList({ mistakes, chapters }: MistakesListProps) {
         </Card>
 
         <Card className="border-white/[0.06]">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/10">
+          <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 ring-1 ring-emerald-500/10 sm:h-12 sm:w-12">
               <Target className="h-6 w-6 text-emerald-400" />
             </div>
             <div>
@@ -132,8 +132,8 @@ export function MistakesList({ mistakes, chapters }: MistakesListProps) {
         </Card>
 
         <Card className="border-white/[0.06]">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-500/10 ring-1 ring-blue-500/10">
+          <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-500/10 ring-1 ring-blue-500/10 sm:h-12 sm:w-12">
               <BookOpen className="h-6 w-6 text-blue-400" />
             </div>
             <div>
@@ -148,8 +148,8 @@ export function MistakesList({ mistakes, chapters }: MistakesListProps) {
         </Card>
 
         <Card className="border-white/[0.06]">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 ring-1 ring-amber-500/10">
+          <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 ring-1 ring-amber-500/10 sm:h-12 sm:w-12">
               <TrendingDown className="h-6 w-6 text-amber-400" />
             </div>
             <div>

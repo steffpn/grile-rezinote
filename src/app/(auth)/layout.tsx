@@ -7,7 +7,7 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen bg-[#050508]">
+    <div className="flex min-h-screen overflow-x-hidden bg-[#050508]">
       {/* Left panel — decorative */}
       <div className="relative hidden w-1/2 overflow-hidden lg:block">
         {/* Gradient mesh background */}
@@ -75,10 +75,10 @@ export default function AuthLayout({
       </div>
 
       {/* Right panel — form */}
-      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
+      <div className="flex w-full items-center justify-center px-4 py-10 sm:px-6 sm:py-12 lg:w-1/2">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <div className="mb-10 flex justify-center lg:hidden">
+          <div className="mb-8 flex justify-center sm:mb-10 lg:hidden">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/20">
                 <Stethoscope className="h-5 w-5 text-white" />

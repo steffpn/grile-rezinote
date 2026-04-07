@@ -19,7 +19,7 @@ interface ChapterRadarProps {
   cohort?: { chapterName: string; accuracyPct: number }[]
 }
 
-function truncateName(name: string, maxLength: number = 15): string {
+function truncateName(name: string, maxLength: number = 12): string {
   if (name.length <= maxLength) return name
   return name.slice(0, maxLength - 3) + "..."
 }
@@ -93,8 +93,8 @@ export function ChapterRadar({ data, cohort }: ChapterRadarProps) {
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.65, ease: [0.21, 0.47, 0.32, 0.98] }}
     >
-      <ResponsiveContainer width="100%" height={400}>
-        <RechartsRadarChart data={chartData}>
+      <ResponsiveContainer width="100%" height={320} minWidth={0}>
+        <RechartsRadarChart data={chartData} outerRadius="72%">
           <defs>
             <radialGradient id="radarFill" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#10b981" stopOpacity={0.6} />
@@ -108,12 +108,12 @@ export function ChapterRadar({ data, cohort }: ChapterRadarProps) {
           <PolarGrid stroke="currentColor" opacity={0.12} />
           <PolarAngleAxis
             dataKey="chapter"
-            tick={{ fill: "currentColor", opacity: 0.6, fontSize: 11 }}
+            tick={{ fill: "currentColor", opacity: 0.6, fontSize: 10 }}
           />
           <PolarRadiusAxis
             angle={30}
             domain={[0, 100]}
-            tick={{ fill: "currentColor", opacity: 0.4, fontSize: 10 }}
+            tick={{ fill: "currentColor", opacity: 0.4, fontSize: 9 }}
             stroke="currentColor"
             strokeOpacity={0.1}
           />

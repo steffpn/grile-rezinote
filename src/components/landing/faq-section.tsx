@@ -45,13 +45,13 @@ const faqs = [
 
 export function FaqSection() {
   return (
-    <section className="relative py-32">
+    <section className="relative py-20 sm:py-32">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/3 top-1/2 h-[400px] w-[400px] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
       </div>
 
-      <div className="relative mx-auto max-w-3xl px-6">
-        <div className="mb-16 text-center">
+      <div className="relative mx-auto max-w-3xl px-4 sm:px-6">
+        <div className="mb-12 text-center sm:mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -62,7 +62,7 @@ export function FaqSection() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               Intrebari frecvente
             </div>
-            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            <h2 className="text-balance text-3xl font-semibold tracking-tight text-white sm:text-5xl">
               Tot ce vrei sa stii
             </h2>
             <p className="mt-4 text-pretty text-base text-white/50 sm:text-lg">

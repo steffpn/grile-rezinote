@@ -12,7 +12,7 @@ const stats = [
 
 export function StatsSection() {
   return (
-    <section className="relative py-28 sm:py-36">
+    <section className="relative py-20 sm:py-36">
       {/* Separator line */}
       <div className="absolute inset-x-0 top-0 mx-auto h-px max-w-4xl bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
 
@@ -21,16 +21,16 @@ export function StatsSection() {
         <div className="h-[300px] w-[700px] rounded-full bg-teal-500/[0.04] blur-[120px]" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6">
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
         <motion.div
-          className="mb-20 text-center"
+          className="mb-14 text-center sm:mb-20"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
           <h2
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
+            className="text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Pregatire bazata pe{" "}
@@ -62,9 +62,9 @@ export function StatsSection() {
                 }}
               />
               {/* Inner glass card */}
-              <div className="relative h-full rounded-2xl bg-[#0a0a10]/90 p-7 text-center backdrop-blur-xl">
+              <div className="relative h-full rounded-2xl bg-[#0a0a10]/90 p-4 text-center backdrop-blur-xl sm:p-7">
                 <div
-                  className="text-4xl font-extrabold tracking-tight sm:text-5xl"
+                  className="text-3xl font-extrabold tracking-tight sm:text-5xl"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
                   <span className="bg-gradient-to-b from-white via-white to-white/50 bg-clip-text text-transparent">

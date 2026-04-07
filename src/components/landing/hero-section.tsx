@@ -32,27 +32,27 @@ export function HeroSection() {
     <section className="relative min-h-screen overflow-hidden">
       <AuroraBackground />
 
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 pt-32 pb-20 lg:grid-cols-12 lg:gap-8 lg:pt-40">
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 pt-28 pb-16 sm:px-6 sm:gap-12 sm:pt-32 sm:pb-20 lg:grid-cols-12 lg:gap-8 lg:pt-40">
         {/* LEFT: text content */}
-        <div className="lg:col-span-7 text-center lg:text-left">
+        <div className="lg:col-span-7 text-center lg:text-left min-w-0">
           {/* Pill badge */}
           <motion.div
             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.08] px-5 py-2 text-sm text-emerald-300 backdrop-blur-sm">
-              <span className="relative flex h-1.5 w-1.5">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.08] px-3 py-1.5 text-[11px] leading-tight text-emerald-300 backdrop-blur-sm sm:px-5 sm:py-2 sm:text-sm">
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
               </span>
-              Platforma de pregatire pentru rezidentiat stomatologie
+              <span className="truncate">Pregatire pentru rezidentiat stomatologie</span>
             </div>
           </motion.div>
 
           {/* Headline — word-by-word reveal */}
           <h1
-            className="mt-8 text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl"
+            className="mt-6 text-[2.25rem] font-extrabold leading-[1.05] tracking-tight sm:mt-8 sm:text-6xl lg:text-7xl xl:text-8xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {headlineWords.map((word, i) => (
@@ -85,7 +85,7 @@ export function HeroSection() {
 
           {/* Subheadline */}
           <motion.p
-            className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/55 sm:text-xl lg:mx-0"
+            className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/55 sm:mt-8 sm:text-xl lg:mx-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.7 }}
@@ -97,16 +97,16 @@ export function HeroSection() {
 
           {/* CTAs */}
           <motion.div
-            className="mt-10 flex flex-col items-center gap-4 sm:flex-row lg:items-start lg:justify-start sm:justify-center"
+            className="mt-8 flex w-full flex-col items-stretch gap-3 sm:mt-10 sm:flex-row sm:items-center sm:justify-center sm:gap-4 lg:items-start lg:justify-start"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.85 }}
           >
-            <Spotlight>
+            <Spotlight className="w-full sm:w-auto">
               <Button
                 size="lg"
                 asChild
-                className="group min-h-[56px] min-w-[220px] rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 border-0 text-base font-semibold text-white shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+                className="group min-h-[52px] w-full sm:w-auto sm:min-w-[220px] rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 border-0 text-base font-semibold text-white shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:brightness-110 active:scale-[0.98] transition-all duration-300"
               >
                 <Link href="/signup">
                   Incepe gratuit
@@ -114,12 +114,12 @@ export function HeroSection() {
                 </Link>
               </Button>
             </Spotlight>
-            <Spotlight>
+            <Spotlight className="w-full sm:w-auto">
               <Button
                 size="lg"
                 variant="outline"
                 asChild
-                className="min-h-[56px] min-w-[220px] rounded-full border-white/15 bg-white/[0.04] text-base text-white/85 backdrop-blur-sm hover:bg-white/[0.08] hover:text-white hover:border-white/25 transition-all duration-300"
+                className="min-h-[52px] w-full sm:w-auto sm:min-w-[220px] rounded-full border-white/15 bg-white/[0.04] text-base text-white/85 backdrop-blur-sm hover:bg-white/[0.08] hover:text-white hover:border-white/25 transition-all duration-300"
               >
                 <Link href="#pricing">Vezi planurile</Link>
               </Button>

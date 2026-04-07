@@ -32,7 +32,7 @@ export function AnswerDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Detalii Raspuns
@@ -54,10 +54,10 @@ export function AnswerDetailDialog({
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 {formatQuestionType(answer.questionType)}
               </p>
-              <p className="mt-1 leading-relaxed">{answer.questionText}</p>
+              <p className="mt-1 break-words leading-relaxed">{answer.questionText}</p>
             </div>
 
-            <div className="flex gap-4 text-sm">
+            <div className="flex flex-col gap-1 text-sm sm:flex-row sm:gap-4">
               <div>
                 <span className="text-muted-foreground">Capitol: </span>
                 <span className="font-medium">{answer.chapterName}</span>

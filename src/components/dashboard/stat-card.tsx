@@ -52,22 +52,22 @@ export function StatCard({
     <GlassCard className={cn("min-h-[120px]", className)} padding="none">
       {/* Optional sparkline in the top-right corner */}
       {sparkline && sparkline.length > 1 && (
-        <div className="pointer-events-none absolute right-3 top-3 opacity-70">
+        <div className="pointer-events-none absolute right-3 top-3 hidden opacity-70 sm:block">
           <Sparkline data={sparkline} width={72} height={28} color="#10b981" />
         </div>
       )}
 
-      <div className="flex items-center gap-4 p-5">
-        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 ring-1 ring-emerald-400/20">
+      <div className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 ring-1 ring-emerald-400/20 sm:h-12 sm:w-12">
           <div className="absolute inset-0 rounded-2xl bg-emerald-500/5 blur-md" />
           <div className="relative">{icon}</div>
         </div>
-        <div className="flex-1 space-y-1">
+        <div className="min-w-0 flex-1 space-y-1">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             {label}
           </p>
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-bold tracking-tight tabular-nums bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <p className="truncate text-xl font-bold tracking-tight tabular-nums bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent sm:text-2xl">
               {parsed.number !== null ? (
                 <AnimatedCounter
                   value={parsed.number}

@@ -81,7 +81,7 @@ export function TrendChart({ data, height = 300 }: TrendChartProps) {
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
     >
-      <ResponsiveContainer width="100%" height={height}>
+      <ResponsiveContainer width="100%" height={height} minWidth={0}>
         <AreaChart data={data} margin={{ top: 10, right: 8, left: -16, bottom: 0 }}>
           <defs>
             <linearGradient id="accuracyFill" x1="0" y1="0" x2="0" y2="1">

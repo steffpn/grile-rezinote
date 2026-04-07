@@ -68,7 +68,7 @@ export function ScoreDistribution({ distribution }: ScoreDistributionProps) {
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
     >
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={300} minWidth={0}>
         <BarChart
           data={distribution}
           margin={{ top: 10, right: 10, left: -10, bottom: 5 }}

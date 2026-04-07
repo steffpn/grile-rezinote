@@ -7,8 +7,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16 text-sm leading-relaxed text-white/80">
-      <h1 className="mb-2 text-3xl font-semibold text-white">Politică de confidențialitate</h1>
+    <main className="mx-auto max-w-3xl px-4 pt-28 pb-16 text-sm leading-relaxed text-white/80 sm:px-6 sm:pt-32">
+      <h1 className="mb-2 text-balance text-2xl font-semibold text-white sm:text-3xl">Politică de confidențialitate</h1>
       <p className="mb-8 text-white/50">Ultima actualizare: aprilie 2026</p>
 
       <section className="space-y-6">

@@ -42,18 +42,18 @@ export default async function PricingPage() {
     : "—"
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl px-4 pt-28 pb-16 sm:px-6 sm:pt-32 lg:px-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">
+        <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
           Alege planul potrivit
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+        <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
           Acces complet la toate grilele si simularile de examen. Pregateste-te
           eficient pentru rezidentiat.
         </p>
       </div>
 
-      <div className="mt-12 grid gap-8 md:grid-cols-2">
+      <div className="mt-10 grid gap-6 sm:mt-12 sm:gap-8 md:grid-cols-2">
         <PricingCard
           name="Lunar"
           price={monthlyPrice}

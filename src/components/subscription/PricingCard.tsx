@@ -41,7 +41,7 @@ export function PricingCard({
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -4 }}
-      className={`relative flex flex-col rounded-lg border p-8 transition-shadow ${
+      className={`relative flex flex-col rounded-lg border p-6 transition-shadow sm:p-8 ${
         popular
           ? "border-primary shadow-lg ring-1 ring-primary hover:shadow-xl hover:shadow-primary/15"
           : "border-border hover:shadow-lg"
@@ -88,7 +88,7 @@ export function PricingCard({
         <button
           type="submit"
           disabled={isPending}
-          className={`w-full rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+          className={`min-h-[44px] w-full rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
             popular
               ? "bg-primary text-primary-foreground hover:bg-primary/90"
               : "bg-secondary text-secondary-foreground hover:bg-secondary/80"

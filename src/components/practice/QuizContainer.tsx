@@ -223,12 +223,13 @@ export function QuizContainer({
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       {/* Top bar */}
-      <div className="sticky top-0 z-30 space-y-2 rounded-b-xl border-b bg-background/95 px-4 pb-3 pt-2 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold tabular-nums">
-            {answeredIds.size}/{questions.length} intrebari raspunse
+      <div className="sticky top-0 z-30 space-y-2 rounded-b-xl border-b bg-background/95 px-3 pb-3 pt-2 backdrop-blur-sm sm:px-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs font-semibold tabular-nums sm:text-sm">
+            <span className="hidden sm:inline">{answeredIds.size}/{questions.length} intrebari raspunse</span>
+            <span className="sm:hidden">{answeredIds.size}/{questions.length} raspunse</span>
           </span>
-          <span className="text-sm font-semibold tabular-nums text-muted-foreground">
+          <span className="text-xs font-semibold tabular-nums text-muted-foreground sm:text-sm">
             {currentIndex + 1} / {questions.length}
           </span>
           <Button
@@ -236,9 +237,9 @@ export function QuizContainer({
             disabled={isCompleting || isPending}
             variant={answeredIds.size === questions.length ? "default" : "outline"}
             size="sm"
-            className="min-h-[44px]"
+            className="min-h-[44px] text-xs sm:text-sm"
           >
-            {isCompleting || isPending ? "Se finalizeaza..." : "Termina testul"}
+            {isCompleting || isPending ? "Se finalizeaza..." : "Termina"}
           </Button>
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">

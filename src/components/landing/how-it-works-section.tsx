@@ -30,13 +30,13 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section className="relative py-32">
+    <section className="relative py-20 sm:py-32">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute right-1/4 top-0 h-[500px] w-[500px] rounded-full bg-teal-500/[0.04] blur-[120px]" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mx-auto mb-20 max-w-2xl text-center">
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mx-auto mb-14 max-w-2xl text-center sm:mb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -47,7 +47,7 @@ export function HowItWorksSection() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               Cum functioneaza
             </div>
-            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            <h2 className="text-balance text-3xl font-semibold tracking-tight text-white sm:text-5xl">
               De la inregistrare la{" "}
               <span className="bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
                 examen promovat

@@ -106,13 +106,13 @@ function HeroVisual() {
 
 export function FeaturesSection() {
   return (
-    <section className="relative py-32">
+    <section className="relative py-20 sm:py-32">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-1/3 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-emerald-500/[0.04] blur-[120px]" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -123,7 +123,7 @@ export function FeaturesSection() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               Tot ce ai nevoie pentru rezidentiat
             </div>
-            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            <h2 className="text-balance text-3xl font-semibold tracking-tight text-white sm:text-5xl">
               Construit pentru{" "}
               <span className="bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
                 rezultate reale
@@ -136,7 +136,7 @@ export function FeaturesSection() {
           </motion.div>
         </div>
 
-        <div className="grid auto-rows-[180px] grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid auto-rows-[auto] grid-cols-1 gap-4 md:auto-rows-[180px] md:grid-cols-4">
           {features.map((f, i) => {
             const Icon = f.icon
             return (

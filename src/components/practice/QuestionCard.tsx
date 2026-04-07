@@ -72,8 +72,8 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
           showResults && feedback && !feedback.isCorrect && "border-red-400 bg-red-50/30 dark:border-red-600 dark:bg-red-950/20"
         )}
       >
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <div className="flex items-center gap-2">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
             <span className="text-lg font-bold tracking-tight">
               Intrebarea {questionNumber}
             </span>
@@ -116,11 +116,11 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
 
         <CardContent className="space-y-4">
           {question.subchapter && (
-            <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/80">
+            <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/80 break-words">
               {question.subchapter}
             </p>
           )}
-          <p className="text-base leading-relaxed">{question.text}</p>
+          <p className="text-base leading-relaxed break-words">{question.text}</p>
 
           <QuestionOptionGroup
             questionType={question.type}

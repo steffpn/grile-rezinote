@@ -112,15 +112,15 @@ export function TestHistoryTable({ data }: TestHistoryTableProps) {
           description="Ajusteaza filtrele sau incepe un test nou pentru a popula istoricul."
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
-          <Table>
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
+          <Table className="min-w-[560px]">
             <TableHeader>
               <TableRow className="border-white/[0.06] hover:bg-transparent">
                 <TableHead className="w-28">Data</TableHead>
                 <TableHead className="w-24">Tip</TableHead>
                 <TableHead className="hidden sm:table-cell">Capitole</TableHead>
                 <TableHead className="w-24 text-center">Intrebari</TableHead>
-                <TableHead className="w-24 text-center">Scor</TableHead>
+                <TableHead className="hidden md:table-cell w-24 text-center">Scor</TableHead>
                 <TableHead className="w-24 text-center">Acuratete</TableHead>
                 <TableHead className="w-16"></TableHead>
               </TableRow>
@@ -169,7 +169,7 @@ export function TestHistoryTable({ data }: TestHistoryTableProps) {
                     <span className="font-medium">{row.correctCount}</span>
                     <span className="text-muted-foreground">/{row.questionCount}</span>
                   </TableCell>
-                  <TableCell className="text-center text-sm">
+                  <TableCell className="hidden md:table-cell text-center text-sm">
                     {row.score != null && row.maxScore != null ? (
                       <>
                         <span className="font-medium">{row.score}</span>

@@ -60,7 +60,7 @@ export function SignupForm() {
             name="name"
             type="text"
             placeholder="Ion Popescu"
-            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20"
+            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-base text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 md:text-base"
             required
           />
           {state?.errors?.name && (
@@ -77,7 +77,7 @@ export function SignupForm() {
             name="email"
             type="email"
             placeholder="exemplu@email.com"
-            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20"
+            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-base text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 md:text-base"
             required
           />
           {state?.errors?.email && (
@@ -95,7 +95,7 @@ export function SignupForm() {
             id="password"
             name="password"
             type="password"
-            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20"
+            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-base text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 md:text-base"
             required
           />
           <p className="text-xs text-white/25">

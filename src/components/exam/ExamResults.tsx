@@ -132,7 +132,7 @@ export function ExamResults({
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <p className="text-5xl font-bold tabular-nums">
+            <p className="text-4xl font-bold tabular-nums sm:text-5xl">
               <NumberTicker value={score} />
               <span className="text-muted-foreground">/{maxScore}</span>
             </p>
@@ -182,7 +182,7 @@ export function ExamResults({
           </div>
 
           {/* Quick stats */}
-          <div className="flex justify-center gap-6 text-sm">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
             <div className="flex items-center gap-1.5">
               <Check className="h-4 w-4 text-green-600" />
               <span>{correctCount} corecte</span>
@@ -199,7 +199,7 @@ export function ExamResults({
           </div>
 
           {/* Time stats */}
-          <div className="flex justify-center gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
               <span>Timp utilizat: {formatDuration(timeTakenSeconds)}</span>

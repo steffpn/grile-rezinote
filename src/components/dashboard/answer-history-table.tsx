@@ -135,8 +135,8 @@ export function AnswerHistoryTable({
           description="Incearca alti termeni de cautare sau alte filtre."
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
-          <Table>
+        <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
+          <Table className="min-w-[480px]">
             <TableHeader>
               <TableRow className="border-white/[0.06] hover:bg-transparent">
                 <TableHead className="w-24">Data</TableHead>
@@ -144,7 +144,7 @@ export function AnswerHistoryTable({
                 <TableHead className="hidden sm:table-cell w-32">
                   Capitol
                 </TableHead>
-                <TableHead className="w-16">Tip</TableHead>
+                <TableHead className="hidden md:table-cell w-16">Tip</TableHead>
                 <TableHead className="w-20">Rezultat</TableHead>
               </TableRow>
             </TableHeader>
@@ -158,7 +158,7 @@ export function AnswerHistoryTable({
                   <TableCell className="text-xs text-muted-foreground">
                     {format(new Date(row.answeredAt), "dd MMM yyyy")}
                   </TableCell>
-                  <TableCell className="max-w-[200px] whitespace-normal">
+                  <TableCell className="min-w-[160px] max-w-[260px] whitespace-normal">
                     <span className="line-clamp-2 text-sm" title={row.questionText}>
                       {row.questionText}
                     </span>
@@ -168,7 +168,7 @@ export function AnswerHistoryTable({
                       {row.chapterName}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Badge variant="outline" className="text-xs">
                       {formatQuestionType(row.questionType)}
                     </Badge>

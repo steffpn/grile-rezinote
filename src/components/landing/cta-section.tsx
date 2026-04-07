@@ -9,14 +9,14 @@ export function CtaSection() {
   const reduce = useReducedMotion()
 
   return (
-    <section className="relative px-6 py-32">
+    <section className="relative px-4 py-20 sm:px-6 sm:py-32">
       <div className="relative mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
-          className="relative overflow-hidden rounded-[2.5rem] border border-white/[0.08]"
+          className="relative overflow-hidden rounded-3xl border border-white/[0.08] sm:rounded-[2.5rem]"
         >
           {/* Multi-layer gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-teal-600/15 to-cyan-600/20" />
@@ -69,7 +69,7 @@ export function CtaSection() {
           />
 
           {/* Content */}
-          <div className="relative px-6 py-24 text-center sm:px-12 sm:py-32">
+          <div className="relative px-5 py-16 text-center sm:px-12 sm:py-32">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -86,7 +86,7 @@ export function CtaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.25 }}
-              className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-6xl"
+              className="text-balance text-3xl font-semibold tracking-tight text-white sm:text-6xl"
             >
               Pregateste-te ca un{" "}
               <span className="bg-gradient-to-r from-emerald-200 via-teal-100 to-cyan-200 bg-clip-text text-transparent">
@@ -115,7 +115,7 @@ export function CtaSection() {
               <Button
                 asChild
                 size="lg"
-                className="group h-14 rounded-full bg-white px-8 text-base font-semibold text-emerald-900 shadow-xl shadow-emerald-500/20 hover:bg-emerald-50"
+                className="group min-h-[52px] w-full max-w-[320px] rounded-full bg-white px-8 text-base font-semibold text-emerald-900 shadow-xl shadow-emerald-500/20 hover:bg-emerald-50 sm:h-14 sm:w-auto"
               >
                 <Link href="/register">
                   Incepe gratuit

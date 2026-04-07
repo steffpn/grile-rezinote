@@ -81,12 +81,12 @@ export function Marquee({ className }: { className?: string }) {
   const row = [...testimonials, ...testimonials]
 
   return (
-    <section className={cn("relative overflow-hidden py-20", className)}>
+    <section className={cn("relative w-full max-w-full overflow-x-hidden py-14 sm:py-20", className)}>
       {/* Edge fades */}
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-32 bg-gradient-to-r from-black to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-32 bg-gradient-to-l from-black to-transparent" />
 
-      <div className="mx-auto mb-12 max-w-3xl px-6 text-center">
+      <div className="mx-auto mb-10 max-w-3xl px-4 text-center sm:mb-12 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
