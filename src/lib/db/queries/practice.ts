@@ -22,8 +22,8 @@ export async function getChaptersForPractice() {
     .where(isNull(chapters.archivedAt))
     .orderBy(asc(chapters.sortOrder))
 
-  // Get question counts per chapter (non-archived questions only)
-  const stats = await db
+  // Per-chapter total question count
+  const totals = await db
     .select({
       chapterId: questions.chapterId,
       questionCount: sql<number>`count(*)::int`,
@@ -31,16 +31,41 @@ export async function getChaptersForPractice() {
     .from(questions)
     .where(isNull(questions.archivedAt))
     .groupBy(questions.chapterId)
+  const totalsMap = new Map(totals.map((s) => [s.chapterId, s.questionCount]))
 
-  const statsMap = new Map(
-    stats.map((s) => [s.chapterId, s.questionCount])
-  )
+  // Per-(chapter, subchapter) breakdown
+  const subRows = await db
+    .select({
+      chapterId: questions.chapterId,
+      subchapter: questions.subchapter,
+      questionCount: sql<number>`count(*)::int`,
+    })
+    .from(questions)
+    .where(isNull(questions.archivedAt))
+    .groupBy(questions.chapterId, questions.subchapter)
+
+  const subsByChapter = new Map<
+    string,
+    Array<{ name: string; questionCount: number }>
+  >()
+  for (const row of subRows) {
+    if (!row.subchapter) continue
+    if (!subsByChapter.has(row.chapterId)) subsByChapter.set(row.chapterId, [])
+    subsByChapter.get(row.chapterId)!.push({
+      name: row.subchapter,
+      questionCount: row.questionCount,
+    })
+  }
+  for (const list of subsByChapter.values()) {
+    list.sort((a, b) => a.name.localeCompare(b.name, "ro"))
+  }
 
   return chapterList.map((ch) => ({
     id: ch.id,
     name: ch.name,
     sortOrder: ch.sortOrder,
-    questionCount: statsMap.get(ch.id) ?? 0,
+    questionCount: totalsMap.get(ch.id) ?? 0,
+    subchapters: subsByChapter.get(ch.id) ?? [],
   }))
 }
 

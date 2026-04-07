@@ -5,6 +5,10 @@ export const practiceConfigSchema = z.object({
   chapterIds: z
     .array(z.string().uuid())
     .min(1, "Selecteaza cel putin un capitol"),
+  // Optional subchapter filter — if provided, the practice draws only from
+  // questions whose subchapter is one of these strings (within the selected
+  // chapters). Empty array = no subchapter restriction.
+  subchapters: z.array(z.string().min(1).max(200)).optional().default([]),
   questionCount: z
     .number()
     .int()

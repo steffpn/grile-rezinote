@@ -104,6 +104,7 @@ export async function createPracticeAttempt(formData: FormData) {
   const rawData = {
     type: formData.get("type") as string,
     chapterIds: JSON.parse((formData.get("chapterIds") as string) || "[]"),
+    subchapters: JSON.parse((formData.get("subchapters") as string) || "[]"),
     questionCount: parseInt(formData.get("questionCount") as string, 10),
     feedbackMode: formData.get("feedbackMode") as string,
     wrongAnswersOnly: formData.get("wrongAnswersOnly") === "true",
@@ -153,6 +154,7 @@ export async function createPracticeAttempt(formData: FormData) {
       WHERE mc.is_mastered = false
         AND q.archived_at IS NULL
         ${config.chapterIds.length > 0 ? sql`AND q.chapter_id IN (${sql.join(config.chapterIds.map((id) => sql`${id}`), sql`, `)})` : sql``}
+        ${config.subchapters && config.subchapters.length > 0 ? sql`AND q.subchapter IN (${sql.join(config.subchapters.map((s) => sql`${s}`), sql`, `)})` : sql``}
     `
 
     const wrongResults = await db.execute(wrongAnswerQuery)
@@ -160,16 +162,19 @@ export async function createPracticeAttempt(formData: FormData) {
       (r) => r.question_id
     )
   } else {
-    // Get questions from selected chapters
+    // Get questions from selected chapters (and optionally restricted to
+    // a chosen set of subchapters within those chapters).
+    const baseConds = [
+      inArray(questions.chapterId, config.chapterIds),
+      isNull(questions.archivedAt),
+    ]
+    if (config.subchapters && config.subchapters.length > 0) {
+      baseConds.push(inArray(questions.subchapter, config.subchapters))
+    }
     const eligibleQuestions = await db
       .select({ id: questions.id, chapterId: questions.chapterId })
       .from(questions)
-      .where(
-        and(
-          inArray(questions.chapterId, config.chapterIds),
-          isNull(questions.archivedAt)
-        )
-      )
+      .where(and(...baseConds))
 
     // Group by chapter for proportional distribution
     const byChapter = new Map<string, string[]>()

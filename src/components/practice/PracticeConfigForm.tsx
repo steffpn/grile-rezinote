@@ -22,6 +22,7 @@ interface Chapter {
   id: string
   name: string
   questionCount: number
+  subchapters?: { name: string; questionCount: number }[]
 }
 
 interface PracticeConfigFormProps {
@@ -34,6 +35,7 @@ export function PracticeConfigForm({
   wrongAnswerCount = 0,
 }: PracticeConfigFormProps) {
   const [selectedChapterIds, setSelectedChapterIds] = useState<string[]>([])
+  const [selectedSubchapters, setSelectedSubchapters] = useState<string[]>([])
   const [questionCount, setQuestionCount] = useState("20")
   const [feedbackMode, setFeedbackMode] = useState("deferred")
   const [wrongAnswersOnly, setWrongAnswersOnly] = useState(false)
@@ -48,7 +50,16 @@ export function PracticeConfigForm({
 
   const selectedQuestionCount = chapters
     .filter((ch) => selectedChapterIds.includes(ch.id))
-    .reduce((sum, ch) => sum + ch.questionCount, 0)
+    .reduce((sum, ch) => {
+      const subs = ch.subchapters ?? []
+      const picked = subs.filter((s) => selectedSubchapters.includes(s.name))
+      return (
+        sum +
+        (picked.length > 0
+          ? picked.reduce((a, s) => a + s.questionCount, 0)
+          : ch.questionCount)
+      )
+    }, 0)
 
   const effectiveCount = wrongAnswersOnly
     ? wrongAnswerCount
@@ -66,6 +77,11 @@ export function PracticeConfigForm({
         type="hidden"
         name="chapterIds"
         value={JSON.stringify(selectedChapterIds)}
+      />
+      <input
+        type="hidden"
+        name="subchapters"
+        value={JSON.stringify(selectedSubchapters)}
       />
       <input
         type="hidden"
@@ -112,6 +128,8 @@ export function PracticeConfigForm({
               chapters={chapters}
               selectedIds={selectedChapterIds}
               onChange={setSelectedChapterIds}
+              selectedSubchapters={selectedSubchapters}
+              onChangeSubchapters={setSelectedSubchapters}
             />
           </CardContent>
         </Card>

@@ -2,15 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, BookOpen, TrendingUp, History, ClipboardList, Trophy, Menu } from "lucide-react"
+import { BarChart3, BookOpen, TrendingUp, History, ClipboardList, Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import { useState } from "react"
 
 const navItems = [
   { href: "/dashboard/overview", label: "Sumar", icon: BarChart3 },
@@ -50,24 +43,38 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function DashboardSidebar() {
-  const [open, setOpen] = useState(false)
+  const pathname = usePathname()
 
   return (
     <>
-      {/* Mobile: Sheet-based sidebar */}
-      <div className="lg:hidden">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Meniu navigare</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64 pt-10">
-            <NavLinks onNavigate={() => setOpen(false)} />
-          </SheetContent>
-        </Sheet>
-      </div>
+      {/* Mobile: horizontal scrollable tab strip */}
+      <nav
+        className="lg:hidden -mx-4 mb-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label="Dashboard sections"
+      >
+        <ul className="flex min-w-max items-center gap-2 py-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href
+            const Icon = item.icon
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "inline-flex min-h-[40px] items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-medium transition-colors",
+                    isActive
+                      ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                      : "border-white/[0.06] bg-white/[0.02] text-muted-foreground hover:border-white/10 hover:text-foreground"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {item.label}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
 
       {/* Desktop: Fixed sidebar */}
       <aside className="hidden lg:block w-60 shrink-0">
