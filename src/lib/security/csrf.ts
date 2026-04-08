@@ -35,9 +35,13 @@ export async function assertSameOrigin(): Promise<void> {
 
   const allowedHosts = new Set<string>([host])
   // Optional: allow an env-supplied app URL too (useful in preview deployments).
-  if (process.env.NEXT_PUBLIC_APP_URL) {
+  const envAppUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.AUTH_URL
+  if (envAppUrl) {
     try {
-      allowedHosts.add(new URL(process.env.NEXT_PUBLIC_APP_URL).host)
+      allowedHosts.add(new URL(envAppUrl).host)
     } catch {
       // ignore malformed env
     }

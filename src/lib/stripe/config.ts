@@ -1,3 +1,5 @@
+import { getAppUrl } from "@/lib/env-url"
+
 export const STRIPE_CONFIG = {
   monthlyPriceId: process.env.STRIPE_MONTHLY_PRICE_ID!,
   annualPriceId: process.env.STRIPE_ANNUAL_PRICE_ID!,
@@ -5,9 +7,9 @@ export const STRIPE_CONFIG = {
   // TODO PRE-PROD: revert to 7 days before production launch (currently extended for testing)
   trialDays: 45,
   get successUrl() {
-    return `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`
+    return `${getAppUrl() ?? ""}/checkout/success`
   },
   get cancelUrl() {
-    return `${process.env.NEXT_PUBLIC_APP_URL}/pricing`
+    return `${getAppUrl() ?? ""}/pricing`
   },
 } as const

@@ -9,17 +9,19 @@ import { hasUsedTrialBefore } from "@/lib/subscription/trial"
 import { STRIPE_CONFIG } from "@/lib/stripe/config"
 
 // =============================================================================
-// TODO PRE-PROD (Google OAuth):
-// Before going live on the production domain (e.g. rezinot.ro), you MUST:
-//   1. Add the production origin to "Authorized JavaScript origins" in the
-//      Google Cloud Console OAuth client (currently only the Railway URL is
-//      configured).
-//   2. Add the production callback URL to "Authorized redirect URIs":
-//        https://<prod-domain>/api/auth/callback/google
-//   3. Set the AUTH_URL env var on the production host to the production
-//      origin so NextAuth generates the correct callback during sign-in.
-//   4. Move the Google OAuth consent screen from "Testing" to "Production"
-//      so users outside the test list can sign in.
+// Production domain: https://www.grile-rezinote.ro
+// Google OAuth is configured with:
+//   - Authorized JavaScript origins: https://www.grile-rezinote.ro
+//   - Authorized redirect URIs:      https://www.grile-rezinote.ro/api/auth/callback/google
+// Required env on the host (Railway):
+//   - AUTH_URL=https://www.grile-rezinote.ro
+//   - AUTH_TRUST_HOST=true
+//   - AUTH_SECRET=<random 32+>
+//   - NEXT_PUBLIC_SITE_URL=https://www.grile-rezinote.ro (used by Stripe + CSRF)
+//   - GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+// TODO BEFORE PUBLIC LAUNCH:
+//   - Publish the Google OAuth consent screen (Testing -> Production) so
+//     users outside the test list can sign in.
 // =============================================================================
 
 export const authConfig: NextAuthConfig = {
