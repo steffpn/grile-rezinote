@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, LogOut, GraduationCap } from "lucide-react"
+import { Menu, X, LogOut, GraduationCap, BookOpen } from "lucide-react"
+
+const REFERENCE_BOOKS_URL = "https://rezidentiat-medicina-dentara.ro/"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/shared/theme-toggle"
 import { logout } from "@/lib/auth/actions"
@@ -48,6 +50,21 @@ export function NavHeader({
               <Link href={link.href}>{link.label}</Link>
             </Button>
           ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+            asChild
+          >
+            <a
+              href={REFERENCE_BOOKS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <BookOpen className="mr-1.5 h-4 w-4" />
+              Bibliografie
+            </a>
+          </Button>
           <ThemeToggle />
           {userEmail && (
             <>
@@ -104,6 +121,22 @@ export function NavHeader({
                 <Link href={link.href}>{link.label}</Link>
               </Button>
             ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="justify-start rounded-lg text-emerald-600 dark:text-emerald-400"
+              asChild
+              onClick={() => setMobileOpen(false)}
+            >
+              <a
+                href={REFERENCE_BOOKS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                Bibliografie
+              </a>
+            </Button>
             {userEmail && (
               <>
                 <div className="my-2 border-t border-border/50" />
