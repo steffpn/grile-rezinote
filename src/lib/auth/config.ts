@@ -186,4 +186,37 @@ export const authConfig: NextAuthConfig = {
     },
   },
   trustHost: true,
+  // Force secure cookies in production (Railway is behind an HTTPS proxy).
+  // Also pin sameSite=lax so the OAuth redirect back from Google can attach
+  // the PKCE cookie — the default "strict" eats the cookie on cross-site
+  // redirects and causes pkceCodeVerifier parse errors.
+  useSecureCookies: process.env.NODE_ENV === "production",
+  cookies: {
+    pkceCodeVerifier: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.pkce.code_verifier"
+          : "authjs.pkce.code_verifier",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 15,
+      },
+    },
+    state: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.state"
+          : "authjs.state",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 15,
+      },
+    },
+  },
 }

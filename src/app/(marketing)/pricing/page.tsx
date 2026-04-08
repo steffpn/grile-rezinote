@@ -15,7 +15,10 @@ const features = [
 // in the client bundle, so a tampered client cannot misrepresent pricing.
 export const revalidate = 3600 // refresh hourly
 
-async function fetchPrice(priceId: string) {
+async function fetchPrice(priceId: string | undefined) {
+  // Fail-closed: if the env var is missing or the Stripe key is not set,
+  // skip the network call entirely so the build/SSR render doesn't crash.
+  if (!priceId || !process.env.STRIPE_SECRET_KEY) return null
   try {
     const price = await stripe.prices.retrieve(priceId)
     if (!price.unit_amount) return null
@@ -24,7 +27,8 @@ async function fetchPrice(priceId: string) {
       currency: price.currency.toUpperCase(),
       interval: price.recurring?.interval ?? null,
     }
-  } catch {
+  } catch (err) {
+    console.error("[pricing] stripe.prices.retrieve failed:", err)
     return null
   }
 }
