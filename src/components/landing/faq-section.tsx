@@ -26,8 +26,8 @@ const faqs: Faq[] = [
     a: "Da. Banca de intrebari este revizuita constant de echipa noastra in pas cu programa oficiala de rezidentiat si cu schimbarile anuale ale Ministerului Sanatatii.",
   },
   {
-    q: "Pot folosi platforma pe telefon, fara internet?",
-    a: "Absolut. Aplicatia este o PWA (Progressive Web App) si poate fi instalata direct pe iOS sau Android. Odata instalata, poti rezolva grile chiar si offline.",
+    q: "Pot folosi platforma pe telefon?",
+    a: "Da. Aplicatia este o PWA (Progressive Web App) si poate fi instalata direct pe iOS sau Android, cu o experienta fluenta, optimizata pentru mobil. Pentru a rezolva grile si a-ti sincroniza progresul ai nevoie de conexiune la internet.",
   },
   {
     q: "Cat de aproape sunt simularile de examenul real?",

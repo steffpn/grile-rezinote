@@ -40,7 +40,7 @@ const testimonials: Testimonial[] = [
     name: "Razvan M.",
     role: "Rezident anul II",
     initials: "RM",
-    text: "Modul offline a fost salvarea mea in metroul de Bucuresti. Rezolvam grile in fiecare zi, fara intreruperi.",
+    text: "Aplicatia instalata pe telefon m-a salvat in metroul de Bucuresti. Rezolvam grile in fiecare zi, direct de pe mobil.",
   },
   {
     name: "Elena S.",

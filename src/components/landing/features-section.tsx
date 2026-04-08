@@ -6,7 +6,7 @@ import {
   BarChart3,
   Users,
   Timer,
-  WifiOff,
+  Smartphone,
   Lightbulb,
 } from "lucide-react"
 import { BentoCard } from "./bento-card"
@@ -43,9 +43,9 @@ const features = [
     hero: false,
   },
   {
-    icon: WifiOff,
-    title: "Mod offline (PWA)",
-    description: "Instaleaza aplicatia si invata oriunde, chiar si fara internet.",
+    icon: Smartphone,
+    title: "Aplicatie mobila (PWA)",
+    description: "Instaleaza aplicatia pe iOS sau Android cu un singur tap, direct din browser.",
     span: "md:col-span-2",
     hero: false,
   },
