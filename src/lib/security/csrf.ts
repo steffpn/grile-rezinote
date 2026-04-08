@@ -1,4 +1,5 @@
 import { headers } from "next/headers"
+import { getAppUrl } from "@/lib/env-url"
 
 /**
  * Defense-in-depth CSRF check for server actions and route handlers.
@@ -35,10 +36,7 @@ export async function assertSameOrigin(): Promise<void> {
 
   const allowedHosts = new Set<string>([host])
   // Optional: allow an env-supplied app URL too (useful in preview deployments).
-  const envAppUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.AUTH_URL
+  const envAppUrl = getAppUrl()
   if (envAppUrl) {
     try {
       allowedHosts.add(new URL(envAppUrl).host)
