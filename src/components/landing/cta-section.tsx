@@ -78,7 +78,7 @@ export function CtaSection() {
               className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-4 py-1.5 text-xs font-medium text-white backdrop-blur-md"
             >
               <Sparkles className="h-3.5 w-3.5 text-emerald-200" />
-              45 de zile gratuite, fara card
+              Plan FREE gratuit &middot; 7 zile trial PRO
             </motion.div>
 
             <motion.h2
@@ -117,7 +117,7 @@ export function CtaSection() {
                 size="lg"
                 className="group min-h-[52px] w-full max-w-[320px] rounded-full bg-white px-8 text-base font-semibold text-emerald-900 shadow-xl shadow-emerald-500/20 hover:bg-emerald-50 sm:h-14 sm:w-auto"
               >
-                <Link href="/register">
+                <Link href="/signup">
                   Incepe gratuit
                   <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>

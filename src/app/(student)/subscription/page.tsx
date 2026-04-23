@@ -13,13 +13,10 @@ export default async function SubscriptionPage() {
     redirect("/login")
   }
 
-  const details = await getSubscriptionDetails(session.user.id)
-  const access = await checkSubscriptionAccess(session.user.id)
-
-  // No subscription record at all — go to pricing
-  if (!details) {
-    redirect("/pricing")
-  }
+  const [details, access] = await Promise.all([
+    getSubscriptionDetails(session.user.id),
+    checkSubscriptionAccess(session.user.id),
+  ])
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -27,17 +24,19 @@ export default async function SubscriptionPage() {
 
       <div className="space-y-6">
         <SubscriptionStatus
-          status={details.status}
-          planType={details.planType}
-          currentPeriodEnd={details.currentPeriodEnd}
-          cancelAtPeriodEnd={details.cancelAtPeriodEnd}
+          status={details?.status ?? "inactive"}
+          tier={access.tier}
+          planType={details?.planType ?? null}
+          currentPeriodEnd={details?.currentPeriodEnd ?? null}
+          cancelAtPeriodEnd={details?.cancelAtPeriodEnd ?? false}
           trialDaysRemaining={access.trialDaysRemaining}
         />
 
         <ManageSubscription
-          status={details.status}
-          planType={details.planType}
-          cancelAtPeriodEnd={details.cancelAtPeriodEnd}
+          status={details?.status ?? "inactive"}
+          tier={access.tier}
+          planType={details?.planType ?? null}
+          cancelAtPeriodEnd={details?.cancelAtPeriodEnd ?? false}
         />
 
         <div className="text-center text-sm text-muted-foreground">

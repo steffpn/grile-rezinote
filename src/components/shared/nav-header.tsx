@@ -2,17 +2,20 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, LogOut, GraduationCap, BookOpen } from "lucide-react"
+import {
+  Menu,
+  X,
+  LogOut,
+  GraduationCap,
+  BookOpen,
+  Lock,
+} from "lucide-react"
 
 const REFERENCE_BOOKS_URL = "https://rezidentiat-medicina-dentara.ro/"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/shared/theme-toggle"
 import { logout } from "@/lib/auth/actions"
-
-interface NavLink {
-  href: string
-  label: string
-}
+import type { NavLink } from "@/components/shared/app-shell"
 
 interface NavHeaderProps {
   links?: NavLink[]
@@ -22,6 +25,22 @@ interface NavHeaderProps {
 const defaultLinks: NavLink[] = [
   { href: "/dashboard", label: "Dashboard" },
 ]
+
+function LockBadge({ tier }: { tier: string }) {
+  const isPremium = tier === "PREMIUM"
+  return (
+    <span
+      className={`ml-1.5 inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+        isPremium
+          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+          : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+      }`}
+    >
+      <Lock className="h-2.5 w-2.5" />
+      {tier}
+    </span>
+  )
+}
 
 export function NavHeader({
   links = defaultLinks,
@@ -33,21 +52,37 @@ export function NavHeader({
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href={userEmail ? "/dashboard" : "/"} className="flex items-center gap-2 text-lg font-bold">
+        <Link
+          href={userEmail ? "/dashboard" : "/"}
+          className="flex items-center gap-2 text-lg font-bold"
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
             <GraduationCap className="h-5 w-5 text-white" />
           </div>
           <span>
             <span className="text-foreground">Rezi</span>
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">NOTE</span>
+            <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">
+              NOTE
+            </span>
           </span>
         </Link>
 
         {/* Desktop navigation */}
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((link) => (
-            <Button key={link.href} variant="ghost" size="sm" className="rounded-full" asChild>
-              <Link href={link.href}>{link.label}</Link>
+            <Button
+              key={link.href}
+              variant="ghost"
+              size="sm"
+              className="rounded-full"
+              asChild
+            >
+              <Link href={link.href} className="flex items-center">
+                {link.label}
+                {link.locked && link.requiredTier && (
+                  <LockBadge tier={link.requiredTier} />
+                )}
+              </Link>
             </Button>
           ))}
           <Button
@@ -72,7 +107,12 @@ export function NavHeader({
                 {userEmail}
               </span>
               <form action={logout}>
-                <Button variant="ghost" size="sm" className="rounded-full text-muted-foreground hover:text-destructive" type="submit">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full text-muted-foreground hover:text-destructive"
+                  type="submit"
+                >
                   <LogOut className="mr-1 h-4 w-4" />
                   Iesi
                 </Button>
@@ -80,7 +120,11 @@ export function NavHeader({
             </>
           )}
           {!userEmail && (
-            <Button size="sm" className="rounded-full gradient-primary border-0 text-white shadow-md hover:shadow-lg transition-shadow" asChild>
+            <Button
+              size="sm"
+              className="rounded-full gradient-primary border-0 text-white shadow-md hover:shadow-lg transition-shadow"
+              asChild
+            >
               <Link href="/login">Autentificare</Link>
             </Button>
           )}
@@ -118,7 +162,12 @@ export function NavHeader({
                 asChild
                 onClick={() => setMobileOpen(false)}
               >
-                <Link href={link.href}>{link.label}</Link>
+                <Link href={link.href} className="flex items-center">
+                  <span className="flex-1">{link.label}</span>
+                  {link.locked && link.requiredTier && (
+                    <LockBadge tier={link.requiredTier} />
+                  )}
+                </Link>
               </Button>
             ))}
             <Button

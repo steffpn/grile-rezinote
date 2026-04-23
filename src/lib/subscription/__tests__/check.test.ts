@@ -74,6 +74,7 @@ vi.mock("@/lib/db/schema", () => ({
     currentPeriodEnd: "current_period_end",
     cancelAtPeriodEnd: "cancel_at_period_end",
     planType: "plan_type",
+    planTier: "plan_tier",
   },
   users: {
     id: "id",
@@ -112,6 +113,7 @@ describe("checkSubscriptionAccess", () => {
         currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: false,
         planType: "monthly",
+        planTier: "PRO",
       },
     ])
     vi.mocked(db.select).mockReturnValue(chain as never)
@@ -121,6 +123,7 @@ describe("checkSubscriptionAccess", () => {
     expect(result.hasAccess).toBe(true)
     expect(result.status).toBe("active")
     expect(result.planType).toBe("monthly")
+    expect(result.tier).toBe("PRO")
   })
 
   it("returns trialing for user with active Stripe trial", async () => {
@@ -132,6 +135,7 @@ describe("checkSubscriptionAccess", () => {
         currentPeriodEnd: trialEnd,
         cancelAtPeriodEnd: false,
         planType: null,
+        planTier: "PRO",
       },
     ])
     vi.mocked(db.select).mockReturnValue(subChain as never)
@@ -159,7 +163,10 @@ describe("checkSubscriptionAccess", () => {
     expect(result.status).toBe("trial_available")
   })
 
-  it("returns expired for user whose trial has expired", async () => {
+  it("returns expired (as FREE tier) for user whose trial has expired", async () => {
+    // Semantic change: expired trial no longer locks the user out. They drop
+    // to the FREE tier (20 questions/day) and hasAccess stays true. Feature
+    // gating is done per-tier, not via hasAccess anymore.
     const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)
     const subChain = createMockChain([])
     const userChain = createMockChain([{ trialStartedAt: tenDaysAgo }])
@@ -170,8 +177,9 @@ describe("checkSubscriptionAccess", () => {
 
     const result = await checkSubscriptionAccess("user-4")
 
-    expect(result.hasAccess).toBe(false)
+    expect(result.hasAccess).toBe(true)
     expect(result.status).toBe("expired")
+    expect(result.tier).toBe("FREE")
   })
 
   it("returns trialing for user in active server-side trial", async () => {

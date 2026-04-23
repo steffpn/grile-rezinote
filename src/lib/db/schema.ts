@@ -26,6 +26,10 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "inactive",
 ])
 
+// Product tier (feature level). Independent of billing cycle (monthly/annual).
+// FREE is the implicit default for users without an active paid subscription.
+export const planTierEnum = pgEnum("plan_tier", ["FREE", "PRO", "PREMIUM"])
+
 // Tables
 
 export const users = pgTable("users", {
@@ -150,7 +154,10 @@ export const subscriptions = pgTable("subscriptions", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   status: subscriptionStatusEnum("status").notNull().default("inactive"),
-  planType: text("plan_type"), // 'monthly' | 'annual'
+  // Product tier — what features are unlocked. Defaults to FREE until a Stripe
+  // webhook promotes the row to PRO/PREMIUM based on the purchased price ID.
+  planTier: planTierEnum("plan_tier").notNull().default("FREE"),
+  planType: text("plan_type"), // billing cycle: 'monthly' | 'annual'
   cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
   currentPeriodEnd: timestamp("current_period_end"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

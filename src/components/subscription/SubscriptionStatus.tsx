@@ -1,5 +1,8 @@
+import type { PlanTier } from "@/lib/subscription/tiers"
+
 interface SubscriptionStatusProps {
   status: string
+  tier: PlanTier
   planType: string | null
   currentPeriodEnd: Date | null
   cancelAtPeriodEnd: boolean
@@ -24,6 +27,7 @@ function StatusBadge({ status }: { status: string }) {
       "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
     expired: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
     inactive: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+    free: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   }
 
   const labels: Record<string, string> = {
@@ -32,6 +36,7 @@ function StatusBadge({ status }: { status: string }) {
     cancelling: "Se anuleaza",
     expired: "Expirat",
     inactive: "Inactiv",
+    free: "Free",
   }
 
   return (
@@ -43,33 +48,58 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
+function TierBadge({ tier }: { tier: PlanTier }) {
+  const styles: Record<PlanTier, string> = {
+    FREE: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+    PRO: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+    PREMIUM:
+      "bg-gradient-to-r from-amber-200 to-yellow-300 text-amber-900 dark:from-amber-700 dark:to-yellow-800 dark:text-amber-100",
+  }
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold tracking-wide ${styles[tier]}`}
+    >
+      {tier}
+    </span>
+  )
+}
+
 export function SubscriptionStatus({
   status,
+  tier,
   planType,
   currentPeriodEnd,
   cancelAtPeriodEnd,
   trialDaysRemaining,
 }: SubscriptionStatusProps) {
-  const displayStatus = cancelAtPeriodEnd && status === "active"
-    ? "cancelling"
-    : status === "cancelled"
-      ? "expired"
-      : status
+  const displayStatus =
+    tier === "FREE" && status !== "trialing"
+      ? "free"
+      : cancelAtPeriodEnd && status === "active"
+        ? "cancelling"
+        : status === "cancelled"
+          ? "expired"
+          : status
 
-  const planLabel = planType === "annual" ? "Anual" : planType === "monthly" ? "Lunar" : null
+  const cycleLabel =
+    planType === "annual" ? "Anual" : planType === "monthly" ? "Lunar" : null
 
   return (
     <div className="rounded-lg border bg-card p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-lg font-semibold">Starea abonamentului</h3>
-        <StatusBadge status={displayStatus} />
+        <div className="flex items-center gap-2">
+          <TierBadge tier={tier} />
+          <StatusBadge status={displayStatus} />
+        </div>
       </div>
 
       <div className="mt-4 space-y-3">
-        {planLabel && (
+        {cycleLabel && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Plan</span>
-            <span className="font-medium">{planLabel}</span>
+            <span className="text-muted-foreground">Ciclu de facturare</span>
+            <span className="font-medium">{cycleLabel}</span>
           </div>
         )}
 
@@ -97,17 +127,27 @@ export function SubscriptionStatus({
       {cancelAtPeriodEnd && currentPeriodEnd && (
         <div className="mt-4 rounded-md bg-orange-50 p-3 text-sm text-orange-700 dark:bg-orange-950 dark:text-orange-300">
           Abonamentul se va anula pe {formatDate(currentPeriodEnd)}. Vei avea
-          acces pana atunci.
+          acces pana atunci, apoi contul va trece pe planul FREE.
         </div>
       )}
 
-      {displayStatus === "expired" && (
+      {tier === "FREE" && status !== "trialing" && (
+        <div className="mt-4 rounded-md bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+          Esti pe planul FREE (20 intrebari/zi).{" "}
+          <a href="/pricing" className="font-medium underline">
+            Activeaza PRO sau PREMIUM
+          </a>{" "}
+          pentru acces complet.
+        </div>
+      )}
+
+      {displayStatus === "expired" && tier !== "FREE" && (
         <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
           Abonamentul tau a expirat.{" "}
           <a href="/pricing" className="font-medium underline">
             Reaboneaza-te
           </a>{" "}
-          pentru a continua sa folosesti platforma.
+          pentru a recupera accesul.
         </div>
       )}
     </div>

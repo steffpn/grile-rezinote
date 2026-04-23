@@ -19,7 +19,40 @@ interface Faq {
 const faqs: Faq[] = [
   {
     q: "Cat costa accesul la platforma?",
-    a: "Primesti 45 de zile complet gratuite, fara sa introduci niciun card. Dupa perioada de proba, abonamentul este accesibil si poate fi anulat oricand din contul tau.",
+    a: (
+      <>
+        Ai 3 planuri:{" "}
+        <strong>FREE</strong> (gratuit pentru totdeauna, 20 intrebari/zi),{" "}
+        <strong>PRO la 119 RON/luna</strong> (grile nelimitate, simulari,
+        greselile tale, dashboard de progres) si{" "}
+        <strong>PREMIUM la 179 RON/luna</strong> (tot din PRO + analiza pe
+        capitole si subcapitole, clasamente, modul Admitere cu estimarea
+        sanselor). La plata anuala primesti 20% reducere. La primul abonament
+        ai 7 zile de trial gratuit.
+      </>
+    ),
+  },
+  {
+    q: "Care e diferenta intre FREE, PRO si PREMIUM?",
+    a: (
+      <>
+        <strong>FREE</strong>: 20 de intrebari pe zi pe capitole, fara simulari
+        si fara statistici. Bun pentru a te familiariza cu platforma.
+        <br />
+        <strong>PRO</strong>: grile nelimitate, simulari cu cronometru real,
+        istoric complet, &bdquo;Greselile mele&rdquo; si dashboard cu progres
+        general. Ideal pentru pregatirea serioasa.
+        <br />
+        <strong>PREMIUM</strong>: tot din PRO + analiza detaliata pe capitole
+        si subcapitole, clasamente anonime intre utilizatori, modulul Admitere
+        cu estimarea sanselor de admitere bazata pe scorurile tale. Pentru cei
+        care vor un avantaj competitiv real.
+      </>
+    ),
+  },
+  {
+    q: "Cum functioneaza trial-ul de 7 zile?",
+    a: "La primul abonament PRO sau PREMIUM primesti automat 7 zile gratuite, fara obligatie. In aceste 7 zile ai acces la toate functiile PRO. Daca anulezi inainte de final, nu platesti nimic. Trial-ul se acorda o singura data pe cont.",
   },
   {
     q: "Grilele sunt actualizate dupa programa oficiala?",
@@ -35,7 +68,7 @@ const faqs: Faq[] = [
   },
   {
     q: "Pot sa imi compar progresul cu al colegilor?",
-    a: "Da. Vei vedea percentile anonime pentru fiecare simulare si pozitia ta in topul general, fara sa expui datele tale personale.",
+    a: "Da, cu planul PREMIUM. Vei vedea percentile anonime pentru fiecare simulare, pozitia ta in clasamentul general si distributia scorurilor, toate complet anonime. Participarea e opt-in.",
   },
   {
     q: "Cum functioneaza explicatiile detaliate?",

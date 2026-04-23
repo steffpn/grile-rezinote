@@ -4,6 +4,7 @@ import { FeaturesSection } from "@/components/landing/features-section"
 import { Marquee } from "@/components/landing/marquee"
 import { HowItWorksSection } from "@/components/landing/how-it-works-section"
 import { StatsSection } from "@/components/landing/stats-section"
+import { PricingPreview } from "@/components/landing/pricing-preview"
 import { FaqSection } from "@/components/landing/faq-section"
 import { CtaSection } from "@/components/landing/cta-section"
 import { Footer } from "@/components/landing/footer"
@@ -22,6 +23,7 @@ export default function HomePage() {
       <Marquee />
       <HowItWorksSection />
       <StatsSection />
+      <PricingPreview />
       <FaqSection />
       <CtaSection />
       <Footer />

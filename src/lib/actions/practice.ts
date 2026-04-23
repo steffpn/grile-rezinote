@@ -6,6 +6,8 @@ import { attempts, attemptAnswers, questions, options } from "@/lib/db/schema"
 import { eq, and, inArray, isNull, sql } from "drizzle-orm"
 import { getCurrentUser } from "@/lib/auth/get-user"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessMyMistakes } from "@/lib/subscription/gating"
+import { checkDailyQuota } from "@/lib/subscription/quota"
 import { assertSameOrigin } from "@/lib/security/csrf"
 import { scoreQuestion } from "@/lib/scoring/engine"
 import type { QuestionType } from "@/lib/scoring/types"
@@ -95,7 +97,6 @@ export async function createPracticeAttempt(formData: FormData) {
   await assertSameOrigin()
   const user = await getCurrentUser()
 
-  // Verify subscription/trial access
   const access = await checkSubscriptionAccess(user.id)
   if (!access.hasAccess) {
     redirect("/subscription")
@@ -116,6 +117,33 @@ export async function createPracticeAttempt(formData: FormData) {
   }
 
   const config = parsed.data
+
+  // Feature gate: "Greselile mele" (wrongAnswersOnly) requires PRO+.
+  if (config.wrongAnswersOnly && !canAccessMyMistakes(access.tier)) {
+    return {
+      error: {
+        wrongAnswersOnly: [
+          'Functia "Greselile mele" este disponibila doar pentru utilizatorii PRO si PREMIUM.',
+        ],
+      },
+    }
+  }
+
+  // Daily quota gate for FREE tier (20 questions/day; PRO/PREMIUM unlimited).
+  const quota = await checkDailyQuota(user.id, access.tier, config.questionCount)
+  if (!quota.ok) {
+    const remainingMsg =
+      quota.remaining > 0
+        ? `Ai mai ramas ${quota.remaining} ${quota.remaining === 1 ? "intrebare" : "intrebari"} din limita zilnica (${quota.limit}).`
+        : `Ai atins limita zilnica de ${quota.limit} intrebari.`
+    return {
+      error: {
+        questionCount: [
+          `${remainingMsg} Fa upgrade la PRO pentru acces nelimitat.`,
+        ],
+      },
+    }
+  }
 
   let questionPool: string[]
 

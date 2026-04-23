@@ -1,6 +1,8 @@
 "use server"
 
 import { getCurrentUser } from "@/lib/auth/get-user"
+import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessRanking } from "@/lib/subscription/gating"
 import {
   getPeerRankings,
   getPeerAggregateStats,
@@ -11,12 +13,20 @@ import {
 import type { PeerComparisonData, PeerAggregateStats } from "@/types/peer"
 
 /**
- * Fetch full peer comparison data.
+ * Fetch full peer comparison data. PREMIUM-only feature — FREE and PRO users
+ * see the ranking page replaced by an upgrade blocker at the page level, but
+ * we gate here too as defense in depth.
  * If user is opted-in, returns rankings + distribution + stats.
  * If not opted-in, returns stats only (user can see general stats without participating).
  */
 export async function fetchPeerComparison(): Promise<PeerComparisonData> {
   const user = await getCurrentUser()
+  const access = await checkSubscriptionAccess(user.id)
+  if (!canAccessRanking(access.tier)) {
+    throw new Error(
+      "Clasamentul este disponibil doar pentru utilizatorii PREMIUM."
+    )
+  }
   const userOptedIn = await getUserPeerOptIn(user.id)
 
   if (userOptedIn) {

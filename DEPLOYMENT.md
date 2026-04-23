@@ -191,17 +191,19 @@ CREATE POLICY "Authenticated users can read site settings"
 
 #### Create Products and Prices
 
+The platform uses a 3-tier model: **FREE** (no Stripe price needed), **PRO**, and **PREMIUM**. You need to create **2 products** in Stripe, each with **2 prices** (monthly + annual), for a total of **4 prices**.
+
+See `STRIPE_SETUP.md` for full step-by-step instructions. Summary:
+
 1. Go to **Products > + Add product**:
-   - **Product 1: Abonament Lunar** (Monthly)
-     - Name: `Abonament Lunar`
-     - Pricing: Recurring, **49 RON / month**
-     - Click "Save"
-     - Copy the **Price ID** (starts with `price_...`) → this is your `STRIPE_MONTHLY_PRICE_ID`
-   - **Product 2: Abonament Anual** (Annual)
-     - Name: `Abonament Anual`
-     - Pricing: Recurring, **396 RON / year** (= 33 RON/month)
-     - Click "Save"
-     - Copy the **Price ID** → this is your `STRIPE_ANNUAL_PRICE_ID`
+   - **Product 1: grile-ReziNOTE PRO**
+     - Monthly price: **119 RON / month** → copy ID to `STRIPE_PRO_MONTHLY_PRICE_ID`
+     - Annual price: **1142.40 RON / year** (≈ 95.20 RON/month, 20% discount) → copy ID to `STRIPE_PRO_ANNUAL_PRICE_ID`
+   - **Product 2: grile-ReziNOTE PREMIUM**
+     - Monthly price: **179 RON / month** → copy ID to `STRIPE_PREMIUM_MONTHLY_PRICE_ID`
+     - Annual price: **1718.40 RON / year** (≈ 143.20 RON/month, 20% discount) → copy ID to `STRIPE_PREMIUM_ANNUAL_PRICE_ID`
+
+> **Trial (7 days):** Applied in code via `subscription_data.trial_period_days` on Checkout Session creation — you do NOT need to configure trial on individual prices in Stripe Dashboard. Anti-abuse check: trial only granted to users who haven't used it before.
 
 #### Collect API Keys
 
@@ -263,8 +265,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...  # from Stripe CLI (see Step 4)
-STRIPE_MONTHLY_PRICE_ID=price_...
-STRIPE_ANNUAL_PRICE_ID=price_...
+STRIPE_PRO_MONTHLY_PRICE_ID=price_...
+STRIPE_PRO_ANNUAL_PRICE_ID=price_...
+STRIPE_PREMIUM_MONTHLY_PRICE_ID=price_...
+STRIPE_PREMIUM_ANNUAL_PRICE_ID=price_...
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -370,8 +374,10 @@ In the Vercel project settings, go to **Settings > Environment Variables** and a
 | `STRIPE_SECRET_KEY` | `sk_live_...` (or `sk_test_...` for staging) |
 | `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (or `pk_test_...` for staging) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_...` (from the Stripe webhook you created in Section 2B) |
-| `STRIPE_MONTHLY_PRICE_ID` | `price_...` |
-| `STRIPE_ANNUAL_PRICE_ID` | `price_...` |
+| `STRIPE_PRO_MONTHLY_PRICE_ID` | `price_...` (PRO tier, monthly billing) |
+| `STRIPE_PRO_ANNUAL_PRICE_ID` | `price_...` (PRO tier, annual billing) |
+| `STRIPE_PREMIUM_MONTHLY_PRICE_ID` | `price_...` (PREMIUM tier, monthly billing) |
+| `STRIPE_PREMIUM_ANNUAL_PRICE_ID` | `price_...` (PREMIUM tier, annual billing) |
 
 > **Important:** Use the same `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_APP_URL` — they should both be your production domain (e.g., `https://grile-rezinote.vercel.app` or your custom domain).
 
@@ -596,11 +602,13 @@ NEXT_PUBLIC_SITE_URL=             # Used for auth email redirects
 NEXT_PUBLIC_APP_URL=              # Used for Stripe checkout success/cancel URLs
 
 # ── Stripe ────────────────────────────────────────
-STRIPE_SECRET_KEY=                # sk_test_... or sk_live_...
-STRIPE_PUBLISHABLE_KEY=           # pk_test_... or pk_live_...
-STRIPE_WEBHOOK_SECRET=            # whsec_... (from Stripe webhook endpoint)
-STRIPE_MONTHLY_PRICE_ID=          # price_... (monthly subscription price)
-STRIPE_ANNUAL_PRICE_ID=           # price_... (annual subscription price)
+STRIPE_SECRET_KEY=                   # sk_test_... or sk_live_...
+STRIPE_PUBLISHABLE_KEY=              # pk_test_... or pk_live_...
+STRIPE_WEBHOOK_SECRET=               # whsec_... (from Stripe webhook endpoint)
+STRIPE_PRO_MONTHLY_PRICE_ID=         # price_... (PRO tier, monthly: 119 RON)
+STRIPE_PRO_ANNUAL_PRICE_ID=          # price_... (PRO tier, annual: ~1142 RON, 20% off)
+STRIPE_PREMIUM_MONTHLY_PRICE_ID=     # price_... (PREMIUM tier, monthly: 179 RON)
+STRIPE_PREMIUM_ANNUAL_PRICE_ID=      # price_... (PREMIUM tier, annual: ~1718 RON, 20% off)
 ```
 
 Total: 11 environment variables (6 public/shared, 5 secret).

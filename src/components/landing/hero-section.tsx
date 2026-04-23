@@ -121,7 +121,7 @@ export function HeroSection() {
                 asChild
                 className="min-h-[52px] w-full sm:w-auto sm:min-w-[220px] rounded-full border-white/15 bg-white/[0.04] text-base text-white/85 backdrop-blur-sm hover:bg-white/[0.08] hover:text-white hover:border-white/25 transition-all duration-300"
               >
-                <Link href="#pricing">Vezi planurile</Link>
+                <Link href="/pricing">Vezi planurile</Link>
               </Button>
             </Spotlight>
           </motion.div>
@@ -133,7 +133,8 @@ export function HeroSection() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 1.1 }}
           >
-            Fara card de credit &middot; Acces instant &middot; 45 zile gratuit
+            Plan FREE gratuit &middot; 7 zile trial PRO la primul abonament
+            &middot; Anulezi oricand
           </motion.p>
         </div>
 

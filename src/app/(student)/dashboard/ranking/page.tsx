@@ -7,14 +7,45 @@ import { Leaderboard } from "@/components/peer/leaderboard"
 import { ScoreDistribution } from "@/components/peer/score-distribution"
 import { PeerStatsCard } from "@/components/peer/peer-stats-card"
 import { OptInToggle } from "@/components/peer/opt-in-toggle"
+import { getCurrentUser } from "@/lib/auth/get-user"
+import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessRanking } from "@/lib/subscription/gating"
+import { UpgradeBlocker } from "@/components/subscription/UpgradeBlocker"
 
 export const metadata: Metadata = {
   title: "Clasament | grile-ReziNOTE",
 }
 
 export default async function RankingPage() {
-  const data = await fetchPeerComparison()
+  const user = await getCurrentUser()
+  const access = await checkSubscriptionAccess(user.id)
 
+  if (!canAccessRanking(access.tier)) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Clasament</h1>
+          <p className="text-sm text-muted-foreground">
+            Compara-ti performanta cu ceilalti candidati
+          </p>
+        </div>
+        <UpgradeBlocker
+          requiredTier="PREMIUM"
+          title="Clasamente si percentile"
+          description="Vezi exact unde te situezi fata de ceilalti candidati pentru Rezidentiat. Percentile, distributia scorurilor si leaderboard anonim."
+          benefits={[
+            "Leaderboard anonim cu top candidati",
+            "Percentila ta in distributia generala",
+            "Distributia scorurilor pe toate simularile",
+            "Opt-in anonim — doar scorul tau e vizibil, nu identitatea",
+            "Comparatie cu media si varful clasamentului",
+          ]}
+        />
+      </div>
+    )
+  }
+
+  const data = await fetchPeerComparison()
   const hasParticipants = data.stats.totalParticipants > 0
 
   return (

@@ -10,7 +10,7 @@ const columns = [
       { label: "Functionalitati", href: "/#features" },
       { label: "Cum functioneaza", href: "/#how" },
       { label: "Preturi", href: "/pricing" },
-      { label: "Inregistrare", href: "/register" },
+      { label: "Inregistrare", href: "/signup" },
     ],
   },
   {

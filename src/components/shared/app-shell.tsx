@@ -1,10 +1,15 @@
 import { NavHeader } from "@/components/shared/nav-header"
 import { MobileTabBar } from "@/components/shared/mobile-tab-bar"
 import { BookOpen, ExternalLink } from "lucide-react"
+import type { PlanTier } from "@/lib/subscription/tiers"
 
-interface NavLink {
+export interface NavLink {
   href: string
   label: string
+  /** Tier required to access the target page. Optional for non-tiered links. */
+  requiredTier?: PlanTier
+  /** True when the current user's tier is below requiredTier. Renders a lock icon. */
+  locked?: boolean
 }
 
 interface AppShellProps {

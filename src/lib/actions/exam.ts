@@ -6,6 +6,7 @@ import { attempts, attemptAnswers, questions, options } from "@/lib/db/schema"
 import { eq, and, inArray, isNull, sql } from "drizzle-orm"
 import { getCurrentUser } from "@/lib/auth/get-user"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessSimulations } from "@/lib/subscription/gating"
 import { assertSameOrigin } from "@/lib/security/csrf"
 import { scoreQuestion } from "@/lib/scoring/engine"
 import type { QuestionType, QuestionScore } from "@/lib/scoring/types"
@@ -37,10 +38,10 @@ export async function createExamAttempt() {
   await assertSameOrigin()
   const user = await getCurrentUser()
 
-  // Verify subscription/trial access
+  // Simulations require PRO or PREMIUM. FREE users are redirected to pricing.
   const access = await checkSubscriptionAccess(user.id)
-  if (!access.hasAccess) {
-    redirect("/subscription")
+  if (!access.hasAccess || !canAccessSimulations(access.tier)) {
+    redirect("/pricing")
   }
 
   // Get configurable exam duration

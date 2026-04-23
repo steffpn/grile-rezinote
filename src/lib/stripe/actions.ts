@@ -5,8 +5,15 @@ import { stripe } from "./client"
 import { STRIPE_CONFIG } from "./config"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { subscriptions } from "@/lib/db/schema"
+import { subscriptions, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { hasUsedTrialBefore } from "@/lib/subscription/trial"
+import {
+  getStripePriceId,
+  resolveStripePriceId,
+  type BillingCycle,
+  type PlanTier,
+} from "@/lib/subscription/tiers"
 
 /**
  * Gets or creates a Stripe customer for a user.
@@ -53,17 +60,45 @@ export async function getOrCreateCustomer(
 }
 
 /**
- * Creates a Stripe Checkout Session for subscription.
- * Redirects the user to Stripe Hosted Checkout.
+ * Creates a Stripe Checkout Session for a given tier + billing cycle.
+ *
+ * Trial logic: attaches `trial_period_days` ONLY for users who haven't
+ * already consumed their free trial (tracked both via `users.trialStartedAt`
+ * and the persistent `trial_history` table). This prevents users from
+ * stacking a 7-day server-side trial onto a 7-day Stripe trial.
  */
-export async function createCheckoutSession(priceId: string) {
+export async function createCheckoutSessionForTier(
+  tier: Exclude<PlanTier, "FREE">,
+  cycle: BillingCycle
+) {
   const session = await auth()
 
   if (!session?.user?.id || !session?.user?.email) {
     redirect("/login")
   }
 
-  const customerId = await getOrCreateCustomer(session.user.id, session.user.email)
+  const priceId = getStripePriceId(tier, cycle)
+  if (!priceId) {
+    throw new Error(
+      `Stripe price ID missing for ${tier} ${cycle}. Check env vars.`
+    )
+  }
+
+  const customerId = await getOrCreateCustomer(
+    session.user.id,
+    session.user.email
+  )
+
+  // Only offer the free trial to users who haven't used one before.
+  const [userRow] = await db
+    .select({ trialStartedAt: users.trialStartedAt })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1)
+
+  const alreadyUsedTrial =
+    Boolean(userRow?.trialStartedAt) ||
+    (await hasUsedTrialBefore(session.user.email))
 
   const checkoutSession = await stripe.checkout.sessions.create({
     customer: customerId,
@@ -71,7 +106,14 @@ export async function createCheckoutSession(priceId: string) {
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${STRIPE_CONFIG.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: STRIPE_CONFIG.cancelUrl,
-    metadata: { userId: session.user.id },
+    metadata: { userId: session.user.id, planTier: tier },
+    ...(alreadyUsedTrial
+      ? {}
+      : {
+          subscription_data: {
+            trial_period_days: STRIPE_CONFIG.trialDays,
+          },
+        }),
   })
 
   redirect(checkoutSession.url!)
@@ -90,15 +132,25 @@ export async function getCheckoutSession(sessionId: string) {
       | {
           id: string
           status: string
-          items: { data: Array<{ current_period_end: number; price: { recurring?: { interval: string } } }> }
+          items: {
+            data: Array<{
+              current_period_end: number
+              price: { id: string; recurring?: { interval: string } }
+            }>
+          }
         }
       | null
 
+    const priceId = subscription?.items?.data[0]?.price?.id
+    const resolved = priceId ? resolveStripePriceId(priceId) : null
+
     return {
       status: subscription?.status ?? "unknown",
-      planType: subscription?.items?.data[0]?.price?.recurring?.interval === "year"
-        ? "annual"
-        : "monthly",
+      tier: resolved?.tier ?? null,
+      planType:
+        subscription?.items?.data[0]?.price?.recurring?.interval === "year"
+          ? "annual"
+          : "monthly",
       currentPeriodEnd: subscription?.items?.data[0]?.current_period_end
         ? new Date(subscription.items.data[0].current_period_end * 1000)
         : null,
@@ -176,13 +228,24 @@ export async function reactivateSubscription() {
 }
 
 /**
- * Switches the billing cycle between monthly and annual.
+ * Switches to a different tier/cycle combination mid-subscription.
+ * Used by the management page for upgrades (PRO → PREMIUM) and cycle changes.
  */
-export async function switchBillingCycle(newPriceId: string) {
+export async function switchSubscriptionPlan(
+  tier: Exclude<PlanTier, "FREE">,
+  cycle: BillingCycle
+) {
   const session = await auth()
 
   if (!session?.user?.id) {
     throw new Error("Nu esti autentificat")
+  }
+
+  const newPriceId = getStripePriceId(tier, cycle)
+  if (!newPriceId) {
+    throw new Error(
+      `Stripe price ID missing for ${tier} ${cycle}. Check env vars.`
+    )
   }
 
   const [sub] = await db
@@ -195,7 +258,6 @@ export async function switchBillingCycle(newPriceId: string) {
     throw new Error("Nu exista un abonament activ")
   }
 
-  // Get current subscription to find the item ID
   const stripeSubscription = await stripe.subscriptions.retrieve(
     sub.stripeSubscriptionId
   )
@@ -210,7 +272,7 @@ export async function switchBillingCycle(newPriceId: string) {
     proration_behavior: "create_prorations",
   })
 
-  // Local DB will be updated by webhook when Stripe confirms
+  // Local DB will be updated by webhook when Stripe confirms.
   return { success: true }
 }
 
@@ -230,6 +292,7 @@ export async function getSubscriptionDetails(userId: string) {
 
   return {
     status: sub.status,
+    tier: sub.planTier,
     planType: sub.planType,
     currentPeriodEnd: sub.currentPeriodEnd,
     cancelAtPeriodEnd: sub.cancelAtPeriodEnd,

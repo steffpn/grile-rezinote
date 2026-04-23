@@ -2,6 +2,8 @@ import Stripe from "stripe"
 import { db } from "@/lib/db"
 import { subscriptions } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { resolveStripePriceId } from "@/lib/subscription/tiers"
+import type { PlanTier } from "@/lib/subscription/tiers"
 
 /**
  * Maps Stripe subscription status to local enum values.
@@ -37,6 +39,18 @@ function derivePlanType(
   const item = subscription.items?.data[0]
   if (!item?.price?.recurring?.interval) return null
   return item.price.recurring.interval === "year" ? "annual" : "monthly"
+}
+
+/**
+ * Derives the product tier (PRO / PREMIUM) from the Stripe price ID.
+ * Returns null if the price ID doesn't match any configured env var — the
+ * caller should log a warning and leave the tier unchanged.
+ */
+function deriveTier(subscription: Stripe.Subscription): PlanTier | null {
+  const priceId = subscription.items?.data[0]?.price?.id
+  if (!priceId) return null
+  const resolved = resolveStripePriceId(priceId)
+  return resolved?.tier ?? null
 }
 
 /**
@@ -92,11 +106,22 @@ export async function handleSubscriptionChange(
     return
   }
 
+  const tier = deriveTier(subscription)
+  if (!tier) {
+    const priceId = subscription.items?.data[0]?.price?.id
+    console.warn(
+      `Webhook: Stripe price ID ${priceId} does not match any configured tier env var — planTier left unchanged for customer ${customerId}`
+    )
+  }
+
   await db
     .update(subscriptions)
     .set({
       stripeSubscriptionId: subscription.id,
       status: mapStripeStatus(subscription.status),
+      // Only update tier if we could resolve it; keep existing otherwise so we
+      // don't accidentally downgrade a user when a stale price ID comes through.
+      ...(tier ? { planTier: tier } : {}),
       planType: derivePlanType(subscription),
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       currentPeriodEnd: getCurrentPeriodEnd(subscription),
@@ -106,7 +131,7 @@ export async function handleSubscriptionChange(
 
 /**
  * Handles subscription deleted event.
- * Sets status to cancelled.
+ * Sets status to cancelled and drops the user back to FREE tier.
  */
 export async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription
@@ -120,6 +145,7 @@ export async function handleSubscriptionDeleted(
     .update(subscriptions)
     .set({
       status: "cancelled",
+      planTier: "FREE",
       cancelAtPeriodEnd: false,
     })
     .where(eq(subscriptions.stripeCustomerId, customerId))

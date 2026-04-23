@@ -4,18 +4,20 @@ import { useTransition, useState } from "react"
 import {
   cancelSubscription,
   reactivateSubscription,
-  switchBillingCycle,
+  switchSubscriptionPlan,
 } from "@/lib/stripe/actions"
-import { STRIPE_CONFIG } from "@/lib/stripe/config"
+import type { BillingCycle, PlanTier } from "@/lib/subscription/tiers"
 
 interface ManageSubscriptionProps {
   status: string
+  tier: PlanTier
   planType: string | null
   cancelAtPeriodEnd: boolean
 }
 
 export function ManageSubscription({
   status,
+  tier,
   planType,
   cancelAtPeriodEnd,
 }: ManageSubscriptionProps) {
@@ -26,86 +28,76 @@ export function ManageSubscription({
   } | null>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
-  const isActive = status === "active"
+  const isActive = status === "active" || status === "trialing"
   const isCancelling = cancelAtPeriodEnd && isActive
+
+  function runAction(
+    fn: () => Promise<unknown>,
+    successText: string
+  ) {
+    startTransition(async () => {
+      try {
+        await fn()
+        setMessage({ type: "success", text: successText })
+        window.location.reload()
+      } catch (err) {
+        setMessage({
+          type: "error",
+          text:
+            err instanceof Error
+              ? err.message
+              : "A aparut o eroare. Incearca din nou.",
+        })
+      }
+    })
+  }
 
   function handleCancel() {
     setShowCancelConfirm(false)
-    startTransition(async () => {
-      try {
-        await cancelSubscription()
-        setMessage({
-          type: "success",
-          text: "Abonamentul se va anula la sfarsitul perioadei de facturare.",
-        })
-        // Reload to reflect new state
-        window.location.reload()
-      } catch (err) {
-        setMessage({
-          type: "error",
-          text:
-            err instanceof Error
-              ? err.message
-              : "A aparut o eroare. Incearca din nou.",
-        })
-      }
-    })
+    runAction(
+      () => cancelSubscription(),
+      "Abonamentul se va anula la sfarsitul perioadei de facturare."
+    )
   }
 
   function handleReactivate() {
-    startTransition(async () => {
-      try {
-        await reactivateSubscription()
-        setMessage({
-          type: "success",
-          text: "Abonamentul a fost reactivat cu succes!",
-        })
-        window.location.reload()
-      } catch (err) {
-        setMessage({
-          type: "error",
-          text:
-            err instanceof Error
-              ? err.message
-              : "A aparut o eroare. Incearca din nou.",
-        })
-      }
-    })
+    runAction(
+      () => reactivateSubscription(),
+      "Abonamentul a fost reactivat cu succes!"
+    )
   }
 
-  function handleSwitch() {
-    const newPriceId =
-      planType === "monthly"
-        ? STRIPE_CONFIG.annualPriceId
-        : STRIPE_CONFIG.monthlyPriceId
-
-    startTransition(async () => {
-      try {
-        await switchBillingCycle(newPriceId)
-        setMessage({
-          type: "success",
-          text: "Planul a fost schimbat cu succes!",
-        })
-        window.location.reload()
-      } catch (err) {
-        setMessage({
-          type: "error",
-          text:
-            err instanceof Error
-              ? err.message
-              : "A aparut o eroare. Incearca din nou.",
-        })
-      }
-    })
+  function handleSwitchCycle() {
+    if (tier === "FREE") return
+    const newCycle: BillingCycle = planType === "monthly" ? "annual" : "monthly"
+    runAction(
+      () => switchSubscriptionPlan(tier, newCycle),
+      "Ciclul de facturare a fost schimbat cu succes!"
+    )
   }
 
-  if (!isActive) {
+  function handleUpgradeToPremium() {
+    const cycle: BillingCycle = planType === "annual" ? "annual" : "monthly"
+    runAction(
+      () => switchSubscriptionPlan("PREMIUM", cycle),
+      "Ai trecut la PREMIUM cu succes!"
+    )
+  }
+
+  function handleDowngradeToPro() {
+    const cycle: BillingCycle = planType === "annual" ? "annual" : "monthly"
+    runAction(
+      () => switchSubscriptionPlan("PRO", cycle),
+      "Ai trecut la PRO. Diferenta se va regla la urmatoarea facturare."
+    )
+  }
+
+  if (!isActive || tier === "FREE") {
     return null
   }
 
   return (
     <div className="space-y-6">
-      {/* Status message */}
       {message && (
         <div
           className={`rounded-md p-3 text-sm ${
@@ -118,35 +110,68 @@ export function ManageSubscription({
         </div>
       )}
 
+      {/* Upgrade / downgrade between tiers */}
+      {tier === "PRO" && (
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-6">
+          <h3 className="mb-2 font-semibold">Treci la PREMIUM</h3>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Deblocheaza dashboard-ul pe capitole si subcapitole, clasamentele
+            intre utilizatori si modulul Admitere cu estimarea sanselor.
+          </p>
+          <button
+            onClick={handleUpgradeToPremium}
+            disabled={isPending}
+            className="rounded-md bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isPending ? "Se proceseaza..." : "Fa upgrade la PREMIUM"}
+          </button>
+        </div>
+      )}
+
+      {tier === "PREMIUM" && (
+        <div className="rounded-lg border bg-card p-6">
+          <h3 className="mb-2 font-semibold">Downgrade la PRO</h3>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Pierzi accesul la analiza pe capitole/subcapitole, clasamente si
+            modulul Admitere. Diferenta de pret se regleaza prin proratare.
+          </p>
+          <button
+            onClick={handleDowngradeToPro}
+            disabled={isPending}
+            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isPending ? "Se proceseaza..." : "Treci la PRO"}
+          </button>
+        </div>
+      )}
+
       {/* Switch billing cycle */}
       <div className="rounded-lg border bg-card p-6">
-        <h3 className="mb-2 font-semibold">Schimba planul</h3>
+        <h3 className="mb-2 font-semibold">Schimba ciclul de facturare</h3>
         {planType === "monthly" ? (
           <div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Treci la abonamentul anual si economiseste. Platesti pentru 8
-              luni, primesti 12.
+              Treci la abonamentul anual si economiseste 20%.
             </p>
             <button
-              onClick={handleSwitch}
+              onClick={handleSwitchCycle}
               disabled={isPending}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? "Se proceseaza..." : "Treci la planul anual"}
+              {isPending ? "Se proceseaza..." : "Treci la plata anuala"}
             </button>
           </div>
         ) : (
           <div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Treci la abonamentul lunar. Diferenta de pret se calculeaza
-              automat.
+              Treci la abonamentul lunar. Diferenta se regleaza prin proratare.
             </p>
             <button
-              onClick={handleSwitch}
+              onClick={handleSwitchCycle}
               disabled={isPending}
               className="rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? "Se proceseaza..." : "Treci la planul lunar"}
+              {isPending ? "Se proceseaza..." : "Treci la plata lunara"}
             </button>
           </div>
         )}
@@ -161,8 +186,8 @@ export function ManageSubscription({
         {isCancelling ? (
           <div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Abonamentul tau este programat sa se anuleze. Poti reactiva pentru
-              a continua fara intrerupere.
+              Abonamentul tau este programat sa se anuleze. Poti reactiva
+              pentru a continua fara intrerupere.
             </p>
             <button
               onClick={handleReactivate}
@@ -176,7 +201,7 @@ export function ManageSubscription({
           <div>
             <p className="mb-4 text-sm text-muted-foreground">
               Daca anulezi, vei avea acces pana la sfarsitul perioadei de
-              facturare curente.
+              facturare curente, apoi contul tau trece pe planul FREE.
             </p>
 
             {showCancelConfirm ? (

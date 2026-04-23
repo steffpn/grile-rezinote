@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Target, FileQuestion, ClipboardCheck, Flame, Sparkles } from "lucide-react"
+import { Target, FileQuestion, ClipboardCheck, Flame, Sparkles, Lock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/dashboard/stat-card"
@@ -16,6 +16,9 @@ import {
   fetchTrends,
   fetchChapterStats,
 } from "@/lib/actions/dashboard"
+import { getCurrentUser } from "@/lib/auth/get-user"
+import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessChapterStats } from "@/lib/subscription/gating"
 
 export const metadata: Metadata = {
   title: "Dashboard | grile-ReziNOTE",
@@ -32,6 +35,11 @@ export default async function OverviewPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  // Layout already gates FREE users out — here we only decide whether the
+  // chapter radar (PREMIUM-only) renders or is replaced by an upgrade card.
+  const user = await getCurrentUser()
+  const access = await checkSubscriptionAccess(user.id)
+
   const params = await searchParams
   const rangeParam = typeof params.range === "string" ? params.range : "30"
   const typeParam = typeof params.type === "string" ? params.type : undefined
@@ -39,10 +47,14 @@ export default async function OverviewPage({
 
   const days = rangeParam === "all" ? 365 : rangeParam === "7" ? 7 : 30
 
+  const hasChapterAccess = canAccessChapterStats(access.tier)
+
   const [overview, trends, chapterStats] = await Promise.all([
     fetchDashboardOverview(undefined, undefined, typeFilter),
     fetchTrends(days, typeFilter),
-    fetchChapterStats(undefined, undefined, typeFilter),
+    hasChapterAccess
+      ? fetchChapterStats(undefined, undefined, typeFilter)
+      : Promise.resolve([]),
   ])
 
   const hasData = overview.stats.totalQuestions > 0
@@ -137,14 +149,43 @@ export default async function OverviewPage({
               </CardContent>
             </Card>
 
-            <Card className="border-white/[0.06] shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Puncte Forte per Capitol</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChapterRadar data={chapterStats} />
-              </CardContent>
-            </Card>
+            {hasChapterAccess ? (
+              <Card className="border-white/[0.06] shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">Puncte Forte per Capitol</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ChapterRadar data={chapterStats} />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="flex flex-col border-white/[0.06] shadow-sm">
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="text-lg font-semibold">
+                      Puncte Forte per Capitol
+                    </CardTitle>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                      <Lock className="h-3 w-3" />
+                      PREMIUM
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col items-center justify-center py-10 text-center">
+                  <p className="max-w-xs text-sm text-muted-foreground">
+                    Deblocheaza analiza detaliata pe capitole si subcapitole cu
+                    PREMIUM.
+                  </p>
+                  <Link
+                    href="/pricing"
+                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow transition-all hover:shadow-md"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Treci la PREMIUM
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
           </AnimatedSection>
         </>
       )}

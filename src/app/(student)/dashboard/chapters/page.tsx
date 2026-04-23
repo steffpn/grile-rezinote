@@ -9,6 +9,10 @@ import { HeatMap } from "@/components/dashboard/heat-map"
 import { TimeRangeSelector } from "@/components/dashboard/time-range-selector"
 import { DataTypeToggle } from "@/components/dashboard/data-type-toggle"
 import { fetchChapterStats, fetchHeatmapData } from "@/lib/actions/dashboard"
+import { getCurrentUser } from "@/lib/auth/get-user"
+import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessChapterStats } from "@/lib/subscription/gating"
+import { UpgradeBlocker } from "@/components/subscription/UpgradeBlocker"
 
 export const metadata: Metadata = {
   title: "Capitole | Dashboard | grile-ReziNOTE",
@@ -25,6 +29,34 @@ export default async function ChaptersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const user = await getCurrentUser()
+  const access = await checkSubscriptionAccess(user.id)
+
+  if (!canAccessChapterStats(access.tier)) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Statistici per Capitol</h1>
+          <p className="text-sm text-muted-foreground">
+            Acuratete si progres pentru fiecare capitol
+          </p>
+        </div>
+        <UpgradeBlocker
+          requiredTier="PREMIUM"
+          title="Analiza pe capitole si subcapitole"
+          description="Dashboard-ul avansat iti arata exact unde stai pe fiecare capitol si subcapitol. Identifica zonele slabe si concentreaza-te pe ele."
+          benefits={[
+            "Acuratete per capitol si per subcapitol",
+            "Harta de activitate (heatmap) pentru fiecare capitol",
+            "Sparklines de evolutie pe fiecare capitol",
+            "Sortare automata de la capitolele slabe la cele puternice",
+            "Recomandari de invatare bazate pe punctele slabe identificate",
+          ]}
+        />
+      </div>
+    )
+  }
+
   const params = await searchParams
   const rangeParam = typeof params.range === "string" ? params.range : "30"
   const typeParam = typeof params.type === "string" ? params.type : undefined

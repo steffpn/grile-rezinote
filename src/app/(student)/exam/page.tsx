@@ -6,9 +6,32 @@ import Link from "next/link"
 import { getCurrentUser } from "@/lib/auth/get-user"
 import { getExamDuration, getInProgressExam } from "@/lib/db/queries/exam"
 import { createExamAttempt } from "@/lib/actions/exam"
+import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessSimulations } from "@/lib/subscription/gating"
+import { UpgradeBlocker } from "@/components/subscription/UpgradeBlocker"
 
 export default async function ExamStartPage() {
   const user = await getCurrentUser()
+  const access = await checkSubscriptionAccess(user.id)
+
+  if (!canAccessSimulations(access.tier)) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <UpgradeBlocker
+          requiredTier="PRO"
+          title="Simulari de examen"
+          description="Testeaza-te in conditii reale — 200 de intrebari, 4 ore, cronometru, fara feedback pe parcurs. Exact ca la examenul oficial."
+          benefits={[
+            "Simulari nelimitate in conditii identice cu examenul",
+            "Cronometru oficial cu auto-submit la expirare",
+            "Scoring romanesc cu anulare CM la sub 2 sau peste 4 selectii",
+            "Rezultate detaliate la final + istoric complet al simularilor",
+          ]}
+        />
+      </div>
+    )
+  }
+
   const durationSeconds = await getExamDuration()
   const durationHours = durationSeconds / 3600
   const inProgressExam = await getInProgressExam(user.id)

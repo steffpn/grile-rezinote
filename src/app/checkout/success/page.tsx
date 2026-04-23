@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { CheckCircle } from "lucide-react"
 import { getCheckoutSession } from "@/lib/stripe/actions"
+import { TIER_DISPLAY, type PlanTier } from "@/lib/subscription/tiers"
 
 interface SuccessPageProps {
   searchParams: Promise<{ session_id?: string }>
@@ -19,7 +20,8 @@ export default async function CheckoutSuccessPage({
 
   const session = await getCheckoutSession(sessionId)
 
-  const planName = session?.planType === "annual" ? "Anual" : "Lunar"
+  const tier: PlanTier = session?.tier ?? "PRO"
+  const cycleLabel = session?.planType === "annual" ? "Anual" : "Lunar"
   const periodEnd = session?.currentPeriodEnd
     ? session.currentPeriodEnd.toLocaleDateString("ro-RO", {
         day: "numeric",
@@ -27,6 +29,8 @@ export default async function CheckoutSuccessPage({
         year: "numeric",
       })
     : null
+
+  const features = TIER_DISPLAY[tier].features
 
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-4 py-16 text-center">
@@ -39,29 +43,19 @@ export default async function CheckoutSuccessPage({
       </h1>
 
       <p className="mb-8 text-muted-foreground">
-        Planul tau <strong>{planName}</strong> este acum activ.
+        Planul <strong>{tier}</strong> ({cycleLabel}) este acum activ.
         {periodEnd && <> Urmatoarea facturare: {periodEnd}.</>}
       </p>
 
       <div className="mb-8 w-full rounded-lg border bg-card p-6 text-left">
         <h2 className="mb-4 font-semibold">Ce ai deblocat:</h2>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            Acces la toate grilele din banca de intrebari
-          </li>
-          <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            Simulari de examen nelimitate
-          </li>
-          <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            Statistici detaliate per capitol
-          </li>
-          <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            Comparatie cu praguri de admitere
-          </li>
+          {features.map((feature) => (
+            <li key={feature} className="flex items-start gap-2">
+              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+              <span>{feature}</span>
+            </li>
+          ))}
         </ul>
       </div>
 

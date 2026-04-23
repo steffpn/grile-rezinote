@@ -1,6 +1,8 @@
 "use server"
 
 import { getCurrentUser } from "@/lib/auth/get-user"
+import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessChapterStats } from "@/lib/subscription/gating"
 import {
   getOverallStats,
   getChapterStats,
@@ -65,6 +67,9 @@ export async function fetchDashboardOverview(
 
 /**
  * Fetch per-chapter statistics.
+ * PREMIUM-only: chapter-level analytics are the paid differentiator.
+ * Returns an empty array for lower tiers so pages that embed this widget
+ * (e.g., the overview radar) can render an upgrade state without crashing.
  */
 export async function fetchChapterStats(
   dateFrom?: string,
@@ -72,6 +77,9 @@ export async function fetchChapterStats(
   typeFilter?: string
 ): Promise<ChapterStats[]> {
   const user = await getCurrentUser()
+  const access = await checkSubscriptionAccess(user.id)
+  if (!canAccessChapterStats(access.tier)) return []
+
   const dateRange = parseDateRange(dateFrom, dateTo)
   const filter = parseTypeFilter(typeFilter)
 
@@ -93,13 +101,17 @@ export async function fetchTrends(
 }
 
 /**
- * Fetch heatmap data.
+ * Fetch heatmap data (per-chapter activity grid).
+ * PREMIUM-only — mirrors fetchChapterStats gating.
  */
 export async function fetchHeatmapData(
   days: number = 30,
   typeFilter?: string
 ): Promise<HeatmapCell[]> {
   const user = await getCurrentUser()
+  const access = await checkSubscriptionAccess(user.id)
+  if (!canAccessChapterStats(access.tier)) return []
+
   const filter = parseTypeFilter(typeFilter)
   const safeDays = Math.max(1, Math.min(365, days))
 
