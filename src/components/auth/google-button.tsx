@@ -9,6 +9,13 @@ interface GoogleButtonProps {
   label?: string
   callbackUrl?: string
   className?: string
+  /**
+   * Optional marketing-consent value captured on the signup form. Persisted
+   * to a short-lived cookie before the OAuth redirect so the NextAuth
+   * `signIn` callback can apply it when creating the new user. Only relevant
+   * on the signup page — the login page can omit it.
+   */
+  marketingOptIn?: boolean
 }
 
 /**
@@ -20,17 +27,27 @@ export function GoogleButton({
   label = "Continua cu Google",
   callbackUrl = "/dashboard",
   className,
+  marketingOptIn,
 }: GoogleButtonProps) {
   const [pending, setPending] = useState(false)
+
+  function onClick() {
+    setPending(true)
+    // Persist the marketing-consent choice through the OAuth redirect. The
+    // cookie is SameSite=Lax so it survives the round-trip to Google and
+    // back; TTL is capped at 15 minutes. Deleted server-side after use.
+    if (typeof marketingOptIn === "boolean") {
+      const value = marketingOptIn ? "true" : "false"
+      document.cookie = `signup-marketing-consent=${value}; path=/; max-age=900; SameSite=Lax`
+    }
+    signIn("google", { callbackUrl })
+  }
 
   return (
     <button
       type="button"
       disabled={pending}
-      onClick={() => {
-        setPending(true)
-        signIn("google", { callbackUrl })
-      }}
+      onClick={onClick}
       className={cn(
         "inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm font-medium text-white transition-all hover:border-white/15 hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60",
         className

@@ -58,6 +58,10 @@ export async function signup(
     return { errors: result.error.flatten().fieldErrors as Record<string, string[]> }
   }
 
+  // Marketing consent is optional on the form (pre-checked). Read it as a
+  // string and coerce — absence means "don't opt in".
+  const marketingOptIn = formData.get("marketingOptIn") === "true"
+
   // Check if email already exists
   const [existing] = await db
     .select({ id: users.id })
@@ -86,6 +90,7 @@ export async function signup(
     passwordHash,
     fullName: result.data.name,
     yearOfStudy: result.data.yearOfStudy,
+    marketingOptIn,
     trialStartedAt,
   })
 

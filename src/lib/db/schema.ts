@@ -42,6 +42,14 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").notNull().default("student"),
   isSuperadmin: boolean("is_superadmin").notNull().default(false),
   peerOptIn: boolean("peer_opt_in").notNull().default(false), // opt-in for anonymous peer rankings
+  // Newsletter / marketing communications consent. Defaults to false so the
+  // DB never ships a pre-opted-in default for users created before the field
+  // existed; the signup form sets it explicitly based on the user's choice.
+  marketingOptIn: boolean("marketing_opt_in").notNull().default(false),
+  // Profile fields — what the user is preparing for.
+  targetSpecialtyIds: text("target_specialty_ids").array(), // specialty UUIDs they're aiming for
+  targetScore: integer("target_score"), // goal score for the exam (0–950)
+  graduationYear: integer("graduation_year"), // year they graduate
   trialStartedAt: timestamp("trial_started_at"), // set on first paid feature access
   // OAuth metadata (nullable for credentials-only users)
   googleId: text("google_id").unique(),

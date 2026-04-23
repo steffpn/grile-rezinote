@@ -10,7 +10,7 @@ const tabs = [
   { href: "/practice", label: "Teste", icon: BookOpen },
   { href: "/exam", label: "Simulare", icon: Timer },
   { href: "/dashboard/overview", label: "Progres", icon: BarChart3 },
-  { href: "/subscription", label: "Profil", icon: User },
+  { href: "/profile", label: "Profil", icon: User },
 ]
 
 export function MobileTabBar() {

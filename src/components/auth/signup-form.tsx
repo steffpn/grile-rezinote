@@ -1,12 +1,13 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useState } from "react"
 import { useFormStatus } from "react-dom"
 import Link from "next/link"
 import { signup, type AuthState } from "@/lib/auth/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowRight, Loader2 } from "lucide-react"
 import { GoogleButton } from "./google-button"
 
@@ -36,6 +37,13 @@ function SubmitButton() {
 export function SignupForm() {
   const [state, formAction] = useActionState<AuthState, FormData>(signup, null)
 
+  // Shared marketing consent state. Pre-checked per product request; the user
+  // can uncheck it before submitting either the credentials form or the
+  // Google OAuth flow. For the credentials path it goes through FormData;
+  // for Google it gets persisted to a short-lived cookie that the auth
+  // `signIn` callback reads when creating the new user.
+  const [marketingOptIn, setMarketingOptIn] = useState(true)
+
   return (
     <div>
       <div className="mb-8">
@@ -45,7 +53,11 @@ export function SignupForm() {
         </p>
       </div>
 
-      <GoogleButton label="Inregistreaza-te cu Google" callbackUrl="/dashboard" />
+      <GoogleButton
+        label="Inregistreaza-te cu Google"
+        callbackUrl="/dashboard"
+        marketingOptIn={marketingOptIn}
+      />
 
       <div className="relative my-6 flex items-center">
         <div className="flex-1 border-t border-white/[0.06]" />
@@ -143,6 +155,49 @@ export function SignupForm() {
             </p>
           )}
         </div>
+
+        {/* Marketing consent — pre-checked, opt-out. Hidden input keeps the
+            checkbox state in FormData regardless of checked state. */}
+        <div className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <Checkbox
+            id="marketingOptIn"
+            checked={marketingOptIn}
+            onCheckedChange={(checked) => setMarketingOptIn(checked === true)}
+            className="mt-0.5 border-white/20 data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500"
+          />
+          <input
+            type="hidden"
+            name="marketingOptIn"
+            value={marketingOptIn ? "true" : "false"}
+          />
+          <Label
+            htmlFor="marketingOptIn"
+            className="text-xs leading-relaxed text-white/60"
+          >
+            Doresc sa primesc newsletter, sfaturi de invatare si noutati despre
+            platforma pe email. Poti dezactiva oricand din profilul tau.
+          </Label>
+        </div>
+
+        <p className="text-center text-[11px] leading-relaxed text-white/35">
+          Prin crearea contului, confirm ca am citit si accept{" "}
+          <Link
+            href="/legal/terms"
+            target="_blank"
+            className="text-emerald-400 underline-offset-2 hover:underline"
+          >
+            Termenii si Conditiile
+          </Link>{" "}
+          si{" "}
+          <Link
+            href="/legal/privacy"
+            target="_blank"
+            className="text-emerald-400 underline-offset-2 hover:underline"
+          >
+            Politica de Confidentialitate
+          </Link>
+          .
+        </p>
 
         <div className="pt-1">
           <SubmitButton />

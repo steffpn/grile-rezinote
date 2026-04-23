@@ -1,12 +1,36 @@
 import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
+import { cookies } from "next/headers"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 import { hasUsedTrialBefore } from "@/lib/subscription/trial"
 import { STRIPE_CONFIG } from "@/lib/stripe/config"
+
+/**
+ * Name of the short-lived cookie the client sets before a Google OAuth signup
+ * to carry the marketing-consent checkbox value through the redirect round
+ * trip. Read (and cleared) once by the `signIn` callback when a brand-new
+ * user is created via Google.
+ */
+const SIGNUP_MARKETING_COOKIE = "signup-marketing-consent"
+
+async function readAndClearSignupMarketingCookie(): Promise<boolean> {
+  try {
+    const store = await cookies()
+    const value = store.get(SIGNUP_MARKETING_COOKIE)?.value
+    if (value !== undefined) {
+      // Clear it so a subsequent login doesn't accidentally reapply it.
+      store.delete(SIGNUP_MARKETING_COOKIE)
+    }
+    return value === "true"
+  } catch {
+    // `cookies()` can throw outside of a request context; treat as no consent.
+    return false
+  }
+}
 
 // =============================================================================
 // Production domain: https://www.grile-rezinote.ro
@@ -125,6 +149,12 @@ export const authConfig: NextAuthConfig = {
         (profile?.name as string | undefined) ??
         user.email.split("@")[0]
 
+      // Read the marketing-consent cookie the signup form set on the client
+      // right before redirecting to Google. Missing/absent → opt-out (safe
+      // default for returning users who just click "Continue with Google"
+      // on the login page).
+      const marketingOptIn = await readAndClearSignupMarketingCookie()
+
       const [created] = await db
         .insert(users)
         .values({
@@ -134,6 +164,7 @@ export const authConfig: NextAuthConfig = {
           fullName,
           googleId: account.providerAccountId,
           image: (user.image as string | undefined) ?? null,
+          marketingOptIn,
           trialStartedAt,
         })
         .returning({ id: users.id })
@@ -177,6 +208,7 @@ export const authConfig: NextAuthConfig = {
         "/exam",
         "/admission",
         "/subscription",
+        "/profile",
         "/admin",
       ]
 
