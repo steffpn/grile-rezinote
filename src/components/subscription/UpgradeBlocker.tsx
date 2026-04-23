@@ -12,6 +12,15 @@ interface UpgradeBlockerProps {
   description: string
   /** Optional bullet list of benefits. Falls back to the tier's default features. */
   benefits?: string[]
+  /**
+   * Optional secondary action — e.g., for FREE users blocked from the
+   * dashboard we want to nudge them toward /practice (their one available
+   * feature) rather than only offer an upgrade.
+   */
+  alternativeAction?: {
+    href: string
+    label: string
+  }
 }
 
 /**
@@ -24,6 +33,7 @@ export function UpgradeBlocker({
   title,
   description,
   benefits,
+  alternativeAction,
 }: UpgradeBlockerProps) {
   const display = TIER_DISPLAY[requiredTier]
   const bullets = benefits ?? display.features
@@ -85,13 +95,23 @@ export function UpgradeBlocker({
           ))}
         </ul>
 
-        <Link
-          href="/pricing"
-          className={`group mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r ${gradientClass} px-7 text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl`}
-        >
-          <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
-          {display.cta}
-        </Link>
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+          <Link
+            href="/pricing"
+            className={`group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r ${gradientClass} px-7 text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl`}
+          >
+            <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
+            {display.cta}
+          </Link>
+          {alternativeAction && (
+            <Link
+              href={alternativeAction.href}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background/50 px-7 text-sm font-medium text-foreground backdrop-blur transition-colors hover:bg-accent"
+            >
+              {alternativeAction.label}
+            </Link>
+          )}
+        </div>
 
         <p className="mt-3 text-xs text-muted-foreground">
           Poti anula oricand · Proratare automata la upgrade

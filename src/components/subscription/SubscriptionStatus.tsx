@@ -27,7 +27,6 @@ function StatusBadge({ status }: { status: string }) {
       "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
     expired: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
     inactive: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-    free: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   }
 
   const labels: Record<string, string> = {
@@ -36,7 +35,6 @@ function StatusBadge({ status }: { status: string }) {
     cancelling: "Se anuleaza",
     expired: "Expirat",
     inactive: "Inactiv",
-    free: "Free",
   }
 
   return (
@@ -74,13 +72,16 @@ export function SubscriptionStatus({
   trialDaysRemaining,
 }: SubscriptionStatusProps) {
   const displayStatus =
-    tier === "FREE" && status !== "trialing"
-      ? "free"
-      : cancelAtPeriodEnd && status === "active"
-        ? "cancelling"
-        : status === "cancelled"
-          ? "expired"
-          : status
+    cancelAtPeriodEnd && status === "active"
+      ? "cancelling"
+      : status === "cancelled"
+        ? "expired"
+        : status
+
+  // For plain-FREE accounts the tier badge already conveys everything; an
+  // extra "Free" status pill next to it is redundant. Hide the status badge
+  // in that case and show only the tier badge.
+  const isPlainFree = tier === "FREE" && status !== "trialing"
 
   const cycleLabel =
     planType === "annual" ? "Anual" : planType === "monthly" ? "Lunar" : null
@@ -91,7 +92,7 @@ export function SubscriptionStatus({
         <h3 className="text-lg font-semibold">Starea abonamentului</h3>
         <div className="flex items-center gap-2">
           <TierBadge tier={tier} />
-          <StatusBadge status={displayStatus} />
+          {!isPlainFree && <StatusBadge status={displayStatus} />}
         </div>
       </div>
 

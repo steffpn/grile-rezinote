@@ -33,6 +33,10 @@ export default async function MistakesPage() {
             "Mastery tracking — greselile ies din lista dupa 2 raspunsuri corecte consecutive",
             "Statistici detaliate despre ce tipuri de greseli faci",
           ]}
+          alternativeAction={{
+            href: "/practice",
+            label: "Incepe un test practic",
+          }}
         />
       </div>
     )

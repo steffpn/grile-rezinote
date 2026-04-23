@@ -9,11 +9,21 @@ import {
   GraduationCap,
   BookOpen,
   Lock,
+  CircleUser,
+  CreditCard,
 } from "lucide-react"
 
 const REFERENCE_BOOKS_URL = "https://rezidentiat-medicina-dentara.ro/"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/shared/theme-toggle"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { logout } from "@/lib/auth/actions"
 import type { NavLink } from "@/components/shared/app-shell"
 
@@ -39,6 +49,57 @@ function LockBadge({ tier }: { tier: string }) {
       <Lock className="h-2.5 w-2.5" />
       {tier}
     </span>
+  )
+}
+
+/**
+ * Avatar button that opens a dropdown menu with the user's email,
+ * a link to account management, and the logout action. Replaces the
+ * prior static email pill + inline logout button pattern.
+ */
+function UserMenu({ userEmail }: { userEmail: string }) {
+  // Initials fallback for the avatar. Falls back to "U" if email is malformed.
+  const initials =
+    (userEmail[0]?.toUpperCase() ?? "") +
+    (userEmail.split("@")[0]?.split(/[._-]/)[1]?.[0]?.toUpperCase() ?? "")
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label="Meniu cont"
+          className="group inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-500/20 transition-all hover:from-emerald-500/30 hover:to-teal-500/30 hover:ring-emerald-500/40 dark:text-emerald-300"
+        >
+          {initials || <CircleUser className="h-5 w-5" />}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="font-normal">
+          <p className="text-xs text-muted-foreground">Autentificat ca</p>
+          <p className="truncate text-sm font-medium">{userEmail}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/subscription" className="cursor-pointer">
+            <CreditCard className="mr-2 h-4 w-4" />
+            Abonament
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <form action={logout}>
+          <DropdownMenuItem asChild>
+            <button
+              type="submit"
+              className="w-full cursor-pointer text-destructive focus:text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Deconectare
+            </button>
+          </DropdownMenuItem>
+        </form>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -101,25 +162,9 @@ export function NavHeader({
             </a>
           </Button>
           <ThemeToggle />
-          {userEmail && (
-            <>
-              <span className="ml-2 rounded-full bg-secondary px-3 py-1 text-xs text-muted-foreground">
-                {userEmail}
-              </span>
-              <form action={logout}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full text-muted-foreground hover:text-destructive"
-                  type="submit"
-                >
-                  <LogOut className="mr-1 h-4 w-4" />
-                  Iesi
-                </Button>
-              </form>
-            </>
-          )}
-          {!userEmail && (
+          {userEmail ? (
+            <UserMenu userEmail={userEmail} />
+          ) : (
             <Button
               size="sm"
               className="rounded-full gradient-primary border-0 text-white shadow-md hover:shadow-lg transition-shadow"
@@ -130,9 +175,10 @@ export function NavHeader({
           )}
         </nav>
 
-        {/* Mobile menu button */}
-        <div className="flex items-center gap-1 md:hidden">
+        {/* Mobile controls — avatar + hamburger */}
+        <div className="flex items-center gap-2 md:hidden">
           <ThemeToggle />
+          {userEmail && <UserMenu userEmail={userEmail} />}
           <Button
             variant="ghost"
             size="icon"
@@ -186,25 +232,6 @@ export function NavHeader({
                 Bibliografie
               </a>
             </Button>
-            {userEmail && (
-              <>
-                <div className="my-2 border-t border-border/50" />
-                <span className="px-3 text-sm text-muted-foreground">
-                  {userEmail}
-                </span>
-                <form action={logout}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    type="submit"
-                    className="w-full justify-start text-muted-foreground hover:text-destructive"
-                  >
-                    <LogOut className="mr-1 h-4 w-4" />
-                    Deconectare
-                  </Button>
-                </form>
-              </>
-            )}
             {!userEmail && (
               <Button
                 size="sm"

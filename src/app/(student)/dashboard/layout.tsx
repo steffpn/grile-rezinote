@@ -43,6 +43,10 @@ export default async function DashboardLayout({
             "Istoricul complet al testelor si raspunsurilor",
             'Functia "Greselile mele" pentru a invata din erori',
           ]}
+          alternativeAction={{
+            href: "/practice",
+            label: "Incepe un test practic",
+          }}
         />
       </div>
     )

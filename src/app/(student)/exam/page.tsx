@@ -27,6 +27,10 @@ export default async function ExamStartPage() {
             "Scoring romanesc cu anulare CM la sub 2 sau peste 4 selectii",
             "Rezultate detaliate la final + istoric complet al simularilor",
           ]}
+          alternativeAction={{
+            href: "/practice",
+            label: "Incepe un test practic",
+          }}
         />
       </div>
     )
