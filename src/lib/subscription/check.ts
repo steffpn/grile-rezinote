@@ -9,10 +9,19 @@ export type SubscriptionAccess = {
   hasAccess: boolean
   status: "active" | "trialing" | "trial_available" | "expired" | "none"
   /**
-   * Product tier granting the access. During trial this is PRO (trial unlocks
-   * PRO features; PREMIUM stays aspirational). When hasAccess=false this is FREE.
+   * Product tier granting the access. During an active trial this is PRO
+   * (trial unlocks PRO features; PREMIUM stays aspirational). On FREE plans
+   * (including `trial_available` — user hasn't opted into trial yet) this is
+   * "FREE". Callers should branch on `tier` for feature gating and look at
+   * `trialAvailable` to know whether to offer the opt-in trial CTA.
    */
   tier: PlanTier
+  /**
+   * True when the user is eligible to start their 7-day PRO trial (has never
+   * started one on this account and hasn't used one under this email before).
+   * Used by the UI to render "Start trial" buttons on upgrade blockers.
+   */
+  trialAvailable: boolean
   trialDaysRemaining?: number
   currentPeriodEnd?: Date
   cancelAtPeriodEnd?: boolean
@@ -20,10 +29,10 @@ export type SubscriptionAccess = {
 }
 
 /**
- * Tier granted to trial users. PRO (not PREMIUM) so PREMIUM features stay
- * as an upgrade incentive even during trial.
+ * Tier granted to users during an active trial. PRO (not PREMIUM) so PREMIUM
+ * features stay as an upgrade incentive even while trialing.
  */
-const TRIAL_TIER: PlanTier = "PRO"
+const ACTIVE_TRIAL_TIER: PlanTier = "PRO"
 
 /**
  * Checks the subscription access status for a user.
@@ -44,6 +53,7 @@ export const checkSubscriptionAccess = cache(async function checkSubscriptionAcc
       hasAccess: true,
       status: "active",
       tier: sub.planTier,
+      trialAvailable: false,
       currentPeriodEnd: sub.currentPeriodEnd ?? undefined,
       cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
       planType: sub.planType,
@@ -60,6 +70,7 @@ export const checkSubscriptionAccess = cache(async function checkSubscriptionAcc
         hasAccess: true,
         status: "trialing",
         tier: sub.planTier,
+        trialAvailable: false,
         trialDaysRemaining: daysRemaining,
         currentPeriodEnd: sub.currentPeriodEnd,
       }
@@ -74,12 +85,24 @@ export const checkSubscriptionAccess = cache(async function checkSubscriptionAcc
     .limit(1)
 
   if (!user) {
-    return { hasAccess: false, status: "none", tier: "FREE" }
+    return {
+      hasAccess: false,
+      status: "none",
+      tier: "FREE",
+      trialAvailable: false,
+    }
   }
 
-  // Never started trial — allow access, trial will start on first feature use.
+  // Never started trial — user is on FREE (explicit opt-in required to start).
+  // The UI surfaces a "Start trial" CTA on the FREE banner + upgrade blockers
+  // so users actively choose to activate their 7-day PRO trial.
   if (!user.trialStartedAt) {
-    return { hasAccess: true, status: "trial_available", tier: TRIAL_TIER }
+    return {
+      hasAccess: true,
+      status: "trial_available",
+      tier: "FREE",
+      trialAvailable: true,
+    }
   }
 
   const trialEndDate = new Date(
@@ -94,7 +117,8 @@ export const checkSubscriptionAccess = cache(async function checkSubscriptionAcc
     return {
       hasAccess: true,
       status: "trialing",
-      tier: TRIAL_TIER,
+      tier: ACTIVE_TRIAL_TIER,
+      trialAvailable: false,
       trialDaysRemaining: daysRemaining,
     }
   }
@@ -103,5 +127,10 @@ export const checkSubscriptionAccess = cache(async function checkSubscriptionAcc
   // FREE has limited access (20 questions/day), so hasAccess is TRUE.
   // The legacy `status: "expired"` is preserved for any code still reading it,
   // but callers should branch on `tier` going forward.
-  return { hasAccess: true, status: "expired", tier: "FREE" }
+  return {
+    hasAccess: true,
+    status: "expired",
+    tier: "FREE",
+    trialAvailable: false,
+  }
 })

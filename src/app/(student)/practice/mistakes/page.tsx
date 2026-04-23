@@ -37,6 +37,7 @@ export default async function MistakesPage() {
             href: "/practice",
             label: "Incepe un test practic",
           }}
+          showStartTrial={access.trialAvailable}
         />
       </div>
     )

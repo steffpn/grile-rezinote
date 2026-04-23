@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Lock, Sparkles, Crown } from "lucide-react"
 import type { PlanTier } from "@/lib/subscription/tiers"
 import { TIER_DISPLAY } from "@/lib/subscription/tiers"
+import { StartTrialBlockerButton } from "./StartTrialBlockerButton"
 
 interface UpgradeBlockerProps {
   /** Tier required to unlock the feature. */
@@ -21,6 +22,12 @@ interface UpgradeBlockerProps {
     href: string
     label: string
   }
+  /**
+   * Show a "Start 7-day PRO trial" button alongside the upgrade CTA when the
+   * user hasn't used their trial yet. Only meaningful for PRO gates — the
+   * trial is PRO-only, so PREMIUM blockers never show it.
+   */
+  showStartTrial?: boolean
 }
 
 /**
@@ -34,6 +41,7 @@ export function UpgradeBlocker({
   description,
   benefits,
   alternativeAction,
+  showStartTrial = false,
 }: UpgradeBlockerProps) {
   const display = TIER_DISPLAY[requiredTier]
   const bullets = benefits ?? display.features
@@ -48,6 +56,9 @@ export function UpgradeBlocker({
     requiredTier === "PREMIUM"
       ? "ring-amber-400/30"
       : "ring-emerald-500/30"
+
+  // Trial CTA only makes sense for PRO gates — trial unlocks PRO, not PREMIUM.
+  const canShowTrial = showStartTrial && requiredTier === "PRO"
 
   return (
     <div
@@ -96,12 +107,19 @@ export function UpgradeBlocker({
         </ul>
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+          {canShowTrial && <StartTrialBlockerButton />}
           <Link
             href="/pricing"
-            className={`group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r ${gradientClass} px-7 text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl`}
+            className={`group inline-flex h-11 items-center justify-center gap-2 rounded-xl ${
+              canShowTrial
+                ? "border border-border bg-background/50 text-foreground backdrop-blur hover:bg-accent"
+                : `bg-gradient-to-r ${gradientClass} text-white shadow-lg hover:-translate-y-0.5 hover:shadow-xl`
+            } px-7 text-sm font-semibold transition-all`}
           >
-            <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
-            {display.cta}
+            {!canShowTrial && (
+              <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
+            )}
+            {canShowTrial ? "Vezi toate planurile" : display.cta}
           </Link>
           {alternativeAction && (
             <Link
@@ -114,7 +132,9 @@ export function UpgradeBlocker({
         </div>
 
         <p className="mt-3 text-xs text-muted-foreground">
-          Poti anula oricand · Proratare automata la upgrade
+          {canShowTrial
+            ? "7 zile gratuit · Fara card · Anulezi oricand"
+            : "Poti anula oricand · Proratare automata la upgrade"}
         </p>
       </div>
     </div>

@@ -8,6 +8,7 @@ import { Check, X, Clock } from "lucide-react"
 import Link from "next/link"
 import { NumberTicker } from "./NumberTicker"
 import { Confetti } from "./Confetti"
+import { ShareStoryButton } from "@/components/share/ShareStoryButton"
 
 interface QuestionOption {
   label: string
@@ -31,6 +32,7 @@ interface AnswerData {
 
 interface DeferredResultsProps {
   attempt: {
+    id: string
     score: number | null
     maxScore: number | null
     completedAt: Date | null
@@ -69,8 +71,12 @@ export function DeferredResults({
       <Confetti show={celebrate} />
       {/* Score Summary */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Rezultate</CardTitle>
+          <ShareStoryButton
+            attemptId={attempt.id}
+            label="Distribuie rezultatul"
+          />
         </CardHeader>
         <CardContent className="space-y-4">
           <motion.div

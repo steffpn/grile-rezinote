@@ -47,6 +47,7 @@ export default async function DashboardLayout({
             href: "/practice",
             label: "Incepe un test practic",
           }}
+          showStartTrial={access.trialAvailable}
         />
       </div>
     )

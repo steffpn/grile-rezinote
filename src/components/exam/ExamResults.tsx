@@ -10,6 +10,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { NumberTicker } from "@/components/practice/NumberTicker"
 import { Confetti } from "@/components/practice/Confetti"
+import { ShareStoryButton } from "@/components/share/ShareStoryButton"
 
 interface QuestionOption {
   label: string
@@ -43,6 +44,7 @@ interface ChapterBreakdown {
 
 interface ExamResultsProps {
   attempt: {
+    id: string
     score: number | null
     maxScore: number | null
     startedAt: Date
@@ -122,8 +124,14 @@ export function ExamResults({
       <Confetti show={celebrate} />
       {/* Score Summary */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-center">Rezultate Simulare</CardTitle>
+        <CardHeader className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-center sm:text-left">
+            Rezultate Simulare
+          </CardTitle>
+          <ShareStoryButton
+            attemptId={attempt.id}
+            label="Distribuie rezultatul"
+          />
         </CardHeader>
         <CardContent className="space-y-4">
           <motion.div

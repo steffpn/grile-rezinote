@@ -39,6 +39,7 @@ export default async function ExamResultsPage({
       </Suspense>
       <ExamResults
         attempt={{
+          id: data.attempt.id,
           score: data.attempt.score,
           maxScore: data.attempt.maxScore,
           startedAt: data.attempt.startedAt,

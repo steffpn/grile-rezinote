@@ -22,6 +22,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
       <h1 className="mb-6 text-2xl font-bold">Rezultate Test</h1>
       <DeferredResults
         attempt={{
+          id: data.attempt.id,
           score: data.attempt.score,
           maxScore: data.attempt.maxScore,
           completedAt: data.attempt.completedAt,

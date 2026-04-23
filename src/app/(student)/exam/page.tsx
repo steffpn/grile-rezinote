@@ -31,6 +31,7 @@ export default async function ExamStartPage() {
             href: "/practice",
             label: "Incepe un test practic",
           }}
+          showStartTrial={access.trialAvailable}
         />
       </div>
     )
