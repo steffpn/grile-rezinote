@@ -208,13 +208,13 @@ export function PracticeConfigForm({
                   </Drawer.Portal>
                 </Drawer.Root>
               </div>
-              {selectedChapterIds.length > 0 && (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {selectedQuestionCount} intrebari disponibile.
-                  {effectiveCount < parseInt(questionCount) &&
-                    ` Se vor folosi ${effectiveCount} intrebari.`}
-                </p>
-              )}
+              {selectedChapterIds.length > 0 &&
+                effectiveCount < parseInt(questionCount) && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Se vor folosi {effectiveCount}{" "}
+                    {effectiveCount === 1 ? "intrebare" : "intrebari"}.
+                  </p>
+                )}
             </CardContent>
           </Card>
         )}
@@ -266,7 +266,9 @@ export function PracticeConfigForm({
           type="submit"
           size="lg"
           className="min-h-[52px] w-full rounded-xl gradient-primary border-0 text-white text-base shadow-lg shadow-primary-500/20 hover:shadow-xl transition-all"
-          disabled={selectedChapterIds.length === 0 || isPending}
+          disabled={
+            (!wrongAnswersOnly && selectedChapterIds.length === 0) || isPending
+          }
         >
           {isPending ? (
             "Se creeaza testul..."

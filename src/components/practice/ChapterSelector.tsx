@@ -110,27 +110,28 @@ export function ChapterSelector({
         {allSelected ? "Deselecteaza toate" : "Selecteaza toate"}
       </Button>
 
-      {/* Total — always its own line, below the button */}
+      {/* Selection summary — capitole + subcapitole, fara numar de intrebari */}
       <AnimatePresence mode="wait">
         {selectedIds.length > 0 && (
           <motion.p
-            key={`${selectedIds.length}-${selectedQuestionCount}`}
+            key={`${selectedIds.length}-${selectedSubchapters.length}`}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18 }}
             className="text-sm text-muted-foreground tabular-nums"
           >
-            Total:{" "}
             <span className="font-semibold text-foreground">
-              {selectedQuestionCount}
+              {selectedIds.length}
             </span>{" "}
-            intrebari din {selectedIds.length}{" "}
-            {selectedIds.length === 1 ? "capitol" : "capitole"}
+            {selectedIds.length === 1 ? "capitol selectat" : "capitole selectate"}
             {selectedSubchapters.length > 0 && (
               <span className="text-muted-foreground/80">
                 {" "}
-                · {selectedSubchapters.length} subcapitole
+                · {selectedSubchapters.length}{" "}
+                {selectedSubchapters.length === 1
+                  ? "subcapitol"
+                  : "subcapitole"}
               </span>
             )}
           </motion.p>
@@ -193,14 +194,14 @@ export function ChapterSelector({
                   <span className="flex-1 text-sm font-medium break-words">
                     {chapter.name}
                   </span>
-                  <Badge
-                    variant="secondary"
-                    className="shrink-0 text-[11px]"
-                  >
-                    {pickedSubsInChapter > 0
-                      ? `${pickedSubsInChapter}/${subs.length}`
-                      : chapter.questionCount}
-                  </Badge>
+                  {pickedSubsInChapter > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="shrink-0 text-[11px]"
+                    >
+                      {pickedSubsInChapter}/{subs.length}
+                    </Badge>
+                  )}
                 </motion.button>
 
                 {subs.length > 0 && (
@@ -267,9 +268,6 @@ export function ChapterSelector({
                               </span>
                               <span className="flex-1 break-words leading-snug">
                                 {s.name}
-                              </span>
-                              <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                                {s.questionCount}
                               </span>
                             </button>
                           </li>
