@@ -3,6 +3,7 @@
 import { useTransition, useState } from "react"
 import {
   cancelSubscription,
+  createPortalSession,
   reactivateSubscription,
   switchSubscriptionPlan,
 } from "@/lib/stripe/actions"
@@ -92,6 +93,23 @@ export function ManageSubscription({
     )
   }
 
+  function handleOpenPortal() {
+    startTransition(async () => {
+      try {
+        const { url } = await createPortalSession()
+        window.location.href = url
+      } catch (err) {
+        setMessage({
+          type: "error",
+          text:
+            err instanceof Error
+              ? err.message
+              : "Nu s-a putut deschide portalul de facturare.",
+        })
+      }
+    })
+  }
+
   if (!isActive || tier === "FREE") {
     return null
   }
@@ -144,6 +162,22 @@ export function ManageSubscription({
           </button>
         </div>
       )}
+
+      {/* Stripe Customer Portal — card, invoices, history */}
+      <div className="rounded-lg border bg-card p-6">
+        <h3 className="mb-2 font-semibold">Card si facturi</h3>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Actualizeaza metoda de plata, descarca facturile si vezi istoricul
+          platilor in portalul Stripe.
+        </p>
+        <button
+          onClick={handleOpenPortal}
+          disabled={isPending}
+          className="rounded-md border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isPending ? "Se deschide..." : "Gestioneaza in Stripe"}
+        </button>
+      </div>
 
       {/* Switch billing cycle */}
       <div className="rounded-lg border bg-card p-6">

@@ -3,9 +3,16 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 // Mock the database module
 vi.mock("@/lib/db", () => ({
   db: {
-    select: vi.fn(),
+    select: vi.fn(() => ({
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([]),
+    })),
     update: vi.fn(),
-    insert: vi.fn(),
+    insert: vi.fn(() => ({
+      values: vi.fn().mockReturnThis(),
+      onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+    })),
   },
 }))
 
@@ -15,6 +22,7 @@ vi.mock("drizzle-orm", () => ({
 
 vi.mock("@/lib/db/schema", () => ({
   subscriptions: {
+    userId: "user_id",
     stripeCustomerId: "stripe_customer_id",
     stripeSubscriptionId: "stripe_subscription_id",
     status: "status",
@@ -22,6 +30,26 @@ vi.mock("@/lib/db/schema", () => ({
     cancelAtPeriodEnd: "cancel_at_period_end",
     currentPeriodEnd: "current_period_end",
   },
+  users: {
+    id: "id",
+    email: "email",
+    fullName: "full_name",
+  },
+  trialHistory: {
+    emailHash: "email_hash",
+  },
+}))
+
+// Stub email + trial helpers — none of them should fire during these unit tests.
+vi.mock("@/lib/subscription/trial", () => ({
+  hashEmail: (email: string) => `hash:${email}`,
+}))
+vi.mock("@/lib/email/client", () => ({
+  sendEmail: vi.fn().mockResolvedValue({ ok: true }),
+  appUrl: () => "http://localhost:3000",
+}))
+vi.mock("@/lib/email/templates", () => ({
+  paymentFailedEmail: () => ({ subject: "test", html: "<p/>" }),
 }))
 
 import { db } from "@/lib/db"

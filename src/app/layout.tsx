@@ -5,6 +5,7 @@ import { Toaster } from "sonner"
 import { OfflineIndicator } from "@/components/pwa/offline-indicator"
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider"
 import { CommandPalette } from "@/components/command/command-palette"
+import { CookieBanner } from "@/components/shared/cookie-banner"
 import "./globals.css"
 
 const inter = Inter({
@@ -57,6 +58,7 @@ export default function RootLayout({
           <SmoothScrollProvider>
             {children}
             <CommandPalette />
+            <CookieBanner />
             <Toaster
               theme="dark"
               position="bottom-right"

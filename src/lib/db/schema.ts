@@ -46,6 +46,8 @@ export const users = pgTable("users", {
   // DB never ships a pre-opted-in default for users created before the field
   // existed; the signup form sets it explicitly based on the user's choice.
   marketingOptIn: boolean("marketing_opt_in").notNull().default(false),
+  // GDPR audit trail: when consent was last given. Null when opt-in is false.
+  marketingOptInAt: timestamp("marketing_opt_in_at"),
   // Profile fields — what the user is preparing for.
   targetSpecialtyIds: text("target_specialty_ids").array(), // specialty UUIDs they're aiming for
   targetScore: integer("target_score"), // goal score for the exam (0–950)
@@ -80,6 +82,20 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   userId: uuid("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+
+// One-time tokens for verifying a change-of-email request. The new address
+// receives the link; clicking confirms ownership before we swap the email.
+export const emailChangeTokens = pgTable("email_change_tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  newEmail: text("new_email").notNull(),
   token: text("token").notNull().unique(),
   expiresAt: timestamp("expires_at").notNull(),
   usedAt: timestamp("used_at"),

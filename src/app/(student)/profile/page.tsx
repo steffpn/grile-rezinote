@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { getCurrentUser } from "@/lib/auth/get-user"
 import { getSpecialties } from "@/lib/db/queries/admission"
 import { ProfileForm } from "@/components/profile/ProfileForm"
+import { AccountManagement } from "@/components/profile/AccountManagement"
 
 export const metadata: Metadata = {
   title: "Profilul meu | grile-ReziNOTE",
@@ -34,6 +35,17 @@ export default async function ProfilePage() {
         }}
         specialties={specialties.map((s) => ({ id: s.id, name: s.name }))}
       />
+
+      <div className="mt-12">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold tracking-tight">Cont si date</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Schimba adresa de email, descarca datele tale sau sterge contul
+            (GDPR).
+          </p>
+        </div>
+        <AccountManagement email={user.email} />
+      </div>
     </div>
   )
 }

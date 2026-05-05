@@ -50,6 +50,10 @@ export type ProfileUpdateResult =
 /**
  * Persists the user's profile. All fields optional-to-clear except fullName
  * (kept required since it shows up across the app).
+ *
+ * Marketing-consent timestamp is written every time the opt-in flips to true
+ * (or cleared when it flips off). This is the GDPR audit artefact — we can
+ * prove WHEN consent was given.
  */
 export async function updateProfile(
   input: ProfileUpdateInput
@@ -68,6 +72,15 @@ export async function updateProfile(
 
   const data = parsed.data
 
+  // Compute the marketing timestamp based on transition:
+  //   - flipping ON  → set to NOW (fresh consent)
+  //   - flipping OFF → clear (consent revoked)
+  //   - unchanged    → leave as-is
+  const marketingChanged = data.marketingOptIn !== user.marketingOptIn
+  const marketingOptInAtPatch = marketingChanged
+    ? { marketingOptInAt: data.marketingOptIn ? new Date() : null }
+    : {}
+
   await db
     .update(users)
     .set({
@@ -78,6 +91,7 @@ export async function updateProfile(
       targetSpecialtyIds:
         data.targetSpecialtyIds.length > 0 ? data.targetSpecialtyIds : null,
       marketingOptIn: data.marketingOptIn,
+      ...marketingOptInAtPatch,
       peerOptIn: data.peerOptIn,
     })
     .where(eq(users.id, user.id))

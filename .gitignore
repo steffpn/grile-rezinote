@@ -48,3 +48,6 @@ public/workbox-*.js.map
 
 # planning internal
 .planning/
+
+# internal audit reports — keep local only, may contain security details
+.audit/

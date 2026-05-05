@@ -101,6 +101,13 @@ export const authConfig: NextAuthConfig = {
       if (account?.provider !== "google") return true
       if (!user.email) return false
 
+      // Defense-in-depth for `allowDangerousEmailAccountLinking: true` —
+      // refuse to link or create an account if Google didn't verify the email.
+      // The `email_verified` claim is provided by Google's userinfo response.
+      const emailVerified = (profile as { email_verified?: boolean } | null)
+        ?.email_verified
+      if (emailVerified !== true) return false
+
       // Find existing user by email (works for both prior credentials users
       // and prior Google logins).
       const [existing] = await db
@@ -165,6 +172,7 @@ export const authConfig: NextAuthConfig = {
           googleId: account.providerAccountId,
           image: (user.image as string | undefined) ?? null,
           marketingOptIn,
+          marketingOptInAt: marketingOptIn ? new Date() : null,
           trialStartedAt,
         })
         .returning({ id: users.id })

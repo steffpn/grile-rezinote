@@ -37,12 +37,12 @@ function SubmitButton() {
 export function SignupForm() {
   const [state, formAction] = useActionState<AuthState, FormData>(signup, null)
 
-  // Shared marketing consent state. Pre-checked per product request; the user
-  // can uncheck it before submitting either the credentials form or the
-  // Google OAuth flow. For the credentials path it goes through FormData;
-  // for Google it gets persisted to a short-lived cookie that the auth
-  // `signIn` callback reads when creating the new user.
-  const [marketingOptIn, setMarketingOptIn] = useState(true)
+  // Shared marketing consent state. Default OFF — GDPR requires explicit opt-in
+  // for marketing communications, so the box is unchecked until the user ticks
+  // it. For the credentials path it goes through FormData; for Google it gets
+  // persisted to a short-lived cookie that the auth `signIn` callback reads
+  // when creating the new user.
+  const [marketingOptIn, setMarketingOptIn] = useState(false)
 
   return (
     <div>

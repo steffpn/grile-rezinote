@@ -71,10 +71,6 @@ const faqs: Faq[] = [
     a: "Da, cu planul PREMIUM. Vei vedea percentile anonime pentru fiecare simulare, pozitia ta in clasamentul general si distributia scorurilor, toate complet anonime. Participarea e opt-in.",
   },
   {
-    q: "Cum functioneaza explicatiile detaliate?",
-    a: "Dupa fiecare grila ai acces la rationamentul complet, raspunsul corect motivat si referinte din bibliografia oficiala, ca sa poti aprofunda subiectul.",
-  },
-  {
     q: "Unde gasesc cartile de referinta pentru intrebarile la care am gresit?",
     a: (
       <>

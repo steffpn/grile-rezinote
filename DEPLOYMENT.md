@@ -1,614 +1,387 @@
-# Deployment Guide — grile-ReziNOTE
+# Deployment guide — grile-ReziNOTE
 
-Complete step-by-step instructions for running locally and deploying to Vercel, including all external service configuration and superadmin setup.
+This is the operational manual for deploying and operating the platform. It assumes you are taking over the project from the original developer.
 
----
+**Stack snapshot (May 2026)**
 
-## Table of Contents
+- **Framework:** Next.js 15 (App Router, RSC, Server Actions)
+- **Auth:** NextAuth v5 (JWT strategy) — Credentials + Google OAuth
+- **Database:** PostgreSQL via Drizzle ORM
+- **Payments:** Stripe (Checkout + Customer Portal + Webhooks)
+- **Email:** Resend (transactional)
+- **Rate limiting:** Upstash Redis
+- **Hosting:** Railway (recommended), Vercel-compatible
+- **PWA:** Serwist service worker, installable on iOS/Android
 
-1. [Prerequisites](#1-prerequisites)
-2. [External Services Setup](#2-external-services-setup)
-3. [Running Locally](#3-running-locally)
-4. [Deploying to Vercel](#4-deploying-to-vercel)
-5. [Creating a Superadmin](#5-creating-a-superadmin)
-6. [Post-Deploy Verification Checklist](#6-post-deploy-verification-checklist)
-7. [Production Hardening](#7-production-hardening)
-
----
-
-## 1. Prerequisites
-
-- **Node.js** 18+ (20 LTS recommended)
-- **pnpm** — this project uses pnpm, not npm or yarn
-  ```bash
-  npm install -g pnpm
-  ```
-- **Git** — to clone the repo
-- Accounts on: **Supabase**, **Stripe**, **Vercel** (for cloud deploy)
+> **Note:** an older version of this document described a Supabase + Supabase Auth setup. That is no longer accurate — the project moved to NextAuth + Drizzle. Ignore any Supabase references you may find in older audit/handoff notes.
 
 ---
 
-## 2. External Services Setup
+## Table of contents
 
-You need to configure Supabase and Stripe **before** the app can run. Do this once — the same config works for both local and Vercel.
+1. [Required services](#1-required-services)
+2. [Environment variables](#2-environment-variables)
+3. [Database setup](#3-database-setup)
+4. [Stripe configuration](#4-stripe-configuration)
+5. [Resend (email) configuration](#5-resend-email-configuration)
+6. [Google OAuth](#6-google-oauth)
+7. [Upstash (rate limiting)](#7-upstash-rate-limiting)
+8. [Deploying to Railway](#8-deploying-to-railway)
+9. [First-time admin setup](#9-first-time-admin-setup)
+10. [Operator runbooks](#10-operator-runbooks)
+11. [Backups and recovery](#11-backups-and-recovery)
+12. [Production hardening checklist](#12-production-hardening-checklist)
 
-### 2A. Supabase Project
+---
 
-1. Go to [supabase.com](https://supabase.com) and create a new project.
-2. Choose a region close to your users (e.g., `eu-central-1` for Romania).
-3. Set a strong database password — save it somewhere, you'll need it.
-4. Wait for the project to finish provisioning (~2 minutes).
+## 1. Required services
 
-**Collect these values** from Project Settings > API:
+| Service | What for | Free tier OK? |
+|---|---|---|
+| Postgres database | Persistent storage | yes (Railway has free Postgres) |
+| Stripe | Payments + subscription management | yes (test mode); live billing requires verified business |
+| Resend | Transactional email | yes (3000/mo, 100/day) |
+| Upstash Redis | Rate limiting | yes |
+| Google Cloud (OAuth) | "Continue with Google" | yes |
+| Railway / Vercel / similar | App hosting | Railway has trial credit |
 
-| Value | Where to find it |
-|-------|-----------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Settings > API > Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Settings > API > anon public key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Settings > API > service_role secret key |
-| `DATABASE_URL` | Settings > Database > Connection string (URI) — use the **Transaction** pooler URI (port 6543) |
+You can substitute any Postgres provider (Supabase database, Neon, RDS) — the app uses raw `postgres://` URLs via Drizzle.
 
-> **Important:** For `DATABASE_URL`, use the **Transaction mode** pooler connection string (port 6543), not the direct connection (port 5432). The app disables prepared statements for compatibility with transaction pooling.
+---
 
-#### Configure Supabase Auth
+## 2. Environment variables
 
-Go to **Authentication > Providers** in the Supabase dashboard:
+Copy `.env.example` to `.env.local` and fill it. **Every variable in `.env.example` is required** unless explicitly marked `OPTIONAL`. The full list:
 
-1. **Email provider** — must be enabled (it is by default).
-2. Go to **Authentication > URL Configuration**:
-   - **Site URL**: `http://localhost:3000` (for local) or `https://yourdomain.com` (for production)
-   - **Redirect URLs** — add all of these:
-     ```
-     http://localhost:3000/auth/confirm
-     https://yourdomain.com/auth/confirm
-     ```
-3. Go to **Authentication > Email Templates**:
-   - **Confirm signup** template: Make sure it contains `{{ .ConfirmationURL }}` as the link.
-   - **Reset password** template: Make sure it contains `{{ .ConfirmationURL }}` as the link.
-   - The default templates work fine — no changes needed unless you want to customize the text.
-
-#### Create the Database Trigger (CRITICAL)
-
-The app stores user profiles in a `public.users` table that mirrors Supabase's `auth.users`. You **must** create a database trigger so that when someone signs up, a row is automatically created in `public.users`.
-
-Go to **SQL Editor** in the Supabase dashboard and run this:
-
-```sql
--- Function: create a public.users row when a new auth user signs up
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = ''
-AS $$
-BEGIN
-  INSERT INTO public.users (id, email, full_name, year_of_study, role, is_superadmin)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', 'Utilizator'),
-    (NEW.raw_user_meta_data->>'year_of_study')::integer,
-    'student',
-    false
-  );
-  RETURN NEW;
-END;
-$$;
-
--- Trigger: fire after every new auth user insert
-CREATE OR REPLACE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+```
+DATABASE_URL                              # Postgres connection
+AUTH_SECRET                               # `npx auth secret`
+AUTH_URL                                  # https://your-domain.com
+AUTH_TRUST_HOST                           # "true" when behind any proxy
+NEXT_PUBLIC_APP_URL                       # same as AUTH_URL
+GOOGLE_CLIENT_ID                          # see §6
+GOOGLE_CLIENT_SECRET
+STRIPE_SECRET_KEY                         # see §4
+STRIPE_PUBLISHABLE_KEY
+STRIPE_WEBHOOK_SECRET
+STRIPE_PRO_MONTHLY_PRICE_ID
+STRIPE_PRO_ANNUAL_PRICE_ID
+STRIPE_PREMIUM_MONTHLY_PRICE_ID
+STRIPE_PREMIUM_ANNUAL_PRICE_ID
+RESEND_API_KEY                            # see §5
+EMAIL_FROM                                # OPTIONAL, defaults to noreply@grile-rezinote.ro
+UPSTASH_REDIS_REST_URL                    # see §7
+UPSTASH_REDIS_REST_TOKEN
 ```
 
-> Without this trigger, users who sign up will get stuck — the app queries `public.users` on every page load and redirects to `/login` if no row is found.
-
-#### Enable Row-Level Security (Recommended for Production)
-
-The middleware queries `users` and `subscriptions` via the Supabase client (using the anon key). You need RLS policies so the middleware can read the current user's data but users can't read each other's data.
-
-Run in **SQL Editor**:
-
-```sql
--- Enable RLS on all tables
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.chapters ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.options ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.attempts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.attempt_answers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.specialties ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.admission_data ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
-
--- Users: can read own row
-CREATE POLICY "Users can read own profile"
-  ON public.users FOR SELECT
-  USING (auth.uid() = id);
-
--- Subscriptions: can read own row
-CREATE POLICY "Users can read own subscription"
-  ON public.subscriptions FOR SELECT
-  USING (auth.uid() = user_id);
-
--- Chapters: all authenticated users can read (needed for tests/questions)
-CREATE POLICY "Authenticated users can read chapters"
-  ON public.chapters FOR SELECT
-  USING (auth.role() = 'authenticated');
-
--- Questions: all authenticated users can read
-CREATE POLICY "Authenticated users can read questions"
-  ON public.questions FOR SELECT
-  USING (auth.role() = 'authenticated');
-
--- Options: all authenticated users can read
-CREATE POLICY "Authenticated users can read options"
-  ON public.options FOR SELECT
-  USING (auth.role() = 'authenticated');
-
--- Attempts: can read own attempts
-CREATE POLICY "Users can read own attempts"
-  ON public.attempts FOR SELECT
-  USING (auth.uid() = user_id);
-
--- Attempt answers: can read own answers
-CREATE POLICY "Users can read own answers"
-  ON public.attempt_answers FOR SELECT
-  USING (
-    attempt_id IN (
-      SELECT id FROM public.attempts WHERE user_id = auth.uid()
-    )
-  );
-
--- Specialties: all authenticated can read
-CREATE POLICY "Authenticated users can read specialties"
-  ON public.specialties FOR SELECT
-  USING (auth.role() = 'authenticated');
-
--- Admission data: all authenticated can read
-CREATE POLICY "Authenticated users can read admission data"
-  ON public.admission_data FOR SELECT
-  USING (auth.role() = 'authenticated');
-
--- Site settings: all authenticated can read
-CREATE POLICY "Authenticated users can read site settings"
-  ON public.site_settings FOR SELECT
-  USING (auth.role() = 'authenticated');
-
--- Service role bypasses RLS automatically, so Server Actions
--- using the DATABASE_URL (Drizzle ORM) are unaffected by these policies.
--- These policies only affect the Supabase JS client (anon key) used in middleware.
-```
-
-> **Note:** The server-side code (Server Actions, API routes) connects via `DATABASE_URL` with the `postgres` driver, which uses the database role directly and is **not** affected by RLS. These policies only govern the Supabase JS client used in middleware for session-aware queries.
-
-### 2B. Stripe Setup
-
-1. Go to [dashboard.stripe.com](https://dashboard.stripe.com).
-2. If testing, make sure you're in **Test Mode** (toggle in the top right).
-
-#### Create Products and Prices
-
-The platform uses a 3-tier model: **FREE** (no Stripe price needed), **PRO**, and **PREMIUM**. You need to create **2 products** in Stripe, each with **2 prices** (monthly + annual), for a total of **4 prices**.
-
-See `STRIPE_SETUP.md` for full step-by-step instructions. Summary:
-
-1. Go to **Products > + Add product**:
-   - **Product 1: grile-ReziNOTE PRO**
-     - Monthly price: **119 RON / month** → copy ID to `STRIPE_PRO_MONTHLY_PRICE_ID`
-     - Annual price: **1142.40 RON / year** (≈ 95.20 RON/month, 20% discount) → copy ID to `STRIPE_PRO_ANNUAL_PRICE_ID`
-   - **Product 2: grile-ReziNOTE PREMIUM**
-     - Monthly price: **179 RON / month** → copy ID to `STRIPE_PREMIUM_MONTHLY_PRICE_ID`
-     - Annual price: **1718.40 RON / year** (≈ 143.20 RON/month, 20% discount) → copy ID to `STRIPE_PREMIUM_ANNUAL_PRICE_ID`
-
-> **Trial (7 days):** Applied in code via `subscription_data.trial_period_days` on Checkout Session creation — you do NOT need to configure trial on individual prices in Stripe Dashboard. Anti-abuse check: trial only granted to users who haven't used it before.
-
-#### Collect API Keys
-
-Go to **Developers > API keys**:
-
-| Value | Where |
-|-------|-------|
-| `STRIPE_SECRET_KEY` | Secret key (starts with `sk_test_` or `sk_live_`) |
-| `STRIPE_PUBLISHABLE_KEY` | Publishable key (starts with `pk_test_` or `pk_live_`) |
-
-#### Create Webhook Endpoint
-
-**For local development** — use Stripe CLI (see Section 3).
-
-**For Vercel production:**
-
-1. Go to **Developers > Webhooks > + Add endpoint**
-2. Endpoint URL: `https://yourdomain.com/api/webhooks/stripe`
-3. Select these events:
-   - `customer.subscription.created`
-   - `customer.subscription.updated`
-   - `customer.subscription.deleted`
-   - `invoice.payment_succeeded`
-   - `invoice.payment_failed`
-4. Click "Add endpoint"
-5. Copy the **Signing secret** (starts with `whsec_...`) → this is your `STRIPE_WEBHOOK_SECRET`
+**Boot-time guarantees:** the app will throw at import if `UPSTASH_REDIS_REST_*` is missing (the rate limiter calls `Redis.fromEnv()` eagerly) and the first incoming Stripe webhook will fail signature verification if `STRIPE_WEBHOOK_SECRET` is wrong. Both are loud failures, not silent.
 
 ---
 
-## 3. Running Locally
+## 3. Database setup
 
-### Step 1: Clone and install
+### Option A — fresh database (recommended for new deployments)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/grile-ReziNOT.git
-cd grile-ReziNOT
-pnpm install
-```
-
-### Step 2: Create `.env.local`
-
-Copy the example and fill in your values:
-
-```bash
-cp .env.example .env.local
-```
-
-Edit `.env.local`:
-
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=eyJ...your-service-role-key
-DATABASE_URL=postgresql://postgres.YOUR_PROJECT:YOUR_PASSWORD@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-
-# Stripe (use test keys for local dev)
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...  # from Stripe CLI (see Step 4)
-STRIPE_PRO_MONTHLY_PRICE_ID=price_...
-STRIPE_PRO_ANNUAL_PRICE_ID=price_...
-STRIPE_PREMIUM_MONTHLY_PRICE_ID=price_...
-STRIPE_PREMIUM_ANNUAL_PRICE_ID=price_...
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-### Step 3: Push the database schema
-
-This creates all tables in your Supabase database:
-
-```bash
+# 1. Push the full schema (Drizzle generates DDL from src/lib/db/schema.ts).
 pnpm db:push
+
+# 2. Apply the hardening migration (indexes + cascades + GDPR columns).
+psql "$DATABASE_URL" -f src/lib/db/migrations/0003_handoff_hardening.sql
 ```
 
-You should see output confirming all tables were created. Then seed the default settings:
+`db:push` is idempotent; `0003_handoff_hardening.sql` is also idempotent (uses `IF NOT EXISTS` / DO blocks) so re-runs are safe.
 
-Connect to your database (via Supabase SQL Editor or `psql`) and run:
+### Option B — existing database
 
-```sql
-INSERT INTO site_settings (key, value, updated_at)
-VALUES ('exam_duration_seconds', '14400', now())
-ON CONFLICT (key) DO NOTHING;
-```
-
-### Step 4: Set up Stripe CLI for local webhooks
-
-Install the [Stripe CLI](https://stripe.com/docs/stripe-cli):
+Run only the targeted migration files:
 
 ```bash
-# macOS
-brew install stripe/stripe-cli/stripe
-
-# Windows (scoop)
-scoop install stripe
-
-# Or download from https://github.com/stripe/stripe-cli/releases
+psql "$DATABASE_URL" -f src/lib/db/migrations/0001_add_plan_tier.sql
+psql "$DATABASE_URL" -f src/lib/db/migrations/0002_user_profile_fields.sql
+psql "$DATABASE_URL" -f src/lib/db/migrations/0003_handoff_hardening.sql
 ```
 
-Login and forward webhooks:
+### Verifying the schema
 
 ```bash
-stripe login
-stripe listen --forward-to localhost:3000/api/webhooks/stripe
-```
-
-The CLI will print a webhook signing secret like:
-
-```
-> Ready! Your webhook signing secret is whsec_1234567890abcdef...
-```
-
-Copy that value into your `.env.local` as `STRIPE_WEBHOOK_SECRET`.
-
-**Keep this terminal running** while developing.
-
-### Step 5: Run the dev server
-
-```bash
-pnpm dev
-```
-
-The app starts at [http://localhost:3000](http://localhost:3000).
-
-### Step 6: Run tests (optional)
-
-```bash
-pnpm test
-```
-
-All 45 tests should pass (scoring engine + webhooks + subscription access).
-
----
-
-## 4. Deploying to Vercel
-
-### Step 1: Push to GitHub
-
-Make sure your code is pushed to a GitHub repository. Vercel deploys from Git.
-
-```bash
-git push origin main
-```
-
-### Step 2: Import project in Vercel
-
-1. Go to [vercel.com](https://vercel.com) > **Add New Project**
-2. Import your GitHub repository
-3. Framework: **Next.js** (auto-detected)
-4. Build command: `pnpm build` (auto-detected)
-5. Output directory: leave default (`.next`)
-
-### Step 3: Set environment variables
-
-In the Vercel project settings, go to **Settings > Environment Variables** and add ALL of these:
-
-| Variable | Value |
-|----------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://YOUR_PROJECT.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Your Supabase service role key |
-| `DATABASE_URL` | Your Supabase pooler connection string (port 6543) |
-| `NEXT_PUBLIC_SITE_URL` | `https://yourdomain.com` (your Vercel domain) |
-| `NEXT_PUBLIC_APP_URL` | `https://yourdomain.com` (same as above) |
-| `STRIPE_SECRET_KEY` | `sk_live_...` (or `sk_test_...` for staging) |
-| `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (or `pk_test_...` for staging) |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_...` (from the Stripe webhook you created in Section 2B) |
-| `STRIPE_PRO_MONTHLY_PRICE_ID` | `price_...` (PRO tier, monthly billing) |
-| `STRIPE_PRO_ANNUAL_PRICE_ID` | `price_...` (PRO tier, annual billing) |
-| `STRIPE_PREMIUM_MONTHLY_PRICE_ID` | `price_...` (PREMIUM tier, monthly billing) |
-| `STRIPE_PREMIUM_ANNUAL_PRICE_ID` | `price_...` (PREMIUM tier, annual billing) |
-
-> **Important:** Use the same `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_APP_URL` — they should both be your production domain (e.g., `https://grile-rezinote.vercel.app` or your custom domain).
-
-### Step 4: Deploy
-
-Click **Deploy**. Vercel will build and deploy automatically.
-
-After the first deploy succeeds, note your production URL (e.g., `https://grile-rezinote.vercel.app`).
-
-### Step 5: Update Supabase redirect URLs
-
-Go back to Supabase dashboard > **Authentication > URL Configuration**:
-
-- Set **Site URL** to your Vercel production URL
-- Add your production URL to **Redirect URLs**:
-  ```
-  https://yourdomain.com/auth/confirm
-  ```
-
-### Step 6: Create Stripe production webhook
-
-If you haven't already (from Section 2B):
-
-1. Stripe Dashboard > **Developers > Webhooks > + Add endpoint**
-2. URL: `https://yourdomain.com/api/webhooks/stripe`
-3. Events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`
-4. Copy the signing secret → update `STRIPE_WEBHOOK_SECRET` in Vercel env vars
-5. **Redeploy** after changing env vars (Vercel > Deployments > Redeploy)
-
-### Step 7: Push database schema (if not done)
-
-If this is a fresh Supabase project that hasn't had `db:push` run yet, run it locally with your production `DATABASE_URL`:
-
-```bash
-DATABASE_URL="your-production-connection-string" pnpm db:push
-```
-
-Then seed the default exam duration:
-
-```sql
-INSERT INTO site_settings (key, value, updated_at)
-VALUES ('exam_duration_seconds', '14400', now())
-ON CONFLICT (key) DO NOTHING;
+psql "$DATABASE_URL" -c "\dt"           # list tables — should see ~14 tables
+psql "$DATABASE_URL" -c "\d subscriptions"   # check UNIQUE on user_id
+psql "$DATABASE_URL" -c "\d email_change_tokens"  # added by 0003
 ```
 
 ---
 
-## 5. Creating a Superadmin
+## 4. Stripe configuration
 
-The admin panel is protected by the `isSuperadmin` flag on the `users` table. There is no UI to promote users — you must do it via SQL. This is intentional for security.
+You need: **products, prices, webhook endpoint, customer-portal config**.
 
-### Method: SQL (works for both local and Vercel)
+### 4.1 Create the products and prices
 
-**Step 1:** Sign up as a normal user through the app UI at `/signup`. Complete the email verification.
+In Stripe Dashboard → Products, create two products: **PRO** and **PREMIUM**. For each, add two recurring prices:
 
-**Step 2:** Open the Supabase dashboard > **SQL Editor** and run:
+| Product | Price | Currency | Interval |
+|---|---|---|---|
+| PRO | 119 RON | RON | monthly |
+| PRO | 1142 RON (≈ 119 × 12 × 0.80) | RON | yearly |
+| PREMIUM | 179 RON | RON | monthly |
+| PREMIUM | 1718 RON (≈ 179 × 12 × 0.80) | RON | yearly |
+
+Copy each `price_...` ID into the matching env var.
+
+### 4.2 Webhook endpoint
+
+Stripe Dashboard → Developers → Webhooks → **Add endpoint**.
+
+- URL: `https://your-domain.com/api/webhooks/stripe`
+- Events to send:
+  - `customer.subscription.created`
+  - `customer.subscription.updated`
+  - `customer.subscription.deleted`
+  - `invoice.payment_succeeded`
+  - `invoice.payment_failed`
+- Save → copy the **Signing secret** → set as `STRIPE_WEBHOOK_SECRET`.
+
+### 4.3 Customer Portal
+
+Stripe Dashboard → Settings → Billing → Customer Portal ([direct link](https://dashboard.stripe.com/settings/billing/portal)).
+
+Enable:
+- ☑ **Customer information** — let users update email
+- ☑ **Payment methods** — add/remove cards
+- ☑ **Invoices** — view + download
+- ☑ **Cancel subscriptions** with reason collection
+- ☑ **Update subscriptions** — allow switching between PRO / PREMIUM and monthly / annual
+- ☐ Pause subscriptions — leave OFF (we don't model paused state)
+
+Branding: upload logo, set brand color `#10b981` (emerald). Set:
+- Terms of service: `https://your-domain.com/legal/terms`
+- Privacy policy: `https://your-domain.com/legal/privacy`
+
+Hit **Save**. The "Gestionează în Stripe" button on `/subscription` opens this portal.
+
+### 4.4 Local development with Stripe CLI
+
+```bash
+# Forward webhooks to your local dev server:
+stripe listen --forward-to http://localhost:3000/api/webhooks/stripe
+
+# Trigger test events:
+stripe trigger checkout.session.completed
+stripe trigger customer.subscription.created
+stripe trigger invoice.payment_failed
+```
+
+The CLI prints a `whsec_...` to use as `STRIPE_WEBHOOK_SECRET` in your local `.env.local`.
+
+---
+
+## 5. Resend (email) configuration
+
+1. Sign up at [resend.com](https://resend.com).
+2. Domains → Add Domain → enter `grile-rezinote.ro`.
+3. Resend shows 3 DNS records to add at your registrar:
+   - **SPF** (TXT) — `v=spf1 include:_spf.resend.com ~all`
+   - **DKIM** (TXT, two records: `resend._domainkey`)
+   - **DMARC** (TXT) — `v=DMARC1; p=none; rua=mailto:dmarc@grile-rezinote.ro`
+4. Wait for verification (5–30 minutes typically).
+5. API Keys → Create API Key → scope: **Sending access** → copy → set as `RESEND_API_KEY`.
+6. (Optional) Set `EMAIL_FROM="grile-ReziNOTE <noreply@grile-rezinote.ro>"` if you want a custom sender. Default is the same.
+
+**Until the domain is verified**, sends will only succeed to the email address that owns the Resend account (test-mode behavior). Free tier: 3,000 emails/month, 100/day.
+
+Emails sent by the app:
+- Password reset (`/forgot-password` flow)
+- Welcome (after credentials signup)
+- Payment failed (Stripe webhook)
+- Email-change verification
+- Account-deleted confirmation
+
+---
+
+## 6. Google OAuth
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → Create or select a project.
+2. APIs & Services → OAuth consent screen → External → fill in app name, support email, developer contact.
+3. APIs & Services → Credentials → Create credentials → **OAuth client ID** → Web application.
+4. Authorized JavaScript origins: `https://your-domain.com`, plus `http://localhost:3000` for dev.
+5. Authorized redirect URIs:
+   - `https://your-domain.com/api/auth/callback/google`
+   - `http://localhost:3000/api/auth/callback/google`
+6. Copy Client ID + Client Secret → `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+
+**Before public launch:** OAuth consent screen → Publishing status → "Push to production". Otherwise only the test user list (set in the consent screen) can sign in with Google.
+
+---
+
+## 7. Upstash (rate limiting)
+
+1. [console.upstash.com](https://console.upstash.com) → Create database → Redis.
+2. Choose a region close to your hosting (Frankfurt for EU).
+3. Copy `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` from the database details page.
+
+The app fails open if Redis is unreachable (logs an error and lets the request through) — so a Redis outage degrades to "no rate limiting" rather than full downtime.
+
+---
+
+## 8. Deploying to Railway
+
+1. Create a new project at [railway.app](https://railway.app).
+2. Add a **PostgreSQL** plugin → it auto-injects `DATABASE_URL`.
+3. Connect the GitHub repo → Railway auto-detects Next.js.
+4. Variables tab → paste every var from `.env.example` (filled with prod values).
+5. Domains → "Generate" or add a custom domain (`grile-rezinote.ro`).
+6. Trigger deploy. First deploy runs `npm run build` then `npm start`.
+
+**After first deploy:**
+
+```bash
+# Apply schema (run from your local machine, against the prod DB):
+DATABASE_URL="<railway-postgres-url>" pnpm db:push
+psql "<railway-postgres-url>" -f src/lib/db/migrations/0003_handoff_hardening.sql
+```
+
+Railway provides automated daily backups by default — see §11.
+
+### Vercel notes
+
+The app runs on Vercel too. Move the Postgres elsewhere (Neon, Supabase, Railway) and add the same env vars. Vercel sets `AUTH_TRUST_HOST=true` automatically; you can leave it.
+
+---
+
+## 9. First-time admin setup
+
+The app does not have a public admin signup. To promote your first admin:
 
 ```sql
 UPDATE users
-SET is_superadmin = true
-WHERE email = 'your-email@example.com';
+   SET is_superadmin = true,
+       role = 'admin'
+ WHERE email = 'your-admin-email@example.com';
 ```
 
-Replace `your-email@example.com` with the email you signed up with.
-
-**Step 3:** Refresh the app. You can now access `/admin` and all admin routes:
-
-| Route | Purpose |
-|-------|---------|
-| `/admin` | Admin dashboard |
-| `/admin/chapters` | Manage chapters (create, edit, reorder, delete) |
-| `/admin/questions` | Manage questions (create, edit, CS/CM types, source references) |
-| `/admin/import-export` | Bulk import/export questions from CSV/Excel |
-| `/admin/specialties` | Manage dental specialties |
-| `/admin/admission-data` | Manage historical admission thresholds |
-| `/admin/settings` | Configure exam duration |
-
-### Verifying it worked
-
-After running the SQL update:
-
-1. Go to your app and log in with the promoted account
-2. Navigate to `/admin` — you should see the admin panel
-3. If you get redirected to `/dashboard` instead, the update didn't take — double-check the email matches exactly
-
-### Creating additional admins
-
-Repeat the same process: have them sign up normally, then run the SQL update. The `isSuperadmin` flag is the only thing that controls admin access.
+After that user logs in, `/admin` becomes accessible. From there you can manage chapters, questions, specialties, admission data, and site settings.
 
 ---
 
-## 6. Post-Deploy Verification Checklist
+## 10. Operator runbooks
 
-Run through these after deploying to make sure everything works:
+### "User says their PRO didn't activate after paying"
 
-### Auth Flow
-- [ ] Sign up with a new email → receive verification email
-- [ ] Click verification link → redirected to `/dashboard`
-- [ ] Log out → redirected to `/login`
-- [ ] Log in with the same credentials → back to `/dashboard`
-- [ ] Test "Forgot password" → receive reset email → set new password
+```sql
+-- 1. Find the user and their subscription row:
+SELECT u.id, u.email, s.status, s.plan_tier, s.stripe_customer_id, s.stripe_subscription_id, s.current_period_end
+  FROM users u
+  LEFT JOIN subscriptions s ON s.user_id = u.id
+ WHERE u.email = 'reporter@example.com';
 
-### Admin Panel
-- [ ] Superadmin can access `/admin`
-- [ ] Regular user cannot access `/admin` (redirected to `/dashboard`)
-- [ ] Create a chapter in admin
-- [ ] Create a question (both CS and CM types) in admin
-- [ ] Import questions from a CSV file
-
-### Practice & Exams
-- [ ] Start a chapter practice test → answer questions → see results
-- [ ] Start a mixed practice test → verify questions from multiple chapters
-- [ ] Start an exam simulation → timer visible and counting down
-- [ ] Answer some questions, close browser, come back → answers preserved
-
-### Payments (use Stripe test mode)
-- [ ] Visit `/pricing` → see monthly and annual plans
-- [ ] Click subscribe → redirected to Stripe Checkout
-- [ ] Use test card `4242 4242 4242 4242` → payment succeeds
-- [ ] Redirected to `/checkout/success`
-- [ ] Subscription shows as active in `/subscription`
-
-### Dashboard
-- [ ] After completing a test, dashboard shows updated stats
-- [ ] Charts render (trend chart, radar chart)
-- [ ] Answer history shows completed test answers
-
-### PWA
-- [ ] On mobile, the browser shows "Add to Home Screen" prompt
-- [ ] After installing, app opens in standalone mode (no browser chrome)
-
----
-
-## 7. Production Hardening
-
-The security audit found issues that should be fixed before going live with real users:
-
-### Critical — Fix Before Launch
-
-1. **SQL injection in practice.ts** (`src/lib/actions/practice.ts` ~line 144)
-   - The `wrongAnswersOnly` code path uses `sql.raw()` to build an `IN` clause from chapter IDs
-   - Fix: replace `sql.raw()` with `sql.join()` using parameterized `sql` template literals (the safe pattern is already used elsewhere in the codebase)
-
-2. **No rate limiting on auth endpoints**
-   - `login()`, `signup()`, and `forgotPassword()` have no rate limiting
-   - Fix: Add rate limiting via Vercel's Edge Middleware, or use a library like `@upstash/ratelimit` with Vercel KV:
-     ```
-     pnpm add @upstash/ratelimit @upstash/redis
-     ```
-   - Alternatively, Supabase has built-in rate limiting on their auth endpoints — but the Server Actions bypass it since they call Supabase server-side
-
-3. **Supabase RLS policies**
-   - See Section 2A above — the RLS SQL is provided
-   - Without RLS, any authenticated user could query any other user's data by calling Supabase's PostgREST API directly with their anon key
-
-### High — Fix This Sprint
-
-4. **Add auth checks to Stripe actions** — `getCheckoutSession()` and `getSubscriptionDetails()` in `src/lib/stripe/actions.ts` don't verify the caller owns the session/subscription. Add `getCurrentUser()` checks.
-
-5. **Add superadmin check in middleware** — Currently, `/admin` routes are only protected at the layout level (`getCurrentAdmin()`). Add a middleware check so admin routes are blocked before page rendering:
-   ```typescript
-   // In middleware.ts, after the existing admin auth check:
-   if (user && pathname.startsWith("/admin")) {
-     const { data: userRecord } = await supabase
-       .from("users")
-       .select("is_superadmin")
-       .eq("id", user.id)
-       .single()
-     if (!userRecord?.is_superadmin) {
-       return NextResponse.redirect(new URL("/dashboard", request.url))
-     }
-   }
-   ```
-
-6. **Add security headers** in `next.config.ts`:
-   ```typescript
-   const nextConfig: NextConfig = {
-     async headers() {
-       return [
-         {
-           source: "/(.*)",
-           headers: [
-             { key: "X-Frame-Options", value: "DENY" },
-             { key: "X-Content-Type-Options", value: "nosniff" },
-             { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-             { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-             {
-               key: "Strict-Transport-Security",
-               value: "max-age=63072000; includeSubDomains; preload",
-             },
-           ],
-         },
-       ]
-     },
-   }
-   ```
-
-### Environment Checklist for Production
-
-- [ ] Switch Stripe from test keys (`sk_test_`, `pk_test_`) to live keys (`sk_live_`, `pk_live_`)
-- [ ] Create live Stripe products/prices (the test ones won't work in live mode)
-- [ ] Update `STRIPE_WEBHOOK_SECRET` to the live webhook's signing secret
-- [ ] Set `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_APP_URL` to your real domain
-- [ ] Update Supabase Site URL and Redirect URLs to your real domain
-- [ ] Verify the database trigger `on_auth_user_created` exists
-- [ ] Verify RLS policies are enabled
-- [ ] Seed `site_settings` with default exam duration
-
----
-
-## Environment Variables — Complete Reference
-
-```env
-# ── Supabase ──────────────────────────────────────
-NEXT_PUBLIC_SUPABASE_URL=         # Project URL (https://xxx.supabase.co)
-NEXT_PUBLIC_SUPABASE_ANON_KEY=    # Public anon key
-SUPABASE_SERVICE_ROLE_KEY=        # Secret service role key
-DATABASE_URL=                     # PostgreSQL connection string (pooler, port 6543)
-
-# ── App URLs ──────────────────────────────────────
-NEXT_PUBLIC_SITE_URL=             # Used for auth email redirects
-NEXT_PUBLIC_APP_URL=              # Used for Stripe checkout success/cancel URLs
-
-# ── Stripe ────────────────────────────────────────
-STRIPE_SECRET_KEY=                   # sk_test_... or sk_live_...
-STRIPE_PUBLISHABLE_KEY=              # pk_test_... or pk_live_...
-STRIPE_WEBHOOK_SECRET=               # whsec_... (from Stripe webhook endpoint)
-STRIPE_PRO_MONTHLY_PRICE_ID=         # price_... (PRO tier, monthly: 119 RON)
-STRIPE_PRO_ANNUAL_PRICE_ID=          # price_... (PRO tier, annual: ~1142 RON, 20% off)
-STRIPE_PREMIUM_MONTHLY_PRICE_ID=     # price_... (PREMIUM tier, monthly: 179 RON)
-STRIPE_PREMIUM_ANNUAL_PRICE_ID=      # price_... (PREMIUM tier, annual: ~1718 RON, 20% off)
+-- 2. Check whether Stripe sent the webhook:
+SELECT * FROM webhook_events
+ WHERE processed_at > NOW() - INTERVAL '1 day'
+ ORDER BY processed_at DESC LIMIT 20;
 ```
 
-Total: 11 environment variables (6 public/shared, 5 secret).
+If no relevant webhook event arrived, check Stripe Dashboard → Developers → Webhooks → your endpoint → "Recent deliveries". Resend the failing event from there.
+
+If the webhook fired but tier is still FREE: confirm the price ID on the subscription matches one of `STRIPE_*_PRICE_ID`. Mismatched price IDs are a silent failure (logged but not alerted) — fix the env var and replay the webhook.
+
+### "Refund a customer"
+
+Stripe Dashboard → Customers → find by email → Payments → ⋮ → Refund. The local DB stays in sync via the next webhook.
+
+### "Comp / extend a trial"
+
+```sql
+-- Push trial start back so they get N more days from now:
+UPDATE users SET trial_started_at = NOW() WHERE email = 'lucky@example.com';
+```
+
+If they previously consumed a trial, the `trial_history` row will block re-issuance. Clear it (rare):
+
+```sql
+DELETE FROM trial_history
+ WHERE email_hash = encode(digest(LOWER(TRIM('lucky@example.com')), 'sha256'), 'hex');
+```
+
+### "Roll AUTH_SECRET"
+
+Rotating `AUTH_SECRET` invalidates **every existing JWT** — all users get force-logged-out on next request. Communicate before doing this. Steps:
+
+```bash
+# 1. Generate new secret:
+npx auth secret
+
+# 2. Set it as AUTH_SECRET in Railway / your host.
+# 3. Redeploy. Users will be redirected to /login.
+```
+
+### "Roll Stripe webhook secret"
+
+Stripe Dashboard → Developers → Webhooks → endpoint → Signing secret → "Roll secret". Update `STRIPE_WEBHOOK_SECRET` in Railway, redeploy. There is a brief window where the old secret still works (Stripe documents this).
+
+### "Roll Google OAuth client secret"
+
+Cloud Console → Credentials → your OAuth client → Reset client secret. Update `GOOGLE_CLIENT_SECRET`, redeploy. In-flight Google sign-ins will fail until the new secret takes effect.
+
+### "Bulk import questions"
+
+Two paths:
+
+1. **Admin UI** — `/admin/import-export` accepts CSV/XLSX uploaded from the browser. The format is documented in the page itself.
+2. **CLI scripts** — `scripts/import-grile.mjs` and `scripts/import-xlsx-grile.mjs` for batch runs.
+
+Cap: 5,000 rows per upload (set in `import-export.ts` to bound DoS surface).
+
+### "User wants their data" / "User wants to delete account"
+
+These are now self-service in the app — direct them to **Profil → Cont și date**:
+- "Descarcă toate datele (JSON)" → returns a JSON file with everything.
+- "Șterge contul" → confirms with email, cancels Stripe sub, deletes the row + cascades.
+
+The account-deletion flow keeps `trial_history` (pseudonymous SHA-256 of email) on purpose, to prevent re-signup trial abuse.
+
+---
+
+## 11. Backups and recovery
+
+**Railway Postgres** ships with daily automated backups, retained 7 days on the free plan, longer on paid plans (configurable in plugin settings → Backups).
+
+**Test the restore** before declaring this done:
+
+```bash
+# 1. From Railway Postgres → Backups, download a snapshot.
+# 2. Spin up a temporary Postgres and restore:
+pg_restore -d "$TEMP_DB_URL" snapshot.dump
+# 3. Verify row counts match expectation.
+```
+
+**RTO/RPO target (suggested):** 4-hour RTO, 24-hour RPO. Document any deviation with the client.
+
+If you need point-in-time recovery (sub-day granularity), upgrade to Railway's Pro plan or move to a Postgres provider that supports PITR (Neon, Supabase Pro, AWS RDS).
+
+---
+
+## 12. Production hardening checklist
+
+Run through this list once before flipping the public-launch switch.
+
+- [ ] All `.env` values are set in production. No defaults masking missing config.
+- [ ] DNS records for the email domain (SPF / DKIM / DMARC) verified in Resend.
+- [ ] Google OAuth consent screen status: **Production**, not Testing.
+- [ ] Stripe in **Live mode** with verified business. Test-mode keys removed from prod env.
+- [ ] Stripe webhook endpoint pointed at the prod URL with the prod signing secret.
+- [ ] Stripe Customer Portal configured (§4.3) and "Gestionează în Stripe" button works.
+- [ ] First admin promoted via SQL (§9).
+- [ ] `0003_handoff_hardening.sql` applied (indexes + cascades + UNIQUE).
+- [ ] Railway backups confirmed enabled. Restore drill performed at least once.
+- [ ] Smoke test: signup → email arrives, login → password reset email arrives, checkout → tier upgrades, customer portal → opens, account deletion → completes and signs out.
+- [ ] `npx tsc --noEmit` and `vitest run` both clean.
+
+---
+
+## Support contacts
+
+- Stripe: [support.stripe.com](https://support.stripe.com)
+- Resend: support@resend.com
+- Railway: [railway.app/help](https://railway.app/help)
+- Project email: support@grile-rezinote.ro

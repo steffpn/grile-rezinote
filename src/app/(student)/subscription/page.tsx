@@ -14,7 +14,7 @@ export default async function SubscriptionPage() {
   }
 
   const [details, access] = await Promise.all([
-    getSubscriptionDetails(session.user.id),
+    getSubscriptionDetails(),
     checkSubscriptionAccess(session.user.id),
   ])
 

@@ -121,12 +121,22 @@ export async function createCheckoutSessionForTier(
 
 /**
  * Retrieves checkout session details for the success page.
+ * Verifies that the session belongs to the calling user before returning.
  */
 export async function getCheckoutSession(sessionId: string) {
+  const authSession = await auth()
+  if (!authSession?.user?.id) {
+    return null
+  }
+
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ["subscription"],
     })
+
+    if (session.metadata?.userId !== authSession.user.id) {
+      return null
+    }
 
     const subscription = session.subscription as
       | {
@@ -277,13 +287,61 @@ export async function switchSubscriptionPlan(
 }
 
 /**
- * Gets detailed subscription information for management page.
+ * Creates a Stripe Customer Portal session and returns the redirect URL.
+ * The portal lets the user update their card, download invoices, change
+ * billing email, view past payments, and manage their subscription with
+ * the full Stripe-hosted UI (more capabilities than our inline page).
+ *
+ * Configure which surfaces are exposed in:
+ *   Stripe Dashboard → Settings → Billing → Customer Portal
  */
-export async function getSubscriptionDetails(userId: string) {
+export async function createPortalSession() {
+  const session = await auth()
+  if (!session?.user?.id) {
+    throw new Error("Nu esti autentificat")
+  }
+
   const [sub] = await db
     .select()
     .from(subscriptions)
-    .where(eq(subscriptions.userId, userId))
+    .where(eq(subscriptions.userId, session.user.id))
+    .limit(1)
+
+  if (!sub?.stripeCustomerId) {
+    throw new Error("Nu exista un cont de facturare. Aboneaza-te mai intai.")
+  }
+
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: sub.stripeCustomerId,
+    return_url: `${getAppUrlOrLocal()}/subscription`,
+  })
+
+  return { url: portalSession.url }
+}
+
+function getAppUrlOrLocal(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.AUTH_URL ||
+    "http://localhost:3000"
+  )
+}
+
+/**
+ * Gets detailed subscription information for management page.
+ * Always derives userId from session — never trusts client input.
+ */
+export async function getSubscriptionDetails() {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return null
+  }
+
+  const [sub] = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, session.user.id))
     .limit(1)
 
   if (!sub) {

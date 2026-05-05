@@ -22,6 +22,8 @@ import {
   passwordResetLimiter,
 } from "@/lib/rate-limit"
 import { headers } from "next/headers"
+import { sendEmail, appUrl } from "@/lib/email/client"
+import { passwordResetEmail, welcomeEmail } from "@/lib/email/templates"
 
 async function getClientKey(prefix: string): Promise<string> {
   const h = await headers()
@@ -91,8 +93,22 @@ export async function signup(
     fullName: result.data.name,
     yearOfStudy: result.data.yearOfStudy,
     marketingOptIn,
+    marketingOptInAt: marketingOptIn ? new Date() : null,
     trialStartedAt,
   })
+
+  // Send welcome email (best-effort; never block signup)
+  {
+    const { subject, html } = welcomeEmail({
+      fullName: result.data.name,
+      dashboardUrl: `${appUrl()}/dashboard`,
+    })
+    void sendEmail({ to: result.data.email, subject, html }).then((res) => {
+      if (!res.ok) {
+        console.warn("[signup] welcome email did not send:", res.error)
+      }
+    })
+  }
 
   // Auto-login after signup
   try {
@@ -181,11 +197,17 @@ export async function forgotPassword(
       expiresAt,
     })
 
-    // TODO: Send email with reset link
-    // For now, log the token (in production, use a proper email service)
-    console.log(
-      `Password reset link: ${process.env.NEXT_PUBLIC_SITE_URL}/update-password?token=${token}`
-    )
+    const [profile] = await db
+      .select({ fullName: users.fullName })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1)
+
+    const { subject, html } = passwordResetEmail({
+      resetUrl: `${appUrl()}/update-password?token=${token}`,
+      fullName: profile?.fullName ?? null,
+    })
+    await sendEmail({ to: result.data.email, subject, html })
   }
 
   // Always return success to not reveal if email exists

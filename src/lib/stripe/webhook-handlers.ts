@@ -1,9 +1,15 @@
 import Stripe from "stripe"
 import { db } from "@/lib/db"
-import { subscriptions } from "@/lib/db/schema"
+import { subscriptions, users, trialHistory } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { resolveStripePriceId } from "@/lib/subscription/tiers"
 import type { PlanTier } from "@/lib/subscription/tiers"
+import { hashEmail } from "@/lib/subscription/trial"
+import {
+  sendEmail,
+  appUrl,
+} from "@/lib/email/client"
+import { paymentFailedEmail } from "@/lib/email/templates"
 
 /**
  * Maps Stripe subscription status to local enum values.
@@ -127,6 +133,24 @@ export async function handleSubscriptionChange(
       currentPeriodEnd: getCurrentPeriodEnd(subscription),
     })
     .where(eq(subscriptions.stripeCustomerId, customerId))
+
+  // Trial-abuse defense: if Stripe is providing a managed trial, record the
+  // user's email hash in trial_history. This prevents the user from cancelling
+  // and re-subscribing to get a second 7-day Stripe trial. The server-side
+  // opt-in trial path already writes here via startTrial().
+  if (subscription.status === "trialing") {
+    const [userRow] = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(eq(users.id, existingSub.userId))
+      .limit(1)
+    if (userRow?.email) {
+      await db
+        .insert(trialHistory)
+        .values({ emailHash: hashEmail(userRow.email) })
+        .onConflictDoNothing({ target: trialHistory.emailHash })
+    }
+  }
 }
 
 /**
@@ -167,7 +191,8 @@ export async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 
 /**
  * Handles invoice.payment_failed event.
- * Logs the failure. The subscription status will be updated by
+ * Notifies the user by email so they know to update their card before Stripe
+ * stops retrying. Subscription status will be updated by
  * customer.subscription.updated webhook when Stripe changes it.
  */
 export async function handlePaymentFailed(invoice: Stripe.Invoice) {
@@ -176,6 +201,26 @@ export async function handlePaymentFailed(invoice: Stripe.Invoice) {
   console.warn(
     `Payment failed for subscription ${subscriptionId}, invoice ${invoice.id}`
   )
-  // Stripe will send customer.subscription.updated if status changes
-  // (e.g., to past_due), which handleSubscriptionChange will process.
+
+  if (!subscriptionId) return
+
+  const [sub] = await db
+    .select({ userId: subscriptions.userId })
+    .from(subscriptions)
+    .where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
+    .limit(1)
+  if (!sub) return
+
+  const [userRow] = await db
+    .select({ email: users.email, fullName: users.fullName })
+    .from(users)
+    .where(eq(users.id, sub.userId))
+    .limit(1)
+  if (!userRow?.email) return
+
+  const { subject, html } = paymentFailedEmail({
+    fullName: userRow.fullName,
+    manageUrl: `${appUrl()}/subscription`,
+  })
+  void sendEmail({ to: userRow.email, subject, html })
 }

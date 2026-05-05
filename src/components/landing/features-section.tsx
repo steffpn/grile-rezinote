@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { motion } from "framer-motion"
 import {
   BookOpenCheck,
@@ -7,11 +8,21 @@ import {
   Users,
   Timer,
   Smartphone,
-  Lightbulb,
+  BookMarked,
 } from "lucide-react"
 import { BentoCard } from "./bento-card"
 
-const features = [
+const REFERENCE_BOOKS_URL = "https://rezidentiat-medicina-dentara.ro/"
+
+interface Feature {
+  icon: typeof BookOpenCheck
+  title: string
+  description: ReactNode
+  span: string
+  hero: boolean
+}
+
+const features: Feature[] = [
   {
     icon: BookOpenCheck,
     title: "Grile actualizate",
@@ -50,14 +61,27 @@ const features = [
     hero: false,
   },
   {
-    icon: Lightbulb,
-    title: "Explicatii detaliate",
-    description:
-      "Fiecare raspuns vine cu rationamentul complet si referinte din bibliografie.",
+    icon: BookMarked,
+    title: "Referinte din manuale",
+    description: (
+      <>
+        Fiecare grila gresita iti arata pagina exacta din manualul nostru. Le
+        gasesti pe{" "}
+        <a
+          href={REFERENCE_BOOKS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-emerald-300 underline-offset-4 hover:underline"
+        >
+          Rezidentiat Medicina Dentara
+        </a>
+        .
+      </>
+    ),
     span: "md:col-span-2",
     hero: false,
   },
-] as const
+]
 
 function HeroVisual() {
   return (

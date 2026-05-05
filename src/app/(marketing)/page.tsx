@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { HeroSection } from "@/components/landing/hero-section"
 import { FeaturesSection } from "@/components/landing/features-section"
-import { Marquee } from "@/components/landing/marquee"
 import { HowItWorksSection } from "@/components/landing/how-it-works-section"
 import { StatsSection } from "@/components/landing/stats-section"
 import { PricingPreview } from "@/components/landing/pricing-preview"
@@ -20,7 +19,6 @@ export default function HomePage() {
     <main className="flex min-h-screen flex-col">
       <HeroSection />
       <FeaturesSection />
-      <Marquee />
       <HowItWorksSection />
       <StatsSection />
       <PricingPreview />

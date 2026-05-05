@@ -266,6 +266,34 @@ export async function submitAnswer(data: {
     return { error: "Testul este deja finalizat" }
   }
 
+  // Check if answer already exists (update) or is new (insert)
+  const [existing] = await db
+    .select({ id: attemptAnswers.id })
+    .from(attemptAnswers)
+    .where(
+      and(
+        eq(attemptAnswers.attemptId, data.attemptId),
+        eq(attemptAnswers.questionId, data.questionId)
+      )
+    )
+    .limit(1)
+
+  // Daily quota gate: only enforce on NEW answers (not on revisions of an
+  // already-answered question — that doesn't increase the daily count).
+  // Closes the bypass where a FREE user could keep submitting questions
+  // past 20/day inside an already-started attempt.
+  if (!existing) {
+    const access = await checkSubscriptionAccess(user.id)
+    const quota = await checkDailyQuota(user.id, access.tier, 1)
+    if (!quota.ok) {
+      return {
+        error:
+          "Ai atins limita zilnica de intrebari pentru planul FREE. Fa upgrade la PRO pentru acces nelimitat.",
+        quotaExceeded: true as const,
+      }
+    }
+  }
+
   // Get question details for scoring
   const question = await getQuestionWithCorrectOptions(data.questionId)
   const result = scoreQuestion(
@@ -279,18 +307,6 @@ export async function submitAnswer(data: {
   // Anything in between is "partial" and must NOT be reported as correct.
   const isFullyCorrect = result.score === result.maxScore
   const isPartial = result.score > 0 && result.score < result.maxScore
-
-  // Check if answer already exists (update) or is new (insert)
-  const [existing] = await db
-    .select({ id: attemptAnswers.id })
-    .from(attemptAnswers)
-    .where(
-      and(
-        eq(attemptAnswers.attemptId, data.attemptId),
-        eq(attemptAnswers.questionId, data.questionId)
-      )
-    )
-    .limit(1)
 
   if (existing) {
     await db
