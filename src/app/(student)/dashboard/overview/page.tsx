@@ -1,16 +1,26 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Target, FileQuestion, ClipboardCheck, Flame, Sparkles, Lock } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowRight, Lock, Sparkles } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
-import { StatCard } from "@/components/dashboard/stat-card"
 import { TrendChart } from "@/components/dashboard/trend-chart"
 import { ChapterRadar } from "@/components/dashboard/radar-chart"
 import { TimeRangeSelector } from "@/components/dashboard/time-range-selector"
 import { DataTypeToggle } from "@/components/dashboard/data-type-toggle"
 import { MotivationCard } from "@/components/motivation/motivation-card"
-import { AnimatedStatGrid, AnimatedStatItem, AnimatedSection } from "@/components/motion/dashboard-animations"
+import {
+  AnimatedSection,
+} from "@/components/motion/dashboard-animations"
+import {
+  DashboardWindow,
+  DashboardWindowCell,
+  DashboardWindowGrid,
+  MonoLabel,
+  PercentBar,
+  ScorePill,
+  SectionTag,
+} from "@/components/branded"
 import {
   fetchDashboardOverview,
   fetchTrends,
@@ -28,6 +38,15 @@ function mapTypeFilter(type?: string): string | undefined {
   if (!type || type === "all") return undefined
   if (type === "practice") return "practice_chapter"
   return type
+}
+
+/**
+ * Pretty-print durata de la ultimul răspuns ca status mono.
+ */
+function formatLastActivity(streak: number): string {
+  if (streak === 0) return "fără activitate"
+  if (streak === 1) return "azi"
+  return `${streak} zile consecutive`
 }
 
 export default async function OverviewPage({
@@ -58,18 +77,24 @@ export default async function OverviewPage({
   ])
 
   const hasData = overview.stats.totalQuestions > 0
+  const accuracy = overview.stats.accuracyPct
+  const accuracyTone = accuracy >= 70 ? "pos" : accuracy >= 50 ? "neutral" : "neg"
 
   return (
     <div className="space-y-8">
       {/* Header with filters */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Progresul tau in pregatirea pentru rezidentiat
+          <SectionTag>Dashboard</SectionTag>
+          <h1 className="mt-3 text-[38px] font-bold leading-[1.05] tracking-[-0.03em] text-fg">
+            Progresul tău, în clar.
+          </h1>
+          <p className="mt-3 max-w-[560px] text-[15px] leading-[1.55] text-fg-dim">
+            Cât de mult, cât de des, cât de bine. Filtrează pe interval sau tip
+            de test pentru a izola pattern-uri.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-2">
           <Suspense>
             <TimeRangeSelector />
           </Suspense>
@@ -81,110 +106,162 @@ export default async function OverviewPage({
 
       {!hasData ? (
         /* Empty state */
-        <Card className="border-dashed border-2 border-emerald-500/20">
-          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10">
-              <Sparkles className="h-10 w-10 text-emerald-400" />
-            </div>
-            <h2 className="text-xl font-bold">
-              Incepe-ti aventura!
-            </h2>
-            <p className="mb-8 mt-2 max-w-sm text-sm text-muted-foreground">
-              Completeaza primul test de practica si urmareste-ti progresul aici.
-            </p>
-            <Button size="lg" className="rounded-full gradient-primary border-0 text-white shadow-lg hover:shadow-xl transition-shadow px-8" asChild>
-              <Link href="/practice">Incepe un test</Link>
+        <div className="rounded-[14px] border border-dashed border-line-2 bg-bg-2 px-6 py-20 text-center">
+          <div className="mx-auto mb-6 grid size-16 place-items-center rounded-full bg-neon/12 text-neon">
+            <Sparkles className="size-7" />
+          </div>
+          <h2 className="text-[24px] font-bold tracking-[-0.02em] text-fg">
+            Începe-ți aventura.
+          </h2>
+          <p className="mx-auto mt-2 max-w-sm text-[14px] leading-[1.55] text-fg-dim">
+            Completează primul test de practică și urmărește-ți progresul aici.
+          </p>
+          <div className="mt-8">
+            <Button size="lg" asChild>
+              <Link href="/practice">
+                Începe un test
+                <ArrowRight className="size-4" />
+              </Link>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
         <>
-          {/* Stat Cards */}
-          <AnimatedStatGrid className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <AnimatedStatItem>
-              <StatCard
-                label="Acuratete"
-                value={`${overview.stats.accuracyPct}%`}
-                icon={<Target className="h-6 w-6 text-emerald-400" />}
-              />
-            </AnimatedStatItem>
-            <AnimatedStatItem>
-              <StatCard
-                label="Intrebari"
-                value={overview.stats.totalQuestions}
-                icon={<FileQuestion className="h-6 w-6 text-teal-400" />}
-              />
-            </AnimatedStatItem>
-            <AnimatedStatItem>
-              <StatCard
-                label="Teste"
-                value={overview.stats.totalTests}
-                icon={<ClipboardCheck className="h-6 w-6 text-cyan-400" />}
-              />
-            </AnimatedStatItem>
-            <AnimatedStatItem>
-              <StatCard
-                label="Serie"
-                value={`${overview.streak} zile`}
-                icon={<Flame className="h-6 w-6 text-accent-warm" />}
-              />
-            </AnimatedStatItem>
-          </AnimatedStatGrid>
+          {/* Hero metric — DashboardWindow chrome */}
+          <DashboardWindow
+            title={
+              <span>
+                dashboard.tsx ·{" "}
+                <span className="text-fg-dim">last {days} days</span>
+              </span>
+            }
+            status={
+              <>
+                <span className="size-1.5 rounded-full bg-neon shadow-[0_0_6px_var(--neon)]" />
+                <MonoLabel size="body" tone="accent">
+                  {formatLastActivity(overview.streak)}
+                </MonoLabel>
+              </>
+            }
+          >
+            <DashboardWindowGrid cols={4}>
+              {/* Hero metric: accuracy */}
+              <DashboardWindowCell colSpan={2}>
+                <MonoLabel size="cell">Acuratețe globală</MonoLabel>
+                <div className="mt-3 font-mono text-[80px] font-semibold leading-none tracking-[-0.05em] text-fg">
+                  {accuracy}
+                  <span className="text-fg-mute">%</span>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <ScorePill tone={accuracyTone}>
+                    {overview.stats.correctAnswers} / {overview.stats.totalQuestions} corecte
+                  </ScorePill>
+                  <MonoLabel size="body">
+                    {overview.stats.totalTests} {overview.stats.totalTests === 1 ? "test" : "teste"}
+                  </MonoLabel>
+                </div>
+              </DashboardWindowCell>
 
-          {/* Daily Motivation */}
-          <AnimatedSection delay={0.3}>
+              {/* Streak */}
+              <DashboardWindowCell>
+                <MonoLabel size="cell">Serie zile</MonoLabel>
+                <div className="mt-3 font-mono text-[44px] font-semibold leading-none tracking-[-0.04em] text-fg">
+                  {overview.streak}
+                </div>
+                <PercentBar
+                  value={Math.min(100, (overview.streak / 30) * 100)}
+                  className="mt-4"
+                />
+                <div className="mt-2.5 font-mono text-[10.5px] text-fg-mute">
+                  {overview.streak >= 30
+                    ? "≥ 30 zile · constant"
+                    : `mai sunt ${30 - overview.streak} zile până la 30`}
+                </div>
+              </DashboardWindowCell>
+
+              {/* Total questions */}
+              <DashboardWindowCell>
+                <MonoLabel size="cell">Întrebări totale</MonoLabel>
+                <div className="mt-3 font-mono text-[44px] font-semibold leading-none tracking-[-0.04em] text-fg">
+                  {overview.stats.totalQuestions.toLocaleString("ro-RO")}
+                </div>
+                <div className="mt-4 flex items-center gap-2 font-mono text-[11px] text-fg-mute">
+                  <span>medie</span>
+                  <span className="text-fg">
+                    {overview.stats.totalTests > 0
+                      ? Math.round(
+                          overview.stats.totalQuestions /
+                            overview.stats.totalTests,
+                        )
+                      : 0}
+                  </span>
+                  <span>per test</span>
+                </div>
+              </DashboardWindowCell>
+            </DashboardWindowGrid>
+          </DashboardWindow>
+
+          {/* Daily motivation */}
+          <AnimatedSection delay={0.05}>
             <Suspense fallback={null}>
               <MotivationCard />
             </Suspense>
           </AnimatedSection>
 
-          {/* Charts Grid */}
-          <AnimatedSection delay={0.4} className="grid gap-6 lg:grid-cols-2">
-            <Card className="border-white/[0.06] shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Evolutia Acuratetii</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TrendChart data={trends} height={280} />
-              </CardContent>
-            </Card>
+          {/* Charts grid */}
+          <AnimatedSection delay={0.1} className="grid gap-4 lg:grid-cols-2">
+            <div className="rounded-[14px] border border-line bg-bg-2 p-6">
+              <div className="mb-4 flex items-baseline justify-between">
+                <div>
+                  <MonoLabel size="cell">Evoluția acurateței</MonoLabel>
+                  <h3 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-fg">
+                    Ultimele {days} zile
+                  </h3>
+                </div>
+                <ScorePill tone={accuracyTone} size="sm">
+                  {accuracy}%
+                </ScorePill>
+              </div>
+              <TrendChart data={trends} height={240} />
+            </div>
 
             {hasChapterAccess ? (
-              <Card className="border-white/[0.06] shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">Puncte Forte per Capitol</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChapterRadar data={chapterStats} />
-                </CardContent>
-              </Card>
+              <div className="rounded-[14px] border border-line bg-bg-2 p-6">
+                <div className="mb-4">
+                  <MonoLabel size="cell">Per capitol</MonoLabel>
+                  <h3 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-fg">
+                    Puncte forte vs slabe
+                  </h3>
+                </div>
+                <ChapterRadar data={chapterStats} />
+              </div>
             ) : (
-              <Card className="flex flex-col border-white/[0.06] shadow-sm">
-                <CardHeader>
-                  <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="text-lg font-semibold">
-                      Puncte Forte per Capitol
-                    </CardTitle>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
-                      <Lock className="h-3 w-3" />
-                      PREMIUM
-                    </span>
+              <div className="flex flex-col rounded-[14px] border border-line bg-bg-2 p-6">
+                <div className="mb-4 flex items-start justify-between gap-2">
+                  <div>
+                    <MonoLabel size="cell">Per capitol</MonoLabel>
+                    <h3 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-fg">
+                      Puncte forte vs slabe
+                    </h3>
                   </div>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col items-center justify-center py-10 text-center">
-                  <p className="max-w-xs text-sm text-muted-foreground">
-                    Deblocheaza analiza detaliata pe capitole si subcapitole cu
+                  <span className="inline-flex items-center gap-1 rounded-[3px] bg-warm/15 px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-mono-tight text-warm">
+                    <Lock className="size-2.5" aria-hidden />
+                    PREMIUM
+                  </span>
+                </div>
+                <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
+                  <p className="max-w-xs text-[14px] leading-[1.55] text-fg-dim">
+                    Deblochează analiza detaliată pe capitole și subcapitole cu
                     PREMIUM.
                   </p>
-                  <Link
-                    href="/pricing"
-                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-xs font-semibold text-white shadow transition-all hover:shadow-md"
-                  >
-                    <Sparkles className="h-3 w-3" />
-                    Treci la PREMIUM
-                  </Link>
-                </CardContent>
-              </Card>
+                  <Button asChild className="mt-6" size="sm">
+                    <Link href="/pricing">
+                      <Sparkles className="size-3.5" />
+                      Treci la PREMIUM
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             )}
           </AnimatedSection>
         </>
@@ -192,3 +269,4 @@ export default async function OverviewPage({
     </div>
   )
 }
+

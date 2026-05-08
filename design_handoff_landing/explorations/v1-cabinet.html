@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>grile-ReziNOTE — Cabinet</title>
+<meta name="viewport" content="width=1440">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(0.13 0.012 165);
+    --bg-2: oklch(0.16 0.014 165);
+    --bg-3: oklch(0.20 0.016 165);
+    --line: oklch(0.28 0.018 165);
+    --line-2: oklch(0.34 0.02 165);
+    --fg: oklch(0.96 0.008 95);
+    --fg-dim: oklch(0.72 0.012 95);
+    --fg-mute: oklch(0.55 0.015 95);
+    --neon: oklch(0.82 0.20 162);
+    --neon-2: oklch(0.72 0.18 162);
+    --neon-deep: oklch(0.50 0.14 162);
+    --warn: oklch(0.78 0.16 60);
+    --danger: oklch(0.70 0.20 25);
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    width: 1440px;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: var(--mono); font-feature-settings: 'zero', 'cv11'; }
+
+  /* ───── NAV ───── */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: oklch(0.13 0.012 165 / 0.72);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    max-width: 1280px; margin: 0 auto;
+    padding: 18px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; letter-spacing: -0.02em; font-size: 17px;
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--neon) 0%, var(--neon-2) 100%);
+    box-shadow: 0 0 18px oklch(0.82 0.20 162 / 0.4);
+    display: grid; place-items: center;
+    color: var(--bg); font-weight: 800; font-size: 14px;
+  }
+  .nav-links { display: flex; gap: 32px; font-size: 14px; color: var(--fg-dim); }
+  .nav-links a:hover { color: var(--fg); }
+  .nav-cta { display: flex; gap: 12px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    border: 1px solid transparent;
+    transition: all .15s;
+    cursor: pointer;
+  }
+  .btn-ghost { color: var(--fg-dim); }
+  .btn-ghost:hover { color: var(--fg); }
+  .btn-outline { border-color: var(--line-2); color: var(--fg); }
+  .btn-outline:hover { background: var(--bg-2); border-color: oklch(0.42 0.02 165); }
+  .btn-primary {
+    background: var(--neon); color: var(--bg);
+    font-weight: 600;
+    box-shadow: 0 0 0 1px oklch(0.82 0.20 162 / 0.5), 0 8px 32px -8px oklch(0.82 0.20 162 / 0.5);
+  }
+  .btn-primary:hover { background: oklch(0.86 0.20 162); }
+  .btn-lg { padding: 14px 24px; font-size: 15px; border-radius: 12px; }
+
+  /* ───── HERO ───── */
+  .hero {
+    max-width: 1280px; margin: 0 auto;
+    padding: 88px 48px 64px;
+    position: relative;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 64px;
+    align-items: center;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 12px;
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    font-size: 12px; font-weight: 500;
+    color: var(--fg-dim);
+    background: var(--bg-2);
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--neon);
+    box-shadow: 0 0 10px var(--neon);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.5; } }
+  h1.display {
+    margin-top: 28px;
+    font-size: 88px;
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+  h1.display .accent {
+    color: var(--neon);
+    font-style: italic;
+    font-weight: 600;
+  }
+  .hero-sub {
+    margin-top: 28px;
+    font-size: 19px; line-height: 1.55;
+    color: var(--fg-dim);
+    max-width: 540px;
+  }
+  .hero-cta-row {
+    margin-top: 40px;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .hero-meta {
+    margin-top: 36px;
+    display: flex; gap: 28px;
+    font-size: 13px; color: var(--fg-mute);
+  }
+  .hero-meta-item { display: flex; align-items: center; gap: 8px; }
+  .check { color: var(--neon); }
+
+  /* hero side: result card mock */
+  .result-card {
+    background: linear-gradient(180deg, var(--bg-2) 0%, oklch(0.15 0.014 165) 100%);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow:
+      0 0 0 1px oklch(0.82 0.20 162 / 0.05),
+      0 24px 80px -20px oklch(0.10 0.01 165 / 0.8),
+      inset 0 1px 0 oklch(0.30 0.02 165 / 0.6);
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -10%;
+    width: 60%; height: 200%;
+    background: radial-gradient(ellipse at center, oklch(0.82 0.20 162 / 0.10) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .rc-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--line);
+    font-size: 12px; color: var(--fg-mute);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .rc-status {
+    color: var(--neon);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rc-score-block { padding: 24px 0 20px; }
+  .rc-score-label { font-size: 12px; color: var(--fg-mute); text-transform: uppercase; letter-spacing: 0.1em; }
+  .rc-score {
+    font-family: var(--mono);
+    font-size: 92px; font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-top: 8px;
+    color: var(--fg);
+  }
+  .rc-score sup { font-size: 26px; color: var(--fg-mute); margin-left: 6px; vertical-align: 56px; }
+  .rc-score-delta {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 14px;
+    padding: 4px 10px;
+    background: oklch(0.82 0.20 162 / 0.12);
+    color: var(--neon);
+    border-radius: 6px;
+    font-size: 12px; font-family: var(--mono);
+  }
+  .rc-divider {
+    border-top: 1px dashed var(--line); margin: 8px 0 18px;
+  }
+  .rc-admit-label { font-size: 12px; color: var(--fg-mute); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+  .rc-spec {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .rc-spec:last-child { border-bottom: none; }
+  .rc-spec-name { display: flex; align-items: center; gap: 10px; }
+  .rc-spec-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .rc-spec-dot.ok { background: var(--neon); box-shadow: 0 0 8px var(--neon); }
+  .rc-spec-dot.no { background: oklch(0.40 0.02 165); }
+  .rc-spec-detail { color: var(--fg-mute); font-family: var(--mono); font-size: 12px; }
+  .rc-spec.no .rc-spec-name { color: var(--fg-mute); }
+  .rc-foot {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--fg-mute);
+    display: flex; justify-content: space-between;
+  }
+
+  /* ───── STATS STRIP ───── */
+  .stats-strip {
+    max-width: 1280px; margin: 32px auto 0;
+    padding: 32px 48px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 48px;
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 40px; font-weight: 500;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+  .stat-num .unit { color: var(--neon); }
+  .stat-label { font-size: 12px; color: var(--fg-mute); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+
+  /* ───── SECTION ───── */
+  section.block {
+    max-width: 1280px; margin: 0 auto;
+    padding: 120px 48px;
+  }
+  .section-head { margin-bottom: 64px; }
+  .section-tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 11px;
+    color: var(--neon);
+    text-transform: uppercase; letter-spacing: 0.15em;
+    padding: 4px 10px;
+    border: 1px solid oklch(0.82 0.20 162 / 0.3);
+    border-radius: 4px;
+    background: oklch(0.82 0.20 162 / 0.05);
+  }
+  h2.section-title {
+    margin-top: 20px;
+    font-size: 56px; line-height: 1.0;
+    letter-spacing: -0.035em;
+    font-weight: 600;
+    text-wrap: balance;
+    max-width: 780px;
+  }
+  h2.section-title .accent { color: var(--neon); font-style: italic; font-weight: 500; }
+  .section-sub {
+    margin-top: 20px;
+    font-size: 18px; color: var(--fg-dim);
+    max-width: 640px; line-height: 1.55;
+  }
+
+  /* ───── ADMISSION KILLER ───── */
+  .admission-block {
+    background:
+      radial-gradient(ellipse at 80% 20%, oklch(0.82 0.20 162 / 0.10) 0%, transparent 50%),
+      var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 56px;
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 56px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .admission-block::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(transparent 95%, oklch(0.82 0.20 162 / 0.04) 100%),
+      linear-gradient(90deg, transparent 95%, oklch(0.82 0.20 162 / 0.04) 100%);
+    background-size: 32px 32px;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+  .admission-text h3 {
+    font-size: 44px; line-height: 1.05;
+    letter-spacing: -0.03em; font-weight: 600;
+    text-wrap: balance;
+  }
+  .admission-text h3 .accent { color: var(--neon); }
+  .admission-text p {
+    margin-top: 20px;
+    font-size: 17px; color: var(--fg-dim); line-height: 1.55;
+  }
+  .admission-text ul {
+    margin-top: 28px; list-style: none;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .admission-text li {
+    display: flex; align-items: flex-start; gap: 12px;
+    color: var(--fg-dim); font-size: 15px;
+  }
+  .admission-text li .dot {
+    flex-shrink: 0;
+    width: 6px; height: 6px;
+    border-radius: 2px;
+    margin-top: 8px;
+    background: var(--neon);
+  }
+  /* admission visual: distribution chart */
+  .dist-card {
+    background: oklch(0.10 0.01 165);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+  }
+  .dist-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 24px;
+    font-size: 12px; color: var(--fg-mute);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .dist-head .live { color: var(--neon); display: flex; align-items: center; gap: 6px; }
+  .dist-svg { width: 100%; height: 220px; display: block; }
+  .dist-axis {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    margin-top: 8px;
+    font-family: var(--mono); font-size: 11px; color: var(--fg-mute);
+  }
+  .dist-axis span:nth-child(2n) { text-align: center; }
+  .dist-axis span:last-child { text-align: right; }
+  .dist-legend {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    font-size: 12px; color: var(--fg-mute);
+  }
+  .dist-legend-item .v { font-family: var(--mono); color: var(--fg); font-size: 18px; display: block; margin-bottom: 4px; }
+
+  /* ───── FEATURES BENTO ───── */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 240px;
+    gap: 16px;
+  }
+  .feat {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: border-color .2s;
+  }
+  .feat:hover { border-color: var(--line-2); }
+  .feat-tag { font-family: var(--mono); font-size: 11px; color: var(--neon); letter-spacing: 0.1em; text-transform: uppercase; }
+  .feat-title { font-size: 22px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 600; margin-top: 8px; }
+  .feat-desc { font-size: 14px; color: var(--fg-dim); line-height: 1.5; margin-top: 10px; }
+  .feat-1 { grid-column: span 3; grid-row: span 2; }
+  .feat-2 { grid-column: span 3; }
+  .feat-3 { grid-column: span 2; }
+  .feat-4 { grid-column: span 1; }
+  .feat-5 { grid-column: span 3; grid-row: span 1; }
+  .feat-6 { grid-column: span 3; }
+  .feat-visual { flex: 1; display: flex; align-items: flex-end; justify-content: center; padding-top: 16px; }
+
+  /* feat 1: timer mock */
+  .timer-mock {
+    width: 100%; max-width: 320px;
+    text-align: center;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: oklch(0.10 0.01 165);
+  }
+  .timer-mock .t-label { font-family: var(--mono); font-size: 10px; color: var(--fg-mute); letter-spacing: 0.15em; text-transform: uppercase; }
+  .timer-mock .t-time { font-family: var(--mono); font-size: 56px; font-weight: 500; letter-spacing: -0.04em; color: var(--neon); margin: 8px 0; line-height: 1; }
+  .timer-mock .t-sub { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--fg-mute); }
+  .timer-mock .t-sub span:first-child { color: var(--fg-dim); }
+
+  /* feat 2: chapters */
+  .chapters-list { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .chap-row {
+    display: grid; grid-template-columns: 14px 1fr auto;
+    gap: 10px; align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    background: oklch(0.10 0.01 165);
+    border: 1px solid var(--line);
+  }
+  .chap-row .num { font-family: var(--mono); font-size: 10px; color: var(--fg-mute); }
+  .chap-row .bar { width: 80px; height: 4px; border-radius: 999px; background: var(--line); position: relative; }
+  .chap-row .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--neon); border-radius: 999px; }
+
+  /* feat 3: heat map */
+  .heat-grid {
+    display: grid; grid-template-columns: repeat(13, 1fr);
+    gap: 3px; width: 100%;
+  }
+  .heat-cell { aspect-ratio: 1; border-radius: 2px; background: oklch(0.20 0.01 165); }
+
+  /* feat 5: ranking */
+  .rank-mock { width: 100%; }
+  .rank-row {
+    display: grid; grid-template-columns: 30px 1fr auto;
+    align-items: center; gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .rank-row:last-child { border-bottom: none; }
+  .rank-row.you { color: var(--neon); }
+  .rank-row .pos { font-family: var(--mono); color: var(--fg-mute); font-size: 11px; }
+  .rank-row.you .pos { color: var(--neon); }
+  .rank-row .name { color: var(--fg); }
+  .rank-row.you .name { color: var(--neon); font-weight: 500; }
+  .rank-row .pts { font-family: var(--mono); color: var(--fg-mute); }
+  .rank-row.you .pts { color: var(--neon); }
+
+  /* ───── HOW IT WORKS ───── */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    counter-reset: step;
+  }
+  .step {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    background: var(--bg-2);
+    position: relative;
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--neon);
+    letter-spacing: 0.15em;
+  }
+  .step h4 {
+    margin-top: 18px;
+    font-size: 22px; line-height: 1.15;
+    letter-spacing: -0.02em; font-weight: 600;
+  }
+  .step p { margin-top: 12px; font-size: 14px; color: var(--fg-dim); line-height: 1.5; }
+  .step-arrow {
+    position: absolute; top: 32px; right: -20px;
+    color: var(--line-2); font-family: var(--mono);
+    z-index: 1;
+  }
+  .step:last-child .step-arrow { display: none; }
+
+  /* ───── PRICING ───── */
+  .pricing {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .price-card {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 36px;
+    background: var(--bg-2);
+    position: relative;
+  }
+  .price-card.featured {
+    border-color: oklch(0.82 0.20 162 / 0.4);
+    background:
+      radial-gradient(ellipse at top, oklch(0.82 0.20 162 / 0.06) 0%, transparent 70%),
+      var(--bg-2);
+    box-shadow: 0 0 0 1px oklch(0.82 0.20 162 / 0.1), 0 24px 64px -16px oklch(0.82 0.20 162 / 0.12);
+  }
+  .price-tag-feat {
+    position: absolute; top: -12px; left: 36px;
+    padding: 4px 10px;
+    background: var(--neon); color: var(--bg);
+    font-size: 11px; font-weight: 600; font-family: var(--mono);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border-radius: 4px;
+  }
+  .price-name { font-size: 14px; color: var(--fg-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .price-amt {
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 56px; font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .price-amt .cur { font-size: 24px; color: var(--fg-dim); margin-left: 4px; }
+  .price-period { font-size: 14px; color: var(--fg-mute); margin-top: 6px; }
+  .price-period s { color: var(--fg-mute); opacity: 0.5; }
+  .price-list {
+    margin: 28px 0;
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    list-style: none;
+    display: flex; flex-direction: column; gap: 12px;
+    font-size: 14px;
+  }
+  .price-list li { display: flex; align-items: flex-start; gap: 10px; color: var(--fg-dim); }
+  .price-list li .check { color: var(--neon); flex-shrink: 0; margin-top: 4px; }
+  .price-foot { font-size: 13px; color: var(--fg-mute); margin-top: 14px; text-align: center; }
+
+  /* ───── FAQ ───── */
+  .faq-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--line);
+    padding: 24px 8px 24px 0;
+  }
+  .faq-q {
+    font-size: 17px; font-weight: 500;
+    letter-spacing: -0.015em;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
+  }
+  .faq-q .plus { color: var(--neon); font-family: var(--mono); }
+  .faq-a { margin-top: 12px; font-size: 14px; color: var(--fg-dim); line-height: 1.6; }
+
+  /* ───── FINAL CTA ───── */
+  .final-cta {
+    max-width: 1280px; margin: 0 auto;
+    padding: 96px 48px;
+    text-align: center;
+    position: relative;
+  }
+  .final-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, oklch(0.82 0.20 162 / 0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .final-cta h2 {
+    font-size: 84px; line-height: 0.95;
+    letter-spacing: -0.045em; font-weight: 700;
+    text-wrap: balance;
+    max-width: 900px; margin: 0 auto;
+  }
+  .final-cta h2 .accent { color: var(--neon); font-style: italic; font-weight: 600; }
+  .final-cta p { margin-top: 24px; font-size: 18px; color: var(--fg-dim); }
+  .final-cta-row { margin-top: 40px; display: flex; gap: 14px; justify-content: center; }
+
+  /* ───── FOOTER ───── */
+  footer {
+    border-top: 1px solid var(--line);
+    background: oklch(0.11 0.01 165);
+  }
+  .foot-inner {
+    max-width: 1280px; margin: 0 auto;
+    padding: 56px 48px 32px;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 48px;
+  }
+  .foot-col h5 { font-size: 11px; color: var(--fg-mute); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 18px; }
+  .foot-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+  .foot-col li a { color: var(--fg-dim); }
+  .foot-col li a:hover { color: var(--fg); }
+  .foot-blurb { color: var(--fg-mute); font-size: 13px; line-height: 1.5; max-width: 280px; margin-top: 16px; }
+  .foot-bottom {
+    border-top: 1px solid var(--line);
+    padding: 24px 48px;
+    max-width: 1280px; margin: 0 auto;
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--fg-mute);
+    font-family: var(--mono);
+  }
+
+  /* grid pattern */
+  .grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse at top right, black 0%, transparent 70%);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="#">
+      <span class="logo-mark">R</span>
+      <span>grile-ReziNOTE</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#admission">Admitere</a>
+      <a href="#how">Cum funcționează</a>
+      <a href="#pricing">Preț</a>
+      <a href="#faq">Întrebări</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="#">Login</a>
+      <a class="btn btn-primary" href="#">Începe gratuit →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" style="position: relative;">
+  <div class="grid-bg"></div>
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow"><span class="dot"></span> Sesiunea 2026 · 187 zile rămase</div>
+      <h1 class="display">
+        Vezi dacă ai fi<br>
+        <span class="accent">intrat anul trecut.</span>
+      </h1>
+      <p class="hero-sub">
+        Simulator complet pentru rezidențiatul în medicină dentară. Dă examenul, primește scorul real, și află instant la ce specialitate ai fi fost admis pe baza pragurilor din ultimii 5 ani.
+      </p>
+      <div class="hero-cta-row">
+        <a class="btn btn-primary btn-lg" href="#">Începe simularea gratuit</a>
+        <a class="btn btn-outline btn-lg" href="#">Vezi cum arată ▸</a>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item"><span class="check">✓</span> 7 zile gratuit</div>
+        <div class="hero-meta-item"><span class="check">✓</span> Fără card</div>
+        <div class="hero-meta-item"><span class="check">✓</span> Anulezi oricând</div>
+      </div>
+    </div>
+
+    <!-- Result card mock -->
+    <div class="result-card">
+      <div class="rc-header">
+        <span>Simulare · 21 oct 2026</span>
+        <span class="rc-status">● Finalizat</span>
+      </div>
+      <div class="rc-score-block">
+        <div class="rc-score-label">Scor total</div>
+        <div class="rc-score">847<sup class="mono">/950</sup></div>
+        <div class="rc-score-delta">↑ +62 față de simularea trecută</div>
+      </div>
+      <div class="rc-divider"></div>
+      <div class="rc-admit-label">Ai fi fost admis la</div>
+      <div class="rc-spec">
+        <div class="rc-spec-name"><span class="rc-spec-dot ok"></span> Endodonție · UMF Carol Davila</div>
+        <div class="rc-spec-detail">prag 821</div>
+      </div>
+      <div class="rc-spec">
+        <div class="rc-spec-name"><span class="rc-spec-dot ok"></span> Pedodonție · UMF Iuliu Hațieganu</div>
+        <div class="rc-spec-detail">prag 798</div>
+      </div>
+      <div class="rc-spec">
+        <div class="rc-spec-name"><span class="rc-spec-dot ok"></span> Ortodonție · UMF Gr. T. Popa</div>
+        <div class="rc-spec-detail">prag 834</div>
+      </div>
+      <div class="rc-spec no">
+        <div class="rc-spec-name"><span class="rc-spec-dot no"></span> Chirurgie OMF · Carol Davila</div>
+        <div class="rc-spec-detail">prag 891 · −44</div>
+      </div>
+      <div class="rc-foot">
+        <span>Percentila <strong style="color: var(--fg);" class="mono">87</strong></span>
+        <span>3,142 utilizatori</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div>
+    <div class="stat-num mono">12<span class="unit">k</span>+</div>
+    <div class="stat-label">Grile validate</div>
+  </div>
+  <div>
+    <div class="stat-num mono">5<span class="unit">ani</span></div>
+    <div class="stat-label">Date istorice admitere</div>
+  </div>
+  <div>
+    <div class="stat-num mono">200</div>
+    <div class="stat-label">Întrebări per simulare</div>
+  </div>
+  <div>
+    <div class="stat-num mono">3<span class="unit">h</span></div>
+    <div class="stat-label">Cronometru oficial</div>
+  </div>
+</div>
+
+<!-- ADMISSION KILLER -->
+<section class="block" id="admission">
+  <div class="section-head">
+    <span class="section-tag">Killer feature</span>
+    <h2 class="section-title">
+      Nu mai ghici. <span class="accent">Vezi exact</span> unde ai fi intrat.
+    </h2>
+    <p class="section-sub">
+      Pentru fiecare simulare, comparăm scorul tău cu pragurile reale de admitere din ultimii 5 ani — pentru fiecare specialitate, fiecare UMF.
+    </p>
+  </div>
+
+  <div class="admission-block">
+    <div class="admission-text">
+      <h3>Endodonție Carol Davila <span class="accent">— prag 821.</span> Tu ai 847.</h3>
+      <p>
+        Imediat ce termini examenul, vezi într-o singură pagină la ce specialități ai fi fost admis, cu cât marjă, și care sunt cele la care îți mai trebuie încă X puncte.
+      </p>
+      <ul>
+        <li><span class="dot"></span> Praguri actualizate: 2021, 2022, 2023, 2024, 2025</li>
+        <li><span class="dot"></span> Toate UMF-urile RO + numărul de locuri pe an</li>
+        <li><span class="dot"></span> Distribuția scorurilor altor utilizatori — vezi unde ești</li>
+        <li><span class="dot"></span> Recomandări specifice: ce capitole să recapitulezi pentru +50 pct</li>
+      </ul>
+    </div>
+
+    <div class="dist-card">
+      <div class="dist-head">
+        <span>Distribuția scorurilor · Endodonție</span>
+        <span class="live">● live · n=3142</span>
+      </div>
+      <svg class="dist-svg" viewBox="0 0 480 220" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="distFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="oklch(0.82 0.20 162)" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="oklch(0.82 0.20 162)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- gridlines -->
+        <line x1="0" y1="55" x2="480" y2="55" stroke="oklch(0.28 0.018 165)" stroke-dasharray="2 4"/>
+        <line x1="0" y1="110" x2="480" y2="110" stroke="oklch(0.28 0.018 165)" stroke-dasharray="2 4"/>
+        <line x1="0" y1="165" x2="480" y2="165" stroke="oklch(0.28 0.018 165)" stroke-dasharray="2 4"/>
+        <!-- bell curve -->
+        <path d="M 0 220 C 60 220, 100 215, 130 200 C 160 180, 180 140, 200 95 C 220 50, 240 30, 260 35 C 280 50, 300 95, 330 150 C 360 195, 420 218, 480 220 L 480 220 Z"
+              fill="url(#distFill)"/>
+        <path d="M 0 220 C 60 220, 100 215, 130 200 C 160 180, 180 140, 200 95 C 220 50, 240 30, 260 35 C 280 50, 300 95, 330 150 C 360 195, 420 218, 480 220"
+              fill="none" stroke="oklch(0.82 0.20 162)" stroke-width="1.5"/>
+        <!-- threshold line: prag 821 -->
+        <line x1="220" y1="0" x2="220" y2="220" stroke="oklch(0.78 0.16 60)" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="226" y="14" font-family="JetBrains Mono" font-size="10" fill="oklch(0.78 0.16 60)">prag 821</text>
+        <!-- you -->
+        <line x1="290" y1="0" x2="290" y2="220" stroke="oklch(0.96 0.008 95)" stroke-width="1.5"/>
+        <circle cx="290" cy="65" r="5" fill="oklch(0.82 0.20 162)" stroke="oklch(0.13 0.012 165)" stroke-width="2"/>
+        <text x="296" y="60" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="oklch(0.96 0.008 95)">tu · 847</text>
+      </svg>
+      <div class="dist-axis"><span>500</span><span>650</span><span>800</span><span>900</span><span>950</span></div>
+      <div class="dist-legend">
+        <div class="dist-legend-item"><span class="v">87</span>percentilă</div>
+        <div class="dist-legend-item"><span class="v">+26</span>peste prag</div>
+        <div class="dist-legend-item"><span class="v">412</span>au depășit</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BENTO -->
+<section class="block" id="features">
+  <div class="section-head">
+    <span class="section-tag">Tool kit</span>
+    <h2 class="section-title">Tot ce-ți trebuie pentru <span class="accent">rezidențiat.</span> Nimic în plus.</h2>
+  </div>
+
+  <div class="bento">
+    <!-- 1: Simulator (mare) -->
+    <div class="feat feat-1">
+      <div>
+        <span class="feat-tag">01 / Simulator</span>
+        <h3 class="feat-title">200 grile. 3 ore. Cronometru oficial.</h3>
+        <p class="feat-desc">50 CS + 150 CM, randomizate din toate capitolele. Scoring identic cu cel oficial: 4p/0p pe CS, partial credit cu anulare pe CM. Maxim 950.</p>
+      </div>
+      <div class="feat-visual">
+        <div class="timer-mock">
+          <div class="t-label">Timp rămas</div>
+          <div class="t-time mono">02:14:38</div>
+          <div class="t-sub">
+            <span>Întrebare 87/200</span>
+            <span>răspunse 84</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2: Capitole -->
+    <div class="feat feat-2">
+      <div>
+        <span class="feat-tag">02 / Practice</span>
+        <h3 class="feat-title">Antrenament pe capitole.</h3>
+        <p class="feat-desc">Alege un capitol sau mixează. Cu sau fără timer. Vezi răspunsul imediat sau la final.</p>
+      </div>
+      <div class="feat-visual">
+        <div class="chapters-list">
+          <div class="chap-row"><span class="num">01</span><span>Endodonție</span><span class="bar"><i style="width: 78%"></i></span></div>
+          <div class="chap-row"><span class="num">02</span><span>Pedodonție</span><span class="bar"><i style="width: 64%"></i></span></div>
+          <div class="chap-row"><span class="num">03</span><span>Protetică</span><span class="bar"><i style="width: 91%"></i></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3: Heat map -->
+    <div class="feat feat-3">
+      <div>
+        <span class="feat-tag">03 / Tracking</span>
+        <h3 class="feat-title">Heat map de progres</h3>
+        <p class="feat-desc">Fiecare zi în care ai exersat.</p>
+      </div>
+      <div class="feat-visual">
+        <div class="heat-grid" id="heat-grid"></div>
+      </div>
+    </div>
+
+    <!-- 4: Greșeli -->
+    <div class="feat feat-4">
+      <div>
+        <span class="feat-tag">04</span>
+        <h3 class="feat-title">Greșelile tale, una câte una.</h3>
+        <p class="feat-desc">Refă doar întrebările pe care le-ai picat.</p>
+      </div>
+    </div>
+
+    <!-- 5: Ranking -->
+    <div class="feat feat-5">
+      <div>
+        <span class="feat-tag">05 / Ranking</span>
+        <h3 class="feat-title">Vezi unde ești față de toți ceilalți.</h3>
+        <p class="feat-desc">Anonim. Percentilă, distribuție, top.</p>
+      </div>
+      <div class="feat-visual">
+        <div class="rank-mock">
+          <div class="rank-row"><span class="pos">#142</span><span class="name">studiosa.dent</span><span class="pts mono">891</span></div>
+          <div class="rank-row you"><span class="pos">#143</span><span class="name">tu</span><span class="pts mono">847</span></div>
+          <div class="rank-row"><span class="pos">#144</span><span class="name">marcus.dmd</span><span class="pts mono">845</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6: PWA -->
+    <div class="feat feat-6">
+      <div>
+        <span class="feat-tag">06 / Mobil</span>
+        <h3 class="feat-title">Instalabilă pe telefon. Învață în pauze.</h3>
+        <p class="feat-desc">PWA. Iconiță pe home screen. Funcționează ca un app nativ.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="block" id="how">
+  <div class="section-head">
+    <span class="section-tag">Workflow</span>
+    <h2 class="section-title">Patru pași până la <span class="accent">prima ta simulare reală.</span></h2>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">PAS 01</div>
+      <h4>Cont gratuit</h4>
+      <p>Email + parolă. 7 zile trial fără card. Acces complet la tot.</p>
+      <span class="step-arrow">→</span>
+    </div>
+    <div class="step">
+      <div class="step-num">PAS 02</div>
+      <h4>Practica pe capitole</h4>
+      <p>Începe cu zonele unde ești cel mai slab. Feedback la fiecare întrebare.</p>
+      <span class="step-arrow">→</span>
+    </div>
+    <div class="step">
+      <div class="step-num">PAS 03</div>
+      <h4>Simulare completă</h4>
+      <p>200 întrebări, 3 ore, cronometru. Exact ca în ziua examenului.</p>
+      <span class="step-arrow">→</span>
+    </div>
+    <div class="step">
+      <div class="step-num">PAS 04</div>
+      <h4>Vezi unde ai intra</h4>
+      <p>Comparație cu pragurile reale. Plan clar pentru următoarele săptămâni.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING PREVIEW -->
+<section class="block" id="pricing">
+  <div class="section-head" style="text-align: center;">
+    <span class="section-tag">Preț onest</span>
+    <h2 class="section-title" style="margin: 20px auto 0;">Mai ieftin decât <span class="accent">o carte de specialitate.</span></h2>
+    <p class="section-sub" style="margin: 20px auto 0;">Acces complet, fără limite. 7 zile gratuit, anulezi oricând.</p>
+  </div>
+
+  <div class="pricing">
+    <div class="price-card">
+      <div class="price-name">Lunar</div>
+      <div class="price-amt mono">49<span class="cur">RON</span></div>
+      <div class="price-period">pe lună · facturat lunar</div>
+      <ul class="price-list">
+        <li><span class="check">✓</span> Toate cele 12.000+ grile</li>
+        <li><span class="check">✓</span> Simulări nelimitate</li>
+        <li><span class="check">✓</span> Comparație admitere</li>
+        <li><span class="check">✓</span> Statistici complete</li>
+        <li><span class="check">✓</span> PWA mobil</li>
+      </ul>
+      <a class="btn btn-outline btn-lg" style="width: 100%; justify-content: center;" href="#">Începe lunar</a>
+    </div>
+    <div class="price-card featured">
+      <span class="price-tag-feat">−33% · cel mai ales</span>
+      <div class="price-name">Anual</div>
+      <div class="price-amt mono">33<span class="cur">RON</span></div>
+      <div class="price-period">pe lună · 396 RON facturat anual · <s>588 RON</s></div>
+      <ul class="price-list">
+        <li><span class="check">✓</span> Tot ce e în Lunar</li>
+        <li><span class="check">✓</span> 7 zile trial gratuit</li>
+        <li><span class="check">✓</span> Acces până după examen</li>
+        <li><span class="check">✓</span> Prioritate la features noi</li>
+        <li><span class="check">✓</span> Economisești 192 RON</li>
+      </ul>
+      <a class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;" href="#">Începe gratuit 7 zile</a>
+      <div class="price-foot">Card cerut doar la final de trial · anulare în 1 click</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="block" id="faq">
+  <div class="section-head">
+    <span class="section-tag">Răspunsuri</span>
+    <h2 class="section-title">Întrebări <span class="accent">pe bune.</span></h2>
+  </div>
+
+  <div class="faq-grid">
+    <div class="faq-item">
+      <div class="faq-q">De unde sunt grilele? <span class="plus">+</span></div>
+      <div class="faq-a">Sunt validate manual din bibliografia oficială (Iliescu, Gafar, Mounier-Forrest, etc.) și actualizate cu fiecare ediție nouă.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Cum sunt calculate pragurile de admitere? <span class="plus">+</span></div>
+      <div class="faq-a">Pragurile sunt cele oficiale publicate de MS pentru fiecare an din 2021 încoace, pentru fiecare specialitate și fiecare UMF.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">E aceeași formulă de scoring ca la examenul real? <span class="plus">+</span></div>
+      <div class="faq-a">Da. CS: 4p corect, 0 greșit. CM: partial credit cu anulare la mai puțin de 2 sau mai mult de 4 selecții. Total max 950.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Pot să o folosesc pe telefon? <span class="plus">+</span></div>
+      <div class="faq-a">Da, e PWA — o instalezi din browser direct pe home screen, arată și se simte ca un app nativ.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Cât durează un trial? <span class="plus">+</span></div>
+      <div class="faq-a">7 zile, acces complet, fără card cerut la început. Ai timp să faci 1-2 simulări complete și să vezi dacă te ajută.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Cum anulez? <span class="plus">+</span></div>
+      <div class="faq-a">Un buton în pagina de Subscription. Fără email-uri, fără retentions. Anulezi instant și gata.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <h2>Mai sunt 187 zile.<br><span class="accent">Începe acum.</span></h2>
+  <p>7 zile gratuit. Fără card. Vezi în prima simulare unde te afli.</p>
+  <div class="final-cta-row">
+    <a class="btn btn-primary btn-lg" href="#">Începe simularea gratuit →</a>
+    <a class="btn btn-outline btn-lg" href="#">Vezi un exemplu de rezultat</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-col">
+      <div class="logo"><span class="logo-mark">R</span><span>grile-ReziNOTE</span></div>
+      <p class="foot-blurb">Platformă de pregătire pentru rezidențiatul în medicină dentară. Făcută în România, pentru studenții români.</p>
+    </div>
+    <div class="foot-col">
+      <h5>Produs</h5>
+      <ul>
+        <li><a href="#">Features</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">Cum funcționează</a></li>
+        <li><a href="#">Întrebări</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h5>Cont</h5>
+      <ul>
+        <li><a href="#">Login</a></li>
+        <li><a href="#">Signup</a></li>
+        <li><a href="#">Trial gratuit</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h5>Legal</h5>
+      <ul>
+        <li><a href="#">Termeni</a></li>
+        <li><a href="#">Confidențialitate</a></li>
+        <li><a href="#">Cookies</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 grile-ReziNOTE · Făcut în Cluj</span>
+    <span>v1.0 · build 2026.10.21</span>
+  </div>
+</footer>
+
+<script>
+  // generate heat map
+  const grid = document.getElementById('heat-grid');
+  if (grid) {
+    const levels = [
+      'oklch(0.20 0.01 165)',
+      'oklch(0.45 0.10 162)',
+      'oklch(0.60 0.15 162)',
+      'oklch(0.75 0.18 162)',
+      'oklch(0.85 0.20 162)',
+    ];
+    for (let i = 0; i < 13 * 5; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'heat-cell';
+      const r = Math.random();
+      let lvl = 0;
+      if (r > 0.85) lvl = 4;
+      else if (r > 0.65) lvl = 3;
+      else if (r > 0.45) lvl = 2;
+      else if (r > 0.25) lvl = 1;
+      cell.style.background = levels[lvl];
+      grid.appendChild(cell);
+    }
+  }
+</script>
+
+</body>
+</html>

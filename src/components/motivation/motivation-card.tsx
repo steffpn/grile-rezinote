@@ -1,6 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { fetchDailyMotivation } from "@/lib/actions/motivation"
-import type { MessageType } from "@/lib/motivation/types"
 import {
   Trophy,
   Flame,
@@ -32,6 +29,9 @@ import {
   Scale,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
+
+import { fetchDailyMotivation } from "@/lib/actions/motivation"
+import type { MessageType } from "@/lib/motivation/types"
 
 const iconMap: Record<string, LucideIcon> = {
   Trophy,
@@ -65,35 +65,37 @@ const iconMap: Record<string, LucideIcon> = {
 }
 
 const typeLabels: Record<MessageType, string> = {
-  encouragement: "Incurajare",
+  encouragement: "Încurajare",
   guidance: "Sfat",
-  didYouKnow: "Stiai ca?",
+  didYouKnow: "Știai că?",
   milestone: "Reper",
 }
 
-const typeStyles: Record<MessageType, string> = {
-  encouragement:
-    "border-emerald-600/15 bg-emerald-50 text-emerald-900 dark:border-emerald-500/20 dark:bg-emerald-950/40 dark:text-emerald-100",
-  guidance:
-    "border-amber-600/15 bg-amber-50 text-amber-900 dark:border-amber-500/20 dark:bg-amber-950/40 dark:text-amber-100",
-  didYouKnow:
-    "border-teal-600/15 bg-teal-50 text-teal-900 dark:border-teal-500/20 dark:bg-teal-950/40 dark:text-teal-100",
-  milestone:
-    "border-violet-600/15 bg-violet-50 text-violet-900 dark:border-violet-500/20 dark:bg-violet-950/40 dark:text-violet-100",
-}
-
-const typeLabelStyles: Record<MessageType, string> = {
-  encouragement: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
-  guidance: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
-  didYouKnow: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300",
-  milestone: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
-}
-
-const typeIconStyles: Record<MessageType, string> = {
-  encouragement: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
-  guidance: "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
-  didYouKnow: "bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400",
-  milestone: "bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400",
+/**
+ * Tone-uri vizuale per tip de mesaj — toate folosind paleta brand
+ * (`--neon` pentru încurajări, `--warm` pentru sfaturi, etc.).
+ */
+const typeAccent: Record<MessageType, { bg: string; text: string; ring: string }> = {
+  encouragement: {
+    bg: "bg-neon/8",
+    text: "text-neon",
+    ring: "border-neon/25",
+  },
+  guidance: {
+    bg: "bg-warm/8",
+    text: "text-warm",
+    ring: "border-warm/25",
+  },
+  didYouKnow: {
+    bg: "bg-[oklch(0.18_0.04_200)]",
+    text: "text-[oklch(0.78_0.14_200)]",
+    ring: "border-[oklch(0.40_0.10_200)]/40",
+  },
+  milestone: {
+    bg: "bg-[oklch(0.20_0.06_280)]",
+    text: "text-[oklch(0.78_0.14_280)]",
+    ring: "border-[oklch(0.42_0.12_280)]/40",
+  },
 }
 
 /**
@@ -106,20 +108,27 @@ export async function MotivationCard() {
   if (!message) return null
 
   const Icon = iconMap[message.icon] ?? Sparkles
+  const accent = typeAccent[message.type]
 
   return (
-    <Card className={`overflow-hidden ${typeStyles[message.type]}`}>
-      <CardContent className="flex items-center gap-4 py-4">
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${typeIconStyles[message.type]}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm leading-relaxed">{message.text}</p>
-        </div>
-        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${typeLabelStyles[message.type]}`}>
-          {typeLabels[message.type]}
-        </span>
-      </CardContent>
-    </Card>
+    <div
+      className={`flex items-center gap-4 rounded-[14px] border bg-bg-2 px-4 py-3.5 ${accent.ring}`}
+    >
+      <div
+        className={`grid size-10 shrink-0 place-items-center rounded-full ${accent.bg} ${accent.text}`}
+      >
+        <Icon className="size-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[14px] leading-[1.55] text-fg-dim">
+          <span className="text-fg">{message.text}</span>
+        </p>
+      </div>
+      <span
+        className={`shrink-0 rounded-[3px] px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-mono-tight ${accent.bg} ${accent.text}`}
+      >
+        {typeLabels[message.type]}
+      </span>
+    </div>
   )
 }

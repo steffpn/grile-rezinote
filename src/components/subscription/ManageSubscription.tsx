@@ -1,6 +1,10 @@
 "use client"
 
-import { useTransition, useState } from "react"
+import { useState, useTransition } from "react"
+import { ArrowRight, CreditCard, RefreshCw, Sparkles, X } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { MonoLabel } from "@/components/branded"
 import {
   cancelSubscription,
   createPortalSession,
@@ -8,12 +12,47 @@ import {
   switchSubscriptionPlan,
 } from "@/lib/stripe/actions"
 import type { BillingCycle, PlanTier } from "@/lib/subscription/tiers"
+import { cn } from "@/lib/utils"
 
 interface ManageSubscriptionProps {
   status: string
   tier: PlanTier
   planType: string | null
   cancelAtPeriodEnd: boolean
+}
+
+function ManageCard({
+  label,
+  title,
+  description,
+  children,
+  tone = "default",
+}: {
+  label: string
+  title: string
+  description: string
+  children: React.ReactNode
+  tone?: "default" | "highlight" | "danger"
+}) {
+  return (
+    <section
+      className={cn(
+        "rounded-[14px] border p-5 sm:p-6",
+        tone === "highlight" && "border-neon/30 bg-neon/6",
+        tone === "danger" && "border-danger/25 bg-danger/6",
+        tone === "default" && "border-line bg-bg-2",
+      )}
+    >
+      <MonoLabel size="cell">{label}</MonoLabel>
+      <h3 className="mt-1.5 text-[16px] font-semibold tracking-[-0.015em] text-fg">
+        {title}
+      </h3>
+      <p className="mt-1 text-[13.5px] leading-[1.55] text-fg-dim">
+        {description}
+      </p>
+      <div className="mt-4">{children}</div>
+    </section>
+  )
 }
 
 export function ManageSubscription({
@@ -32,10 +71,7 @@ export function ManageSubscription({
   const isActive = status === "active" || status === "trialing"
   const isCancelling = cancelAtPeriodEnd && isActive
 
-  function runAction(
-    fn: () => Promise<unknown>,
-    successText: string
-  ) {
+  function runAction(fn: () => Promise<unknown>, successText: string) {
     startTransition(async () => {
       try {
         await fn()
@@ -47,7 +83,7 @@ export function ManageSubscription({
           text:
             err instanceof Error
               ? err.message
-              : "A aparut o eroare. Incearca din nou.",
+              : "A apărut o eroare. Încearcă din nou.",
         })
       }
     })
@@ -57,23 +93,24 @@ export function ManageSubscription({
     setShowCancelConfirm(false)
     runAction(
       () => cancelSubscription(),
-      "Abonamentul se va anula la sfarsitul perioadei de facturare."
+      "Abonamentul se va anula la sfârșitul perioadei de facturare.",
     )
   }
 
   function handleReactivate() {
     runAction(
       () => reactivateSubscription(),
-      "Abonamentul a fost reactivat cu succes!"
+      "Abonamentul a fost reactivat cu succes.",
     )
   }
 
   function handleSwitchCycle() {
     if (tier === "FREE") return
-    const newCycle: BillingCycle = planType === "monthly" ? "annual" : "monthly"
+    const newCycle: BillingCycle =
+      planType === "monthly" ? "annual" : "monthly"
     runAction(
       () => switchSubscriptionPlan(tier, newCycle),
-      "Ciclul de facturare a fost schimbat cu succes!"
+      "Ciclul de facturare a fost schimbat.",
     )
   }
 
@@ -81,7 +118,7 @@ export function ManageSubscription({
     const cycle: BillingCycle = planType === "annual" ? "annual" : "monthly"
     runAction(
       () => switchSubscriptionPlan("PREMIUM", cycle),
-      "Ai trecut la PREMIUM cu succes!"
+      "Ai trecut la PREMIUM.",
     )
   }
 
@@ -89,7 +126,7 @@ export function ManageSubscription({
     const cycle: BillingCycle = planType === "annual" ? "annual" : "monthly"
     runAction(
       () => switchSubscriptionPlan("PRO", cycle),
-      "Ai trecut la PRO. Diferenta se va regla la urmatoarea facturare."
+      "Ai trecut la PRO. Diferența se va regla la următoarea facturare.",
     )
   }
 
@@ -104,7 +141,7 @@ export function ManageSubscription({
           text:
             err instanceof Error
               ? err.message
-              : "Nu s-a putut deschide portalul de facturare.",
+              : "Nu s-a putut deschide portalul.",
         })
       }
     })
@@ -115,14 +152,16 @@ export function ManageSubscription({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {message && (
         <div
-          className={`rounded-md p-3 text-sm ${
+          role="alert"
+          className={cn(
+            "rounded-[10px] border px-3.5 py-3 text-[13px]",
             message.type === "success"
-              ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
-              : "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
-          }`}
+              ? "border-neon/30 bg-neon/8 text-fg"
+              : "border-danger/30 bg-danger/10 text-danger",
+          )}
         >
           {message.text}
         </div>
@@ -130,142 +169,129 @@ export function ManageSubscription({
 
       {/* Upgrade / downgrade between tiers */}
       {tier === "PRO" && (
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-6">
-          <h3 className="mb-2 font-semibold">Treci la PREMIUM</h3>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Deblocheaza dashboard-ul pe capitole si subcapitole, clasamentele
-            intre utilizatori si modulul Admitere cu estimarea sanselor.
-          </p>
-          <button
-            onClick={handleUpgradeToPremium}
-            disabled={isPending}
-            className="rounded-md bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isPending ? "Se proceseaza..." : "Fa upgrade la PREMIUM"}
-          </button>
-        </div>
+        <ManageCard
+          label="Upgrade"
+          title="Treci la PREMIUM"
+          description="Deblochează dashboard-ul pe capitole și subcapitole, clasamentele între utilizatori și modulul Admitere cu estimarea șanselor."
+          tone="highlight"
+        >
+          <Button onClick={handleUpgradeToPremium} disabled={isPending}>
+            <Sparkles className="size-4" />
+            {isPending ? "Se procesează..." : "Fă upgrade la PREMIUM"}
+          </Button>
+        </ManageCard>
       )}
 
       {tier === "PREMIUM" && (
-        <div className="rounded-lg border bg-card p-6">
-          <h3 className="mb-2 font-semibold">Downgrade la PRO</h3>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Pierzi accesul la analiza pe capitole/subcapitole, clasamente si
-            modulul Admitere. Diferenta de pret se regleaza prin proratare.
-          </p>
-          <button
+        <ManageCard
+          label="Downgrade"
+          title="Treci la PRO"
+          description="Pierzi accesul la analiza pe capitole/subcapitole, clasamente și modulul Admitere. Diferența de preț se reglează prin proratare."
+        >
+          <Button
+            variant="outline"
             onClick={handleDowngradeToPro}
             disabled={isPending}
-            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isPending ? "Se proceseaza..." : "Treci la PRO"}
-          </button>
-        </div>
+            {isPending ? "Se procesează..." : "Treci la PRO"}
+          </Button>
+        </ManageCard>
       )}
 
-      {/* Stripe Customer Portal — card, invoices, history */}
-      <div className="rounded-lg border bg-card p-6">
-        <h3 className="mb-2 font-semibold">Card si facturi</h3>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Actualizeaza metoda de plata, descarca facturile si vezi istoricul
-          platilor in portalul Stripe.
-        </p>
-        <button
+      {/* Stripe portal */}
+      <ManageCard
+        label="Card & facturi"
+        title="Gestionează în Stripe"
+        description="Actualizează metoda de plată, descarcă facturile și vezi istoricul plăților în portalul Stripe."
+      >
+        <Button
+          variant="outline"
           onClick={handleOpenPortal}
           disabled={isPending}
-          className="rounded-md border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isPending ? "Se deschide..." : "Gestioneaza in Stripe"}
-        </button>
-      </div>
+          <CreditCard className="size-4" />
+          {isPending ? "Se deschide..." : "Deschide portalul Stripe"}
+          <ArrowRight className="size-3.5" />
+        </Button>
+      </ManageCard>
 
       {/* Switch billing cycle */}
-      <div className="rounded-lg border bg-card p-6">
-        <h3 className="mb-2 font-semibold">Schimba ciclul de facturare</h3>
-        {planType === "monthly" ? (
-          <div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Treci la abonamentul anual si economiseste 20%.
-            </p>
-            <button
-              onClick={handleSwitchCycle}
-              disabled={isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isPending ? "Se proceseaza..." : "Treci la plata anuala"}
-            </button>
-          </div>
-        ) : (
-          <div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Treci la abonamentul lunar. Diferenta se regleaza prin proratare.
-            </p>
-            <button
-              onClick={handleSwitchCycle}
-              disabled={isPending}
-              className="rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isPending ? "Se proceseaza..." : "Treci la plata lunara"}
-            </button>
-          </div>
-        )}
-      </div>
+      <ManageCard
+        label="Ciclu facturare"
+        title={
+          planType === "monthly"
+            ? "Treci la anual și economisește"
+            : "Treci la lunar"
+        }
+        description={
+          planType === "monthly"
+            ? "Treci la abonamentul anual și economisește 20%."
+            : "Treci la abonamentul lunar. Diferența se reglează prin proratare."
+        }
+      >
+        <Button
+          variant={planType === "monthly" ? "default" : "secondary"}
+          onClick={handleSwitchCycle}
+          disabled={isPending}
+        >
+          <RefreshCw className="size-4" />
+          {isPending
+            ? "Se procesează..."
+            : planType === "monthly"
+              ? "Treci la plata anuală"
+              : "Treci la plata lunară"}
+        </Button>
+      </ManageCard>
 
       {/* Cancel / Reactivate */}
-      <div className="rounded-lg border bg-card p-6">
-        <h3 className="mb-2 font-semibold">
-          {isCancelling ? "Reactiveaza abonamentul" : "Anuleaza abonamentul"}
-        </h3>
-
+      <ManageCard
+        label={isCancelling ? "Reactivare" : "Anulare"}
+        title={
+          isCancelling
+            ? "Reactivează abonamentul"
+            : "Anulează abonamentul"
+        }
+        description={
+          isCancelling
+            ? "Abonamentul tău este programat să se anuleze. Poți reactiva pentru a continua fără întrerupere."
+            : "Dacă anulezi, vei avea acces până la sfârșitul perioadei de facturare curente, apoi contul trece pe FREE."
+        }
+        tone={isCancelling ? "highlight" : "danger"}
+      >
         {isCancelling ? (
-          <div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Abonamentul tau este programat sa se anuleze. Poti reactiva
-              pentru a continua fara intrerupere.
-            </p>
-            <button
-              onClick={handleReactivate}
+          <Button onClick={handleReactivate} disabled={isPending}>
+            <Sparkles className="size-4" />
+            {isPending ? "Se procesează..." : "Reactivează"}
+          </Button>
+        ) : showCancelConfirm ? (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="destructive"
+              onClick={handleCancel}
               disabled={isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? "Se proceseaza..." : "Reactiveaza abonamentul"}
-            </button>
+              <X className="size-4" />
+              {isPending ? "Se procesează..." : "Confirm anularea"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowCancelConfirm(false)}
+              disabled={isPending}
+            >
+              Renunță
+            </Button>
           </div>
         ) : (
-          <div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Daca anulezi, vei avea acces pana la sfarsitul perioadei de
-              facturare curente, apoi contul tau trece pe planul FREE.
-            </p>
-
-            {showCancelConfirm ? (
-              <div className="flex gap-3">
-                <button
-                  onClick={handleCancel}
-                  disabled={isPending}
-                  className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isPending ? "Se proceseaza..." : "Confirm anularea"}
-                </button>
-                <button
-                  onClick={() => setShowCancelConfirm(false)}
-                  disabled={isPending}
-                  className="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
-                >
-                  Renunta
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowCancelConfirm(true)}
-                className="rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-              >
-                Anuleaza abonamentul
-              </button>
-            )}
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => setShowCancelConfirm(true)}
+            className="border-danger/40 text-danger hover:bg-danger/8"
+          >
+            <X className="size-4" />
+            Anulează abonamentul
+          </Button>
         )}
-      </div>
+      </ManageCard>
     </div>
   )
 }

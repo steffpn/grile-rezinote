@@ -24,7 +24,7 @@ interface GoogleButtonProps {
  * creates the local user record (with trial-history check) automatically.
  */
 export function GoogleButton({
-  label = "Continua cu Google",
+  label = "Continuă cu Google",
   callbackUrl = "/dashboard",
   className,
   marketingOptIn,
@@ -49,19 +49,18 @@ export function GoogleButton({
       disabled={pending}
       onClick={onClick}
       className={cn(
-        "inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm font-medium text-white transition-all hover:border-white/15 hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60",
-        className
+        "inline-flex h-10 w-full items-center justify-center gap-3 rounded-[7px] border border-line bg-bg-3 px-4",
+        "text-[14px] font-medium text-fg transition-colors",
+        "hover:border-line-2 hover:bg-bg-2",
+        "disabled:cursor-not-allowed disabled:opacity-60",
+        className,
       )}
     >
       {pending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="size-4 animate-spin" />
       ) : (
         // Official multicolor Google "G" logo.
-        <svg
-          className="h-5 w-5"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
+        <svg className="size-[18px]" viewBox="0 0 24 24" aria-hidden="true">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
             fill="#4285F4"
@@ -80,7 +79,7 @@ export function GoogleButton({
           />
         </svg>
       )}
-      {pending ? "Se conecteaza..." : label}
+      {pending ? "Se conectează..." : label}
     </button>
   )
 }

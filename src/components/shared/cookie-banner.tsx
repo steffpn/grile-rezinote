@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Cookie, X } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
+
 const STORAGE_KEY = "rezinote-cookie-notice-dismissed"
 
 /**
@@ -40,37 +42,36 @@ export function CookieBanner() {
     <div
       role="region"
       aria-label="Notificare cookie-uri"
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-3xl rounded-2xl border border-white/10 bg-black/85 p-4 text-sm text-white shadow-2xl backdrop-blur-xl sm:bottom-5 sm:p-5"
+      className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-3xl rounded-[14px] border border-line bg-bg-2/95 p-4 text-[13.5px] text-fg-dim shadow-dashboard backdrop-blur-xl sm:bottom-5 sm:p-5"
     >
       <div className="flex items-start gap-3">
-        <Cookie className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-neon/12 text-neon">
+          <Cookie className="size-[18px]" />
+        </span>
         <div className="flex-1">
-          <p className="leading-relaxed text-white/80">
-            Folosim doar cookie-uri esentiale (autentificare, preferinte de
-            tema). Nu folosim cookie-uri de tracking sau marketing.{" "}
+          <p className="leading-relaxed">
+            Folosim doar cookie-uri esențiale (autentificare, preferințe).
+            Niciun tracking, niciun marketing.{" "}
             <Link
               href="/legal/privacy"
-              className="font-medium text-emerald-300 underline-offset-4 hover:underline"
+              className="font-medium text-neon underline-offset-2 hover:underline"
             >
-              Politica de confidentialitate
+              Politica de confidențialitate
             </Link>
             .
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              onClick={dismiss}
-              className="rounded-md bg-emerald-500 px-4 py-1.5 text-sm font-medium text-emerald-950 transition-colors hover:bg-emerald-400"
-            >
-              Inteleg
-            </button>
+            <Button onClick={dismiss} size="sm" variant="default">
+              Înțeleg
+            </Button>
           </div>
         </div>
         <button
           onClick={dismiss}
-          aria-label="Inchide notificarea"
-          className="rounded-md p-1 text-white/40 transition-colors hover:bg-white/5 hover:text-white"
+          aria-label="Închide notificarea"
+          className="rounded-[6px] p-1 text-fg-mute transition-colors hover:bg-bg-3 hover:text-fg"
         >
-          <X className="h-4 w-4" />
+          <X className="size-4" />
         </button>
       </div>
     </div>

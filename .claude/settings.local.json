@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Skill(gsd:autopilot)",
-      "Skill(gsd:autopilot:*)"
+      "Skill(gsd:autopilot:*)",
+      "Bash(xargs grep *)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(npx tsc *)"
     ]
   }
 }

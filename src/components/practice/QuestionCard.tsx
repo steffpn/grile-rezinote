@@ -1,14 +1,15 @@
 "use client"
 
 import { forwardRef } from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { BookOpen, CheckCircle2, Flag } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Toggle } from "@/components/ui/toggle"
-import { Flag, BookOpen, CheckCircle2 } from "lucide-react"
+import { MonoLabel } from "@/components/branded"
 import { cn } from "@/lib/utils"
-import { QuestionOptionGroup } from "./QuestionOptionGroup"
 import { formatQuestionType } from "@/lib/format/question-type"
+
+import { QuestionOptionGroup } from "./QuestionOptionGroup"
 
 interface QuestionOption {
   label: string
@@ -59,68 +60,74 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
       showResults = false,
       isVerifying = false,
     },
-    ref
+    ref,
   ) {
     return (
-      <Card
+      <div
         ref={ref}
         id={`question-${question.id}`}
         data-protected="question"
         className={cn(
-          "border-border/50 transition-all duration-300",
-          showResults && feedback?.isCorrect && "border-green-400 bg-green-50/30 dark:border-green-600 dark:bg-green-950/20",
-          showResults && feedback && !feedback.isCorrect && "border-red-400 bg-red-50/30 dark:border-red-600 dark:bg-red-950/20"
+          "rounded-[14px] border bg-bg-2 transition-all",
+          // outer state border
+          showResults && feedback?.isCorrect && "border-neon/40",
+          showResults && feedback && !feedback.isCorrect && "border-danger/40",
+          !showResults && "border-line",
         )}
       >
-        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
-          <div className="flex flex-wrap items-center gap-2 min-w-0">
-            <span className="text-lg font-bold tracking-tight">
-              Intrebarea {questionNumber}
-            </span>
-            <Badge
-              variant="outline"
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-3.5">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <MonoLabel size="body" tone="mute">
+              Întrebarea {questionNumber}
+            </MonoLabel>
+            <span
               className={cn(
-                "rounded-full text-[11px] font-semibold",
+                "rounded-[3px] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight",
                 question.type === "CS"
-                  ? "border-primary/30 bg-primary/5 text-primary"
-                  : "border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400"
+                  ? "bg-neon/12 text-neon"
+                  : "bg-warm/12 text-warm",
               )}
             >
               {formatQuestionType(question.type)}
-            </Badge>
+            </span>
             {showResults && feedback && (
-              <Badge
-                variant={feedback.isCorrect ? "default" : "destructive"}
+              <span
                 className={cn(
-                  "rounded-full text-[11px]",
-                  feedback.isCorrect && "bg-emerald-600 hover:bg-emerald-700"
+                  "rounded-[3px] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight",
+                  feedback.isCorrect
+                    ? "bg-neon/14 text-neon"
+                    : "bg-danger/14 text-danger",
                 )}
               >
-                {feedback.isCorrect ? "Corect" : "Gresit"}
-              </Badge>
+                {feedback.isCorrect ? "Corect" : "Greșit"}
+              </span>
             )}
           </div>
           <Toggle
             pressed={isFlagged}
             onPressedChange={() => onFlag(question.id)}
             size="sm"
-            aria-label="Marcheaza intrebarea"
+            aria-label="Marchează întrebarea"
             className={cn(
-              "rounded-lg",
-              isFlagged && "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+              "rounded-[7px]",
+              isFlagged && "bg-warm/15 text-warm hover:bg-warm/20",
             )}
           >
-            <Flag className="h-4 w-4" />
+            <Flag className="size-4" />
           </Toggle>
-        </CardHeader>
+        </div>
 
-        <CardContent className="space-y-4">
+        {/* Body */}
+        <div className="space-y-5 p-5">
           {question.subchapter && (
-            <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/80 break-words">
+            <MonoLabel size="cell" tone="accent">
               {question.subchapter}
-            </p>
+            </MonoLabel>
           )}
-          <p className="text-base leading-relaxed break-words">{question.text}</p>
+          <p className="break-words text-[15px] leading-[1.55] text-fg">
+            {question.text}
+          </p>
 
           <QuestionOptionGroup
             questionType={question.type}
@@ -137,25 +144,27 @@ export const QuestionCard = forwardRef<HTMLDivElement, QuestionCardProps>(
             <Button
               onClick={() => onVerify(question.id)}
               disabled={isVerifying}
-              className="w-full rounded-xl gradient-primary border-0 text-white shadow-md"
+              size="lg"
+              className="w-full"
             >
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              {isVerifying ? "Se verifica..." : "Verifica raspunsul"}
+              <CheckCircle2 className="size-4" />
+              {isVerifying ? "Se verifică..." : "Verifică răspunsul"}
             </Button>
           )}
 
-          {/* Source reference for incorrect answers */}
-          {feedback && !feedback.isCorrect && (feedback.sourceBook || feedback.sourcePage) && (
-            <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950">
-              <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <span className="text-amber-800 dark:text-amber-200">
-                Sursa: {feedback.sourceBook}
-                {feedback.sourcePage && `, pag. ${feedback.sourcePage}`}
-              </span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          {/* Source reference */}
+          {feedback &&
+            (feedback.sourceBook || feedback.sourcePage) && (
+              <div className="flex items-center gap-2.5 rounded-[10px] border border-line bg-bg-3 px-3.5 py-2.5">
+                <BookOpen className="size-4 shrink-0 text-fg-mute" />
+                <span className="text-[13px] italic text-fg-mute">
+                  Sursa: {feedback.sourceBook}
+                  {feedback.sourcePage && `, pag. ${feedback.sourcePage}`}
+                </span>
+              </div>
+            )}
+        </div>
+      </div>
     )
-  }
+  },
 )

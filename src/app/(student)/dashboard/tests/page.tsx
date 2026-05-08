@@ -1,14 +1,15 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ClipboardList } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { ArrowRight, ClipboardList } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { TestHistoryTable } from "@/components/dashboard/test-history-table"
+import { MonoLabel, SectionTag } from "@/components/branded"
 import { fetchTestHistory } from "@/lib/actions/dashboard"
 
 export const metadata: Metadata = {
-  title: "Istoric Teste | Dashboard | grile-ReziNOTE",
+  title: "Istoric teste | Dashboard | grile-ReziNOTE",
 }
 
 export default async function TestsHistoryPage({
@@ -17,48 +18,56 @@ export default async function TestsHistoryPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const params = await searchParams
-  const page = typeof params.page === "string" ? parseInt(params.page, 10) || 1 : 1
+  const page =
+    typeof params.page === "string" ? parseInt(params.page, 10) || 1 : 1
   const typeFilter = typeof params.type === "string" ? params.type : undefined
 
   const data = await fetchTestHistory(page, 20, typeFilter)
-
   const hasAnyData = data.total > 0 || typeFilter
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Istoric Teste</h1>
-        <p className="text-sm text-muted-foreground">
-          Revizuieste testele si simularile tale anterioare
+        <SectionTag>Istoric teste</SectionTag>
+        <h1 className="mt-3 text-[34px] font-bold leading-[1.05] tracking-[-0.03em] text-fg">
+          Toate testele tale.
+        </h1>
+        <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-fg-dim">
+          Revezi practica și simulările anterioare. Click pentru detalii pe
+          fiecare.
         </p>
       </div>
 
       {!hasAnyData ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <ClipboardList className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">
-              Inca nu ai completat niciun test
-            </h2>
-            <p className="mb-6 mt-2 max-w-sm text-sm text-muted-foreground">
-              Incepe un test de practica sau o simulare pentru a-ti construi istoricul!
-            </p>
-            <Button asChild>
-              <Link href="/practice">Incepe un test</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="rounded-[14px] border border-dashed border-line-2 bg-bg-2/40 p-12 text-center">
+          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-neon/12 text-neon">
+            <ClipboardList className="size-6" />
+          </div>
+          <h2 className="text-[18px] font-semibold tracking-[-0.015em] text-fg">
+            Niciun test încă.
+          </h2>
+          <p className="mx-auto mt-2 max-w-sm text-[14px] leading-[1.55] text-fg-dim">
+            Începe un test de practică sau o simulare pentru a-ți construi
+            istoricul.
+          </p>
+          <Button asChild className="mt-6">
+            <Link href="/practice">
+              Începe un test
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        </div>
       ) : (
         <Suspense>
           <TestHistoryTable data={data} />
         </Suspense>
       )}
 
-      {/* Summary footer */}
       {data.total > 0 && (
-        <p className="text-sm text-muted-foreground text-center">
-          Total: {data.total} teste completate
+        <p className="text-center font-mono text-[11.5px] uppercase tracking-mono text-fg-mute">
+          <MonoLabel size="body" tone="dim">
+            Total · {data.total} teste completate
+          </MonoLabel>
         </p>
       )}
     </div>

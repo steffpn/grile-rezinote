@@ -1,9 +1,11 @@
 import { Suspense } from "react"
+
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { getCurrentUser } from "@/lib/auth/get-user"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
 import { canAccessGeneralDashboard } from "@/lib/subscription/gating"
 import { UpgradeBlocker } from "@/components/subscription/UpgradeBlocker"
+import { SectionTag } from "@/components/branded"
 
 export const dynamic = "force-dynamic"
 
@@ -20,32 +22,31 @@ export default async function DashboardLayout({
   // layer their own PREMIUM gates on top when reached by PRO users.
   if (!canAccessGeneralDashboard(access.tier)) {
     return (
-      <div className="mx-auto max-w-3xl p-4 lg:p-6">
+      <div className="mx-auto max-w-3xl">
         <div className="mb-6">
-          <h1
-            className="text-3xl font-bold tracking-tight"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Dashboard
+          <SectionTag>Dashboard</SectionTag>
+          <h1 className="mt-3 text-[38px] font-bold leading-[1.05] tracking-[-0.03em] text-fg">
+            Progresul tău, în clar.
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Progresul tau in pregatirea pentru rezidentiat
+          <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-fg-dim">
+            Urmărește acuratețea, întrebările făcute și seriile zilnice. Plan
+            FREE nu include dashboard-ul.
           </p>
         </div>
         <UpgradeBlocker
           requiredTier="PRO"
-          title="Dashboard cu progres si statistici"
-          description="Urmareste-ti evolutia in timp: acuratete, numar de intrebari, serii zilnice si trend-uri. Planul FREE nu include dashboard-ul."
+          title="Dashboard cu progres și statistici"
+          description="Urmărește-ți evoluția în timp: acuratețe, număr de întrebări, serii zilnice și trend-uri. Planul FREE nu include dashboard-ul."
           benefits={[
-            "Statistici generale: acuratete, intrebari, teste, serie zile",
-            "Evolutia acuratetii in timp (grafic)",
-            "Filtrare pe interval de timp si tip de test",
-            "Istoricul complet al testelor si raspunsurilor",
-            'Functia "Greselile mele" pentru a invata din erori',
+            "Statistici generale: acuratețe, întrebări, teste, serie zile",
+            "Evoluția acurateței în timp (grafic)",
+            "Filtrare pe interval de timp și tip de test",
+            "Istoricul complet al testelor și răspunsurilor",
+            'Funcția "Greșelile mele" pentru a învăța din erori',
           ]}
           alternativeAction={{
             href: "/practice",
-            label: "Incepe un test practic",
+            label: "Începe un test practic",
           }}
           showStartTrial={access.trialAvailable}
         />
@@ -54,14 +55,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)]">
+    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
       <Suspense>
         <DashboardSidebar tier={access.tier} />
       </Suspense>
-      <main className="flex-1 overflow-auto">
-        {/* Mobile header with menu trigger is inside DashboardSidebar */}
-        <div className="p-4 lg:p-6 lg:pl-2">{children}</div>
-      </main>
+      <main className="min-w-0 flex-1">{children}</main>
     </div>
   )
 }

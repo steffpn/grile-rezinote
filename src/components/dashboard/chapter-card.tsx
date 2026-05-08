@@ -1,10 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { ChevronDown } from "lucide-react"
+
+import { MonoLabel, PercentBar, ScorePill } from "@/components/branded"
 import { Sparkline } from "@/components/dashboard/sparkline"
 import { cn } from "@/lib/utils"
 import type { ChapterStats } from "@/types/dashboard"
@@ -14,90 +13,117 @@ interface ChapterCardProps {
   sparklineData?: { value: number }[]
 }
 
-function getAccuracyColor(accuracy: number): string {
-  if (accuracy >= 70) return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-  if (accuracy >= 40) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-  return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+function toneFor(accuracy: number) {
+  if (accuracy >= 70) return "pos" as const
+  if (accuracy >= 40) return "neutral" as const
+  return "danger" as const
 }
 
 export function ChapterCard({ chapter, sparklineData }: ChapterCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const tone = toneFor(chapter.accuracyPct)
 
   return (
-    <Card
-      className="cursor-pointer transition-shadow hover:shadow-md"
+    <button
+      type="button"
       onClick={() => setExpanded(!expanded)}
+      className="w-full rounded-[12px] border border-line bg-bg-2 p-4 text-left transition-colors hover:border-line-2"
     >
-      <CardContent className="p-4">
-        {/* Collapsed view */}
-        <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold truncate">{chapter.chapterName}</h3>
-            <p className="text-sm text-muted-foreground">
-              {chapter.totalAnswers} intrebari incercate
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Badge
-              className={cn("text-xs font-medium", getAccuracyColor(chapter.accuracyPct))}
-              variant="outline"
-            >
-              {chapter.accuracyPct}%
-            </Badge>
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 text-muted-foreground transition-transform",
-                expanded && "rotate-180"
-              )}
+      {/* Collapsed view */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-[15px] font-semibold tracking-[-0.015em] text-fg">
+            {chapter.chapterName}
+          </h3>
+          <p className="mt-0.5 font-mono text-[11px] tracking-mono-tight text-fg-mute">
+            {chapter.totalAnswers} întrebări încercate
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <ScorePill tone={tone} size="sm">
+            {chapter.accuracyPct}%
+          </ScorePill>
+          <ChevronDown
+            className={cn(
+              "size-4 text-fg-mute transition-transform",
+              expanded && "rotate-180",
+            )}
+          />
+        </div>
+      </div>
+
+      {/* Expanded view */}
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-300",
+          expanded ? "mt-4 max-h-72 opacity-100" : "max-h-0 opacity-0",
+        )}
+      >
+        <div className="space-y-4 border-t border-line pt-3.5">
+          {/* Sparkline */}
+          {sparklineData && sparklineData.length > 0 && (
+            <div className="flex items-center gap-2">
+              <MonoLabel size="cell">Tendință</MonoLabel>
+              <Sparkline data={sparklineData} />
+            </div>
+          )}
+
+          {/* Detailed stats */}
+          <div className="grid grid-cols-3 gap-2">
+            <Stat
+              label="Întrebări unice"
+              value={chapter.totalQuestions}
+            />
+            <Stat
+              label="Corecte"
+              value={chapter.correctAnswers}
+              tone="pos"
+            />
+            <Stat
+              label="Greșite"
+              value={chapter.totalAnswers - chapter.correctAnswers}
+              tone="danger"
             />
           </div>
-        </div>
 
-        {/* Expanded view */}
-        <div
-          className={cn(
-            "overflow-hidden transition-all duration-300",
-            expanded ? "mt-4 max-h-60 opacity-100" : "max-h-0 opacity-0"
-          )}
-        >
-          <div className="space-y-3 border-t pt-3">
-            {/* Sparkline */}
-            {sparklineData && sparklineData.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Tendinta:</span>
-                <Sparkline data={sparklineData} />
-              </div>
-            )}
-
-            {/* Detailed stats */}
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-lg font-bold">{chapter.totalQuestions}</p>
-                <p className="text-xs text-muted-foreground">Intrebari unice</p>
-              </div>
-              <div>
-                <p className="text-lg font-bold">{chapter.correctAnswers}</p>
-                <p className="text-xs text-muted-foreground">Corecte</p>
-              </div>
-              <div>
-                <p className="text-lg font-bold">
-                  {chapter.totalAnswers - chapter.correctAnswers}
-                </p>
-                <p className="text-xs text-muted-foreground">Gresite</p>
-              </div>
+          {/* Progress bar */}
+          <div>
+            <div className="mb-1.5 flex justify-between font-mono text-[10.5px] uppercase tracking-mono-tight text-fg-mute">
+              <span>Acuratețe</span>
+              <span className="text-fg">{chapter.accuracyPct}%</span>
             </div>
-
-            {/* Progress bar */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Acuratete</span>
-                <span>{chapter.accuracyPct}%</span>
-              </div>
-              <Progress value={chapter.accuracyPct} />
-            </div>
+            <PercentBar value={chapter.accuracyPct} thickness={6} />
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </button>
+  )
+}
+
+function Stat({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string
+  value: number
+  tone?: "default" | "pos" | "danger"
+}) {
+  return (
+    <div className="rounded-[8px] border border-line bg-bg-3 p-2.5 text-center">
+      <div
+        className={cn(
+          "font-mono text-[18px] font-medium leading-none",
+          tone === "pos" && "text-neon",
+          tone === "danger" && "text-danger",
+          tone === "default" && "text-fg",
+        )}
+      >
+        {value}
+      </div>
+      <div className="mt-1 font-mono text-[9.5px] uppercase tracking-mono-tight text-fg-mute">
+        {label}
+      </div>
+    </div>
   )
 }

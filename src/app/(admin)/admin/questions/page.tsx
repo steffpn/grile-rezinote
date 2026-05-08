@@ -1,5 +1,6 @@
 import { getQuestions, getChaptersForSelect } from "@/lib/actions/questions"
 import { QuestionTable } from "@/components/admin/question-table"
+import { SectionTag } from "@/components/branded"
 
 interface Props {
   searchParams: Promise<{
@@ -26,11 +27,15 @@ export default async function QuestionsPage({ searchParams }: Props) {
   ])
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Intrebari</h1>
-        <p className="mt-1 text-muted-foreground">
-          Gestioneaza banca de intrebari.
+    <div className="space-y-8">
+      <div>
+        <SectionTag>Întrebări</SectionTag>
+        <h1 className="mt-3 text-[34px] font-bold leading-[1.05] tracking-[-0.03em] text-fg">
+          Banca de întrebări.
+        </h1>
+        <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-fg-dim">
+          Caută, filtrează, editează. Sursele bibliografice sunt sub fiecare
+          întrebare.
         </p>
       </div>
 

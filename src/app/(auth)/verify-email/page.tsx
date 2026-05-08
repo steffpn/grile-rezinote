@@ -1,10 +1,8 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Mail } from "lucide-react"
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card"
+import { ArrowLeft, Mail } from "lucide-react"
+
+import { AuthCard } from "@/components/auth/auth-shell"
 
 export const metadata: Metadata = {
   title: "Verificare email — grile-ReziNOTE",
@@ -12,30 +10,33 @@ export const metadata: Metadata = {
 
 export default function VerifyEmailPage() {
   return (
-    <Card className="w-full max-w-md">
-      <CardContent className="flex flex-col items-center gap-4 pt-8 pb-6 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-          <Mail className="h-8 w-8 text-primary" />
+    <AuthCard>
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-5 grid size-16 place-items-center rounded-full bg-neon/12 text-neon">
+          <Mail className="size-7" />
         </div>
 
-        <h1 className="text-2xl font-semibold">Verifica-ti email-ul</h1>
+        <h1 className="text-[24px] font-bold tracking-[-0.02em] text-fg">
+          Verifică email-ul.
+        </h1>
 
-        <p className="text-muted-foreground">
-          Am trimis un email de confirmare la adresa ta. Acceseaza linkul din
-          email pentru a-ti activa contul.
+        <p className="mt-2 text-[14px] leading-[1.55] text-fg-dim">
+          Am trimis un link de confirmare la adresa ta. Accesează-l pentru a
+          activa contul.
         </p>
 
-        <p className="text-sm text-muted-foreground">
-          Nu ai primit email-ul? Verifica folderul de spam.
+        <p className="mt-4 font-mono text-[11px] uppercase tracking-mono text-fg-mute">
+          Nu ai primit? Verifică folder-ul de spam.
         </p>
 
         <Link
           href="/login"
-          className="text-sm font-medium text-primary hover:underline"
+          className="mt-7 inline-flex items-center gap-2 font-mono text-[11.5px] uppercase tracking-mono text-fg-mute hover:text-neon"
         >
-          Inapoi la autentificare
+          <ArrowLeft className="size-3" />
+          Înapoi la autentificare
         </Link>
-      </CardContent>
-    </Card>
+      </div>
+    </AuthCard>
   )
 }

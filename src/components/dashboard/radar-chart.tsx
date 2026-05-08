@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "recharts"
 import { Radar as RadarIcon } from "lucide-react"
+
 import type { ChapterStats } from "@/types/dashboard"
 
 interface ChapterRadarProps {
@@ -39,19 +40,19 @@ function CustomTooltip({ active, payload }: TooltipBits) {
   if (!active || !payload || payload.length === 0) return null
   const fullName = payload[0]?.payload?.fullName ?? ""
   return (
-    <div className="rounded-xl border border-white/10 bg-background/70 px-3 py-2 text-xs shadow-2xl backdrop-blur-xl">
-      <div className="font-semibold text-foreground">{fullName}</div>
+    <div className="rounded-[8px] border border-line bg-bg-2/95 px-3 py-2 font-mono text-[11px] shadow-dashboard backdrop-blur-xl">
+      <div className="text-fg">{fullName}</div>
       {payload.map((p) => (
         <div key={String(p.dataKey)} className="mt-1 flex items-center gap-2">
           <span
-            className="inline-block h-2 w-2 rounded-full"
+            className="size-1.5 rounded-full"
             style={{
               background: p.color,
-              boxShadow: `0 0 8px ${p.color}`,
+              boxShadow: `0 0 6px ${p.color}`,
             }}
           />
-          <span className="text-muted-foreground">{p.name}</span>
-          <span className="ml-auto font-semibold tabular-nums">
+          <span className="text-fg-mute">{p.name}</span>
+          <span className="ml-auto font-semibold tabular-nums text-fg">
             {p.value ?? 0}%
           </span>
         </div>
@@ -63,17 +64,17 @@ function CustomTooltip({ active, payload }: TooltipBits) {
 export function ChapterRadar({ data, cohort }: ChapterRadarProps) {
   if (data.length === 0) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center gap-3 text-muted-foreground">
-        <RadarIcon className="h-8 w-8 opacity-40" />
-        <span className="text-sm">
-          Completeaza teste pentru a vedea punctele tale forte
+      <div className="flex h-[400px] flex-col items-center justify-center gap-3 text-fg-mute">
+        <RadarIcon className="size-8 opacity-50" />
+        <span className="font-mono text-[11px] uppercase tracking-mono">
+          fără date încă
         </span>
       </div>
     )
   }
 
   const cohortMap = new Map(
-    (cohort ?? []).map((c) => [c.chapterName, c.accuracyPct])
+    (cohort ?? []).map((c) => [c.chapterName, c.accuracyPct]),
   )
 
   const chartData = data.map((d) => ({
@@ -97,31 +98,39 @@ export function ChapterRadar({ data, cohort }: ChapterRadarProps) {
         <RechartsRadarChart data={chartData} outerRadius="72%">
           <defs>
             <radialGradient id="radarFill" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity={0.6} />
-              <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.15} />
+              <stop offset="0%" stopColor="oklch(0.84 0.21 162)" stopOpacity={0.5} />
+              <stop offset="100%" stopColor="oklch(0.74 0.18 162)" stopOpacity={0.12} />
             </radialGradient>
             <radialGradient id="cohortFill" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#94a3b8" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="#94a3b8" stopOpacity={0.05} />
+              <stop offset="0%" stopColor="oklch(0.55 0.015 95)" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="oklch(0.55 0.015 95)" stopOpacity={0.05} />
             </radialGradient>
           </defs>
-          <PolarGrid stroke="currentColor" opacity={0.12} />
+          <PolarGrid stroke="oklch(0.26 0.018 165)" />
           <PolarAngleAxis
             dataKey="chapter"
-            tick={{ fill: "currentColor", opacity: 0.6, fontSize: 10 }}
+            tick={{
+              fill: "oklch(0.74 0.012 95)",
+              fontSize: 10,
+            }}
+            fontFamily="var(--font-sans)"
           />
           <PolarRadiusAxis
             angle={30}
             domain={[0, 100]}
-            tick={{ fill: "currentColor", opacity: 0.4, fontSize: 9 }}
-            stroke="currentColor"
-            strokeOpacity={0.1}
+            tick={{
+              fill: "oklch(0.55 0.015 95)",
+              fontSize: 9,
+            }}
+            stroke="oklch(0.26 0.018 165)"
+            strokeOpacity={0.4}
+            fontFamily="var(--font-mono)"
           />
           {showCohort && (
             <Radar
-              name="Cohorta"
+              name="cohorta"
               dataKey="cohort"
-              stroke="#94a3b8"
+              stroke="oklch(0.55 0.015 95)"
               fill="url(#cohortFill)"
               strokeWidth={1.5}
               strokeDasharray="4 4"
@@ -129,13 +138,13 @@ export function ChapterRadar({ data, cohort }: ChapterRadarProps) {
             />
           )}
           <Radar
-            name="Tu"
+            name="tu"
             dataKey="accuracy"
-            stroke="#10b981"
+            stroke="oklch(0.84 0.21 162)"
             fill="url(#radarFill)"
-            strokeWidth={2.5}
+            strokeWidth={2}
             animationDuration={1200}
-            style={{ filter: "drop-shadow(0 0 8px rgba(16,185,129,0.4))" }}
+            style={{ filter: "drop-shadow(0 0 6px oklch(0.84 0.21 162 / 0.4))" }}
           />
           <Tooltip content={<CustomTooltip />} />
         </RechartsRadarChart>

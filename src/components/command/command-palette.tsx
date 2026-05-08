@@ -3,16 +3,13 @@
 import { Command } from "cmdk"
 import { AnimatePresence, motion } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
 import {
   BarChart3,
   GraduationCap,
   LayoutDashboard,
   LogOut,
-  Moon,
   Rocket,
   Sparkles,
-  Sun,
   Tag,
   Target,
   User,
@@ -35,7 +32,6 @@ interface Item {
 export function CommandPalette() {
   const { open, setOpen } = useCommandPalette()
   const router = useRouter()
-  const { theme, setTheme } = useTheme()
 
   const close = useCallback(() => setOpen(false), [setOpen])
 
@@ -69,16 +65,8 @@ export function CommandPalette() {
       icon: BarChart3,
       perform: go("/dashboard?tab=stats"),
     },
-    {
-      id: "act-theme",
-      label: theme === "dark" ? "Schimba tema (light)" : "Schimba tema (dark)",
-      icon: theme === "dark" ? Sun : Moon,
-      perform: () => {
-        setTheme(theme === "dark" ? "light" : "dark")
-        close()
-      },
-      keywords: "theme tema dark light intuneric luminos",
-    },
+    // Aplicația este dark-only pe v1 — comanda de schimbare temă a fost
+    // eliminată. Va reveni când reintroducem light mode (post-launch).
   ]
 
   const account: Item[] = [

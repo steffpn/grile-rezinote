@@ -1,12 +1,19 @@
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
+
 import { getCurrentUser } from "@/lib/auth/get-user"
-import { getChaptersForPractice, getInProgressAttempts } from "@/lib/db/queries/practice"
+import {
+  getChaptersForPractice,
+  getInProgressAttempts,
+} from "@/lib/db/queries/practice"
 import { getWrongAnswerStats } from "@/lib/db/queries/wrong-answers"
 import { PracticeConfigForm } from "@/components/practice/PracticeConfigForm"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Play } from "lucide-react"
+import {
+  MonoLabel,
+  PercentBar,
+  SectionTag,
+} from "@/components/branded"
 
 export default async function PracticePage() {
   const user = await getCurrentUser()
@@ -18,56 +25,78 @@ export default async function PracticePage() {
   ])
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Teste Practice</h1>
-        <p className="mt-1 text-muted-foreground">
-          Alege capitolele si configureaza testul
+        <SectionTag>Teste practice</SectionTag>
+        <h1 className="mt-3 text-[38px] font-bold leading-[1.05] tracking-[-0.03em] text-fg">
+          Antrenament țintit.
+        </h1>
+        <p className="mt-3 max-w-[560px] text-[15px] leading-[1.55] text-fg-dim">
+          Alege capitolele, alege numărul de întrebări, alege modul de
+          feedback. Vezi exact unde ești slab.
         </p>
       </div>
 
       {/* In-progress attempts */}
       {inProgressAttempts.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Teste in progres</h2>
+        <section>
+          <div className="mb-3 flex items-baseline justify-between">
+            <MonoLabel size="cell">În progres</MonoLabel>
+            <MonoLabel size="body" tone="dim">
+              {inProgressAttempts.length}{" "}
+              {inProgressAttempts.length === 1 ? "test" : "teste"}
+            </MonoLabel>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {inProgressAttempts.map((attempt) => (
-              <Card key={attempt.id} className="group border-border/50 transition-all duration-300 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5">
-                <CardContent className="flex items-center justify-between pt-6">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="rounded-full text-[11px]">
+            {inProgressAttempts.map((attempt) => {
+              const pct = Math.round(
+                (attempt.answeredCount / attempt.totalQuestions) * 100,
+              )
+              return (
+                <div
+                  key={attempt.id}
+                  className="group rounded-[12px] border border-line bg-bg-2 p-4 transition-colors hover:border-line-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-[3px] bg-bg-3 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight text-fg-dim">
                         {attempt.type === "practice_chapter"
                           ? "Capitol"
                           : "Amestecat"}
-                      </Badge>
-                      <Badge variant="secondary" className="rounded-full text-[11px]">
+                      </span>
+                      <span className="rounded-[3px] bg-bg-3 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight text-fg-mute">
                         {attempt.feedbackMode === "immediate"
                           ? "Imediat"
                           : "La final"}
-                      </Badge>
+                      </span>
                     </div>
-                    <p className="text-sm font-medium">
-                      {attempt.answeredCount}/{attempt.totalQuestions} intrebari
-                    </p>
-                    <div className="h-1.5 w-32 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full gradient-primary transition-all"
-                        style={{ width: `${(attempt.answeredCount / attempt.totalQuestions) * 100}%` }}
-                      />
-                    </div>
+                    <Button asChild size="sm" className="shrink-0">
+                      <Link href={`/practice/${attempt.id}`}>
+                        Continuă
+                        <ArrowRight className="size-3.5" />
+                      </Link>
+                    </Button>
                   </div>
-                  <Button asChild size="sm" className="rounded-full gap-1">
-                    <Link href={`/practice/${attempt.id}`}>
-                      Continua
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                  <div className="mt-3 flex items-baseline justify-between gap-2">
+                    <span className="font-mono text-[13px] text-fg">
+                      {attempt.answeredCount}
+                      <span className="text-fg-mute">
+                        {" / "}
+                        {attempt.totalQuestions}
+                      </span>{" "}
+                      întrebări
+                    </span>
+                    <span className="font-mono text-[11px] tracking-mono-tight text-fg-mute">
+                      {pct}%
+                    </span>
+                  </div>
+                  <PercentBar value={pct} className="mt-2.5" thickness={4} />
+                </div>
+              )
+            })}
           </div>
-        </div>
+        </section>
       )}
 
       {/* New test configuration */}

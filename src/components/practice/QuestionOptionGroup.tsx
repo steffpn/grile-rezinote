@@ -1,6 +1,8 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { Check, X } from "lucide-react"
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -21,6 +23,16 @@ interface QuestionOptionGroupProps {
   showResults?: boolean
 }
 
+/**
+ * Listă opțiuni A-E cu states clare:
+ * - default → border `--line`, bg `--panel`
+ * - hover → bg `--bg-3` (doar dacă nu disabled / showResults)
+ * - selected (pre-verificare) → border `--neon`, bg `bg-neon/8`
+ * - correct (post-verificare) → border `--neon`, bg `bg-neon/12`, glow neon
+ * - wrong (post-verificare) → border `--danger`, bg `bg-danger/10`
+ *
+ * Spec § 8 Features (exam mock) și § 3.4 Practica.
+ */
 export function QuestionOptionGroup({
   questionType,
   options,
@@ -36,36 +48,85 @@ export function QuestionOptionGroup({
     isCorrect: boolean,
     isWrong: boolean,
     control: React.ReactNode,
-  ) => (
-    <motion.div
-      key={opt.label}
-      initial={false}
-      animate={{
-        scale: isSelected && !showResults ? 1.015 : 1,
-      }}
-      whileTap={!disabled && !showResults ? { scale: 0.985 } : undefined}
-      transition={{ type: "spring", stiffness: 420, damping: 28 }}
-    >
-      <Label
-        htmlFor={`opt-${opt.label}`}
-        className={cn(
-          "relative flex min-h-[44px] items-center gap-3 rounded-lg border p-3 transition-all duration-200",
-          !disabled && "cursor-pointer",
-          disabled && "cursor-default",
-          !showResults && "hover:bg-accent active:bg-accent",
-          !showResults && isSelected && "border-primary/60 bg-primary/5 shadow-[0_0_0_3px_rgba(16,185,129,0.12)]",
-          showResults && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/30",
-          showResults && isWrong && "border-red-500 bg-red-50 dark:bg-red-950/30",
-        )}
+  ) => {
+    const showCorrect = showResults && isCorrect
+    const showWrong = showResults && isWrong
+    const showMissed = showResults && !isSelected && isCorrect
+
+    return (
+      <motion.div
+        key={opt.label}
+        initial={false}
+        animate={{
+          scale: isSelected && !showResults ? 1.005 : 1,
+        }}
+        whileTap={!disabled && !showResults ? { scale: 0.99 } : undefined}
+        transition={{ type: "spring", stiffness: 420, damping: 28 }}
       >
-        {control}
-        <span className="flex-1 text-sm sm:text-base">
-          <span className="mr-2 font-semibold">{opt.label}.</span>
-          {opt.text}
-        </span>
-      </Label>
-    </motion.div>
-  )
+        <Label
+          htmlFor={`opt-${opt.label}`}
+          className={cn(
+            "relative grid min-h-[44px] items-center gap-3 rounded-[7px] border bg-panel px-3.5 py-2.5",
+            "grid-cols-[24px_1fr_24px] transition-all duration-200",
+            // base / hover
+            !disabled && !showResults && "cursor-pointer hover:bg-bg-3",
+            disabled && "cursor-default",
+            // states
+            !showResults &&
+              isSelected &&
+              "border-neon bg-neon/8",
+            !showResults &&
+              !isSelected &&
+              "border-line",
+            // correct (selected + correct)
+            showCorrect &&
+              isSelected &&
+              "border-neon bg-neon/12 shadow-[0_0_0_1px_var(--neon)]",
+            // wrong (selected + incorrect)
+            showWrong && "border-danger bg-danger/10",
+            // missed (not selected but correct — show with subtle neon)
+            showMissed && "border-neon/60 bg-neon/6",
+            // not relevant default
+            showResults && !isSelected && !isCorrect && "border-line opacity-70",
+          )}
+        >
+          {/* Control (left slot) */}
+          <span className="flex size-6 items-center justify-center font-mono text-[12px] text-fg-mute">
+            {opt.label}
+          </span>
+          {/* Hidden control for accessibility */}
+          <span className="sr-only">{control}</span>
+
+          {/* Option text */}
+          <span className="text-[14px] leading-[1.5] text-fg-dim">
+            <span className="text-fg">{opt.text}</span>
+          </span>
+
+          {/* Trailing indicator */}
+          <span className="flex size-6 items-center justify-center">
+            {showCorrect && isSelected && (
+              <Check className="size-4 text-neon" aria-label="Corect" />
+            )}
+            {showWrong && (
+              <X className="size-4 text-danger" aria-label="Greșit" />
+            )}
+            {showMissed && (
+              <Check
+                className="size-4 text-neon/70"
+                aria-label="Răspuns corect ratat"
+              />
+            )}
+            {!showResults && isSelected && (
+              <span
+                aria-hidden
+                className="size-2 rounded-full bg-neon shadow-[0_0_6px_var(--neon)]"
+              />
+            )}
+          </span>
+        </Label>
+      </motion.div>
+    )
+  }
 
   if (questionType === "CS") {
     return (

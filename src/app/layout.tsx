@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, Sora } from "next/font/google"
+import { Inter, JetBrains_Mono } from "next/font/google"
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "sonner"
 import { OfflineIndicator } from "@/components/pwa/offline-indicator"
@@ -12,13 +12,14 @@ const inter = Inter({
   subsets: ["latin", "latin-ext"],
   display: "swap",
   variable: "--font-inter",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 })
 
-const sora = Sora({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin", "latin-ext"],
   display: "swap",
-  variable: "--font-sora",
-  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-jetbrains-mono",
+  weight: ["400", "500", "600"],
 })
 
 export const metadata: Metadata = {
@@ -37,7 +38,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#10b981",
+  // Aliniat cu --bg din design tokens (dark-only v1)
+  themeColor: "#0A1110",
 }
 
 export default function RootLayout({
@@ -46,13 +48,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ro" suppressHydrationWarning>
-      <body className={`${inter.variable} ${sora.variable} font-sans antialiased`}>
+    // Dark-only pe v1 — clasa `dark` este hardcoded ca dublă-asigurare în
+    // cazul în care ThemeProvider nu apucă să atașeze atributul înainte de
+    // primul paint. ThemeProvider mai jos forțează tema în orice caz.
+    <html lang="ro" className="dark" suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+      >
         <OfflineIndicator />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          enableSystem
+          forcedTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <SmoothScrollProvider>
@@ -66,9 +74,10 @@ export default function RootLayout({
               closeButton
               toastOptions={{
                 style: {
-                  background: "rgba(10, 14, 20, 0.92)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "oklch(0.14 0.014 165 / 0.92)",
+                  border: "1px solid oklch(0.26 0.018 165)",
                   backdropFilter: "blur(12px)",
+                  color: "oklch(0.97 0.008 95)",
                 },
               }}
             />

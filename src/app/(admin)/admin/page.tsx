@@ -1,8 +1,9 @@
+import { and, count, eq, isNull } from "drizzle-orm"
+import { BookOpen, CheckCircle2, HelpCircle, ListChecks, type LucideIcon } from "lucide-react"
+
 import { db } from "@/lib/db"
 import { chapters, questions } from "@/lib/db/schema"
-import { isNull, eq, count, and } from "drizzle-orm"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, HelpCircle, CheckCircle2, ListChecks } from "lucide-react"
+import { MonoLabel, SectionTag } from "@/components/branded"
 
 async function getAdminStats() {
   const [chapterCount] = await db
@@ -33,42 +34,88 @@ async function getAdminStats() {
   }
 }
 
-const statCards = [
-  { key: "chapters" as const, label: "Capitole", icon: BookOpen },
+const statCards: {
+  key: "chapters" | "totalQuestions" | "csQuestions" | "cmQuestions"
+  label: string
+  sub: string
+  icon: LucideIcon
+  tone: "default" | "accent" | "warm"
+}[] = [
   {
-    key: "totalQuestions" as const,
-    label: "Total Intrebari",
-    icon: HelpCircle,
+    key: "chapters",
+    label: "Capitole",
+    sub: "active · publice",
+    icon: BookOpen,
+    tone: "accent",
   },
-  { key: "csQuestions" as const, label: "Intrebari CS", icon: CheckCircle2 },
-  { key: "cmQuestions" as const, label: "Intrebari CM", icon: ListChecks },
+  {
+    key: "totalQuestions",
+    label: "Total întrebări",
+    sub: "active",
+    icon: HelpCircle,
+    tone: "default",
+  },
+  {
+    key: "csQuestions",
+    label: "Complement simplu",
+    sub: "1 răspuns corect",
+    icon: CheckCircle2,
+    tone: "accent",
+  },
+  {
+    key: "cmQuestions",
+    label: "Complement multiplu",
+    sub: "2-4 răspunsuri",
+    icon: ListChecks,
+    tone: "warm",
+  },
 ]
 
 export default async function AdminDashboardPage() {
   const stats = await getAdminStats()
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Panou Admin</h1>
-      <p className="mt-1 text-muted-foreground">
-        Gestioneaza continutul platformei.
-      </p>
+    <div className="space-y-8">
+      <div>
+        <SectionTag>Admin · sumar</SectionTag>
+        <h1 className="mt-3 text-[34px] font-bold leading-[1.05] tracking-[-0.03em] text-fg">
+          Conținutul platformei.
+        </h1>
+        <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-fg-dim">
+          Capitole, întrebări, praguri de admitere — tot ce alimentează
+          platforma trece prin pagina aceasta.
+        </p>
+      </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => {
           const Icon = card.icon
           return (
-            <Card key={card.key}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {card.label}
-                </CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats[card.key]}</div>
-              </CardContent>
-            </Card>
+            <div
+              key={card.key}
+              className="rounded-[12px] border border-line bg-bg-2 p-5"
+            >
+              <div className="flex items-center justify-between">
+                <MonoLabel size="cell">{card.label}</MonoLabel>
+                <span
+                  className={
+                    card.tone === "accent"
+                      ? "text-neon"
+                      : card.tone === "warm"
+                        ? "text-warm"
+                        : "text-fg-mute"
+                  }
+                >
+                  <Icon className="size-4" />
+                </span>
+              </div>
+              <div className="mt-3 font-mono text-[36px] font-semibold leading-none tracking-[-0.04em] text-fg">
+                {stats[card.key].toLocaleString("ro-RO")}
+              </div>
+              <div className="mt-2 font-mono text-[10.5px] tracking-mono-tight text-fg-mute">
+                {card.sub}
+              </div>
+            </div>
           )
         })}
       </div>

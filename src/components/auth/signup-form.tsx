@@ -3,36 +3,50 @@
 import { useActionState, useState } from "react"
 import { useFormStatus } from "react-dom"
 import Link from "next/link"
+import { ArrowRight, Loader2 } from "lucide-react"
+
 import { signup, type AuthState } from "@/lib/auth/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowRight, Loader2 } from "lucide-react"
 import { GoogleButton } from "./google-button"
+import {
+  AuthCard,
+  AuthDivider,
+  AuthError,
+  AuthFootLink,
+  AuthHeader,
+  FieldError,
+} from "./auth-shell"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button
-      type="submit"
-      className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 border-0 text-white font-semibold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:brightness-110 transition-all h-12"
-      disabled={pending}
-    >
+    <Button type="submit" size="lg" className="w-full" disabled={pending}>
       {pending ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Se creeaza contul...
+          <Loader2 className="size-4 animate-spin" />
+          Se creează contul...
         </>
       ) : (
         <>
-          Creeaza cont
-          <ArrowRight className="ml-2 h-4 w-4" />
+          Începe gratuit
+          <ArrowRight className="size-4" />
         </>
       )}
     </Button>
   )
 }
+
+const yearOptions = [
+  { value: "1", label: "Anul 1" },
+  { value: "2", label: "Anul 2" },
+  { value: "3", label: "Anul 3" },
+  { value: "4", label: "Anul 4" },
+  { value: "5", label: "Anul 5" },
+  { value: "6", label: "Anul 6" },
+]
 
 export function SignupForm() {
   const [state, formAction] = useActionState<AuthState, FormData>(signup, null)
@@ -45,125 +59,119 @@ export function SignupForm() {
   const [marketingOptIn, setMarketingOptIn] = useState(false)
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Creeaza-ti contul</h1>
-        <p className="mt-2 text-sm text-white/40">
-          Incepe pregatirea pentru rezidentiat in cateva secunde
-        </p>
-      </div>
+    <AuthCard>
+      <AuthHeader
+        eyebrow="7 zile gratuit · fără card"
+        title="Creează-ți contul."
+        subtitle="Începe pregătirea pentru rezidențiat în câteva secunde."
+      />
 
       <GoogleButton
-        label="Inregistreaza-te cu Google"
+        label="Înregistrează-te cu Google"
         callbackUrl="/dashboard"
         marketingOptIn={marketingOptIn}
       />
 
-      <div className="relative my-6 flex items-center">
-        <div className="flex-1 border-t border-white/[0.06]" />
-        <span className="px-3 text-[11px] uppercase tracking-wider text-white/30">
-          sau
-        </span>
-        <div className="flex-1 border-t border-white/[0.06]" />
-      </div>
+      <AuthDivider />
 
       <form action={formAction} className="space-y-4">
-        {state?.error && (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/[0.08] px-4 py-3 text-sm text-red-300">
-            {state.error}
-          </div>
-        )}
+        {state?.error && <AuthError message={state.error} />}
 
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-sm text-white/60">
+        <div>
+          <Label
+            htmlFor="name"
+            className="mb-1.5 block text-[13px] font-medium text-fg-dim"
+          >
             Nume complet
           </Label>
           <Input
             id="name"
             name="name"
             type="text"
+            autoComplete="name"
             placeholder="Ion Popescu"
-            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-base text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 md:text-base"
+            aria-invalid={!!state?.errors?.name}
             required
           />
-          {state?.errors?.name && (
-            <p className="text-xs text-red-400">{state.errors.name[0]}</p>
-          )}
+          <FieldError message={state?.errors?.name?.[0]} />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm text-white/60">
+        <div>
+          <Label
+            htmlFor="email"
+            className="mb-1.5 block text-[13px] font-medium text-fg-dim"
+          >
             Email
           </Label>
           <Input
             id="email"
             name="email"
             type="email"
+            autoComplete="email"
             placeholder="exemplu@email.com"
-            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-base text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 md:text-base"
+            aria-invalid={!!state?.errors?.email}
             required
           />
-          {state?.errors?.email && (
-            <p className="text-xs text-red-400">
-              {state.errors.email[0]}
-            </p>
-          )}
+          <FieldError message={state?.errors?.email?.[0]} />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-sm text-white/60">
-            Parola
+        <div>
+          <Label
+            htmlFor="password"
+            className="mb-1.5 block text-[13px] font-medium text-fg-dim"
+          >
+            Parolă
           </Label>
           <Input
             id="password"
             name="password"
             type="password"
-            className="h-12 rounded-xl border-white/[0.08] bg-white/[0.04] text-base text-white placeholder:text-white/20 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/20 md:text-base"
+            autoComplete="new-password"
+            aria-invalid={!!state?.errors?.password}
             required
           />
-          <p className="text-xs text-white/25">
-            Minim 8 caractere, cel putin o litera si o cifra
+          <p className="mt-1.5 font-mono text-[11px] tracking-mono text-fg-mute">
+            min 8 · literă · cifră
           </p>
-          {state?.errors?.password && (
-            <p className="text-xs text-red-400">
-              {state.errors.password[0]}
-            </p>
-          )}
+          <FieldError message={state?.errors?.password?.[0]} />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="yearOfStudy" className="text-sm text-white/60">
+        <div>
+          <Label
+            htmlFor="yearOfStudy"
+            className="mb-1.5 block text-[13px] font-medium text-fg-dim"
+          >
             Anul de studiu
           </Label>
           <select
             id="yearOfStudy"
             name="yearOfStudy"
             required
-            className="flex h-12 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-base text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:border-emerald-500/40 focus-visible:ring-1 focus-visible:ring-emerald-500/20"
+            aria-invalid={!!state?.errors?.yearOfStudy}
+            defaultValue=""
+            className="h-10 w-full rounded-[7px] border border-line bg-bg-3 px-3 text-[14px] text-fg outline-none transition-colors focus-visible:border-neon focus-visible:ring-2 focus-visible:ring-neon/25"
           >
-            <option value="" className="bg-[#0a0a0f] text-white/40">Selecteaza anul</option>
-            <option value="1" className="bg-[#0a0a0f]">Anul 1</option>
-            <option value="2" className="bg-[#0a0a0f]">Anul 2</option>
-            <option value="3" className="bg-[#0a0a0f]">Anul 3</option>
-            <option value="4" className="bg-[#0a0a0f]">Anul 4</option>
-            <option value="5" className="bg-[#0a0a0f]">Anul 5</option>
-            <option value="6" className="bg-[#0a0a0f]">Anul 6</option>
+            <option value="" disabled className="bg-bg-2 text-fg-mute">
+              Selectează anul
+            </option>
+            {yearOptions.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-bg-2">
+                {opt.label}
+              </option>
+            ))}
           </select>
-          {state?.errors?.yearOfStudy && (
-            <p className="text-xs text-red-400">
-              {state.errors.yearOfStudy[0]}
-            </p>
-          )}
+          <FieldError message={state?.errors?.yearOfStudy?.[0]} />
         </div>
 
-        {/* Marketing consent — pre-checked, opt-out. Hidden input keeps the
-            checkbox state in FormData regardless of checked state. */}
-        <div className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+        {/* Marketing consent — opt-in. */}
+        <div className="flex items-start gap-3 rounded-[7px] border border-line bg-bg-3/40 p-3">
           <Checkbox
             id="marketingOptIn"
             checked={marketingOptIn}
-            onCheckedChange={(checked) => setMarketingOptIn(checked === true)}
-            className="mt-0.5 border-white/20 data-[state=checked]:border-emerald-500 data-[state=checked]:bg-emerald-500"
+            onCheckedChange={(checked) =>
+              setMarketingOptIn(checked === true)
+            }
+            className="mt-0.5 border-line-2 data-[state=checked]:border-neon data-[state=checked]:bg-neon data-[state=checked]:text-bg"
           />
           <input
             type="hidden"
@@ -172,29 +180,29 @@ export function SignupForm() {
           />
           <Label
             htmlFor="marketingOptIn"
-            className="text-xs leading-relaxed text-white/60"
+            className="text-[12px] leading-relaxed text-fg-dim"
           >
-            Doresc sa primesc newsletter, sfaturi de invatare si noutati despre
-            platforma pe email. Poti dezactiva oricand din profilul tau.
+            Primesc newsletter, sfaturi de învățare și noutăți. Te poți
+            dezabona oricând din profil.
           </Label>
         </div>
 
-        <p className="text-center text-[11px] leading-relaxed text-white/35">
-          Prin crearea contului, confirm ca am citit si accept{" "}
+        <p className="text-center font-mono text-[11px] leading-relaxed tracking-mono-tight text-fg-mute">
+          Prin crearea contului accept{" "}
           <Link
             href="/legal/terms"
             target="_blank"
-            className="text-emerald-400 underline-offset-2 hover:underline"
+            className="text-neon underline-offset-2 hover:underline"
           >
-            Termenii si Conditiile
+            Termenii
           </Link>{" "}
-          si{" "}
+          și{" "}
           <Link
             href="/legal/privacy"
             target="_blank"
-            className="text-emerald-400 underline-offset-2 hover:underline"
+            className="text-neon underline-offset-2 hover:underline"
           >
-            Politica de Confidentialitate
+            Politica
           </Link>
           .
         </p>
@@ -204,15 +212,7 @@ export function SignupForm() {
         </div>
       </form>
 
-      <div className="mt-8 text-center text-sm text-white/30">
-        Ai deja cont?{" "}
-        <Link
-          href="/login"
-          className="font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
-        >
-          Autentifica-te
-        </Link>
-      </div>
-    </div>
+      <AuthFootLink prompt="Ai deja cont?" href="/login" cta="Autentifică-te" />
+    </AuthCard>
   )
 }

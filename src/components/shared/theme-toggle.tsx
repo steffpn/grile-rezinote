@@ -1,22 +1,13 @@
 "use client"
 
-import { useTheme } from "next-themes"
-import { Sun, Moon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-
+/**
+ * ThemeToggle — neutralizat pe v1.
+ *
+ * Aplicația rulează dark-only (vezi `forcedTheme="dark"` în
+ * `src/app/layout.tsx`). Componenta este păstrată ca punct de extensie
+ * pentru când vom reintroduce light mode (post-launch, dacă e cazul) —
+ * până atunci nu randăm nimic ca să nu apară un buton fără efect.
+ */
 export function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme()
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      aria-label="Comută tema"
-    >
-      <Sun className="size-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-      <Moon className="absolute size-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-      <span className="sr-only">Comută tema</span>
-    </Button>
-  )
+  return null
 }

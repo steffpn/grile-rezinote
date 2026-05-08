@@ -2,6 +2,7 @@ import { getAdmissionData, getSpecialties } from "@/lib/db/queries/admission"
 import { AdmissionDataTable } from "@/components/admin/admission-data-table"
 import { AdmissionDataImport } from "@/components/admin/admission-data-import"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SectionTag } from "@/components/branded"
 
 export default async function AdmissionDataPage() {
   const [entries, specialties] = await Promise.all([
@@ -15,30 +16,32 @@ export default async function AdmissionDataPage() {
   }))
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Date Istorice de Admitere
+        <SectionTag>Date admitere</SectionTag>
+        <h1 className="mt-3 text-[34px] font-bold leading-[1.05] tracking-[-0.03em] text-fg">
+          Praguri istorice.
         </h1>
-        <p className="text-muted-foreground">
-          Gestioneaza pragurile de admitere per specialitate si an.
+        <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-fg-dim">
+          Pragurile oficiale de admitere per specialitate, UMF și an. Sursa
+          tot ce face killer feature-ul să meargă.
         </p>
       </div>
 
       <Tabs defaultValue="table">
-        <TabsList>
+        <TabsList variant="line" className="border-b border-line">
           <TabsTrigger value="table">Date</TabsTrigger>
           <TabsTrigger value="import">Import / Export</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="table" className="mt-4">
+        <TabsContent value="table" className="pt-6">
           <AdmissionDataTable
             entries={entries}
             specialties={specialtyOptions}
           />
         </TabsContent>
 
-        <TabsContent value="import" className="mt-4">
+        <TabsContent value="import" className="pt-6">
           <AdmissionDataImport specialties={specialtyOptions} />
         </TabsContent>
       </Tabs>

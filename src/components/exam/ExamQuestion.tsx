@@ -1,9 +1,9 @@
 "use client"
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Toggle } from "@/components/ui/toggle"
 import { Flag } from "lucide-react"
+
+import { Toggle } from "@/components/ui/toggle"
+import { MonoLabel } from "@/components/branded"
 import { cn } from "@/lib/utils"
 import { QuestionOptionGroup } from "@/components/practice/QuestionOptionGroup"
 import { formatQuestionType } from "@/lib/format/question-type"
@@ -29,6 +29,13 @@ interface ExamQuestionProps {
   isFlagged: boolean
 }
 
+/**
+ * ExamQuestion — variant simplificat al QuestionCard pentru contextul de
+ * examen: fără feedback (forward-only), fără verify button. Aceeași anatomie
+ * (header mono · subchapter · text · opțiuni A-E).
+ *
+ * Spec § 3.5 — întrebare centered max-w 720, opțiuni gap 6.
+ */
 export function ExamQuestion({
   question,
   questionNumber,
@@ -39,44 +46,52 @@ export function ExamQuestion({
   isFlagged,
 }: ExamQuestionProps) {
   return (
-    <Card data-protected="question">
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-base font-bold sm:text-lg">
-            Intrebarea {questionNumber}/{totalQuestions}
-          </span>
-          <Badge
-            variant="outline"
+    <div
+      data-protected="question"
+      className="rounded-[14px] border border-line bg-bg-2"
+    >
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-3.5">
+        <div className="flex items-center gap-3">
+          <MonoLabel size="body" tone="mute">
+            Întrebarea {questionNumber}{" "}
+            <span className="text-fg-mute/70">/ {totalQuestions}</span>
+          </MonoLabel>
+          <span
             className={cn(
+              "rounded-[3px] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight",
               question.type === "CS"
-                ? "border-primary/30 bg-primary/5 text-primary rounded-full text-[11px] font-semibold"
-                : "border-violet-500/30 bg-violet-500/5 text-violet-600 dark:text-violet-400 rounded-full text-[11px] font-semibold"
+                ? "bg-neon/12 text-neon"
+                : "bg-warm/12 text-warm",
             )}
           >
             {formatQuestionType(question.type)}
-          </Badge>
+          </span>
         </div>
         <Toggle
           pressed={isFlagged}
           onPressedChange={() => onFlag(question.id)}
           size="sm"
-          aria-label="Marcheaza intrebarea"
+          aria-label="Marchează întrebarea"
           className={cn(
-            isFlagged &&
-              "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+            "rounded-[7px]",
+            isFlagged && "bg-warm/15 text-warm hover:bg-warm/20",
           )}
         >
-          <Flag className="h-4 w-4" />
+          <Flag className="size-4" />
         </Toggle>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4">
+      {/* Body */}
+      <div className="space-y-5 p-5 sm:p-6">
         {question.subchapter && (
-          <p className="text-xs font-medium uppercase tracking-wider text-emerald-400/80">
+          <MonoLabel size="cell" tone="accent">
             {question.subchapter}
-          </p>
+          </MonoLabel>
         )}
-        <p className="text-base leading-relaxed break-words">{question.text}</p>
+        <p className="break-words text-[15px] leading-[1.55] text-fg sm:text-[16px]">
+          {question.text}
+        </p>
 
         <QuestionOptionGroup
           questionType={question.type}
@@ -85,7 +100,7 @@ export function ExamQuestion({
           onChange={(newSelected) => onAnswer(question.id, newSelected)}
           disabled={false}
         />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

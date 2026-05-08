@@ -2,23 +2,23 @@
 
 import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
+
 import { updatePassword, type AuthState } from "@/lib/auth/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+  AuthCard,
+  AuthError,
+  AuthHeader,
+  FieldError,
+} from "./auth-shell"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? "Se salveaza..." : "Schimba parola"}
+    <Button type="submit" size="lg" className="w-full" disabled={pending}>
+      {pending ? "Se salvează..." : "Schimbă parola"}
     </Button>
   )
 }
@@ -26,65 +26,63 @@ function SubmitButton() {
 export function UpdatePasswordForm({ token }: { token?: string }) {
   const [state, formAction] = useActionState<AuthState, FormData>(
     updatePassword,
-    null
+    null,
   )
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Parola noua</CardTitle>
-        <CardDescription>
-          Seteaza o parola noua pentru contul tau
-        </CardDescription>
-      </CardHeader>
+    <AuthCard>
+      <AuthHeader
+        title="Parolă nouă."
+        subtitle="Alege o parolă pe care nu o folosești în altă parte."
+      />
 
-      <CardContent>
-        <form action={formAction} className="space-y-4">
-          {/* Pass reset token as hidden field */}
-          {token && <input type="hidden" name="token" value={token} />}
+      <form action={formAction} className="space-y-5">
+        {/* Pass reset token as hidden field */}
+        {token && <input type="hidden" name="token" value={token} />}
 
-          {state?.error && (
-            <div className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {state.error}
-            </div>
-          )}
+        {state?.error && <AuthError message={state.error} />}
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Parola noua</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Minim 8 caractere, cel putin o litera si o cifra
-            </p>
-            {state?.errors?.password && (
-              <p className="text-sm text-destructive">
-                {state.errors.password[0]}
-              </p>
-            )}
-          </div>
+        <div>
+          <Label
+            htmlFor="password"
+            className="mb-1.5 block text-[13px] font-medium text-fg-dim"
+          >
+            Parolă nouă
+          </Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            aria-invalid={!!state?.errors?.password}
+            required
+          />
+          <p className="mt-1.5 font-mono text-[11px] tracking-mono text-fg-mute">
+            min 8 · literă · cifră
+          </p>
+          <FieldError message={state?.errors?.password?.[0]} />
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirma parola</Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-            />
-            {state?.errors?.confirmPassword && (
-              <p className="text-sm text-destructive">
-                {state.errors.confirmPassword[0]}
-              </p>
-            )}
-          </div>
+        <div>
+          <Label
+            htmlFor="confirmPassword"
+            className="mb-1.5 block text-[13px] font-medium text-fg-dim"
+          >
+            Confirmă parola
+          </Label>
+          <Input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            autoComplete="new-password"
+            aria-invalid={!!state?.errors?.confirmPassword}
+            required
+          />
+          <FieldError message={state?.errors?.confirmPassword?.[0]} />
+        </div>
 
-          <SubmitButton />
-        </form>
-      </CardContent>
-    </Card>
+        <SubmitButton />
+      </form>
+    </AuthCard>
   )
 }

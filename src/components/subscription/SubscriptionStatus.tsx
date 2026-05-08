@@ -1,4 +1,9 @@
+import Link from "next/link"
+import { AlertTriangle } from "lucide-react"
+
+import { MonoLabel } from "@/components/branded"
 import type { PlanTier } from "@/lib/subscription/tiers"
+import { cn } from "@/lib/utils"
 
 interface SubscriptionStatusProps {
   status: string
@@ -17,50 +22,26 @@ function formatDate(date: Date): string {
   })
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    active:
-      "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-    trialing:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-    cancelling:
-      "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-    expired: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-    inactive: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  }
-
-  const labels: Record<string, string> = {
-    active: "Activ",
-    trialing: "Trial",
-    cancelling: "Se anuleaza",
-    expired: "Expirat",
-    inactive: "Inactiv",
-  }
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status] || styles.inactive}`}
-    >
-      {labels[status] || status}
-    </span>
-  )
+const STATUS_LABELS: Record<string, string> = {
+  active: "Activ",
+  trialing: "Trial",
+  cancelling: "Se anulează",
+  expired: "Expirat",
+  inactive: "Inactiv",
 }
 
-function TierBadge({ tier }: { tier: PlanTier }) {
-  const styles: Record<PlanTier, string> = {
-    FREE: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-    PRO: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
-    PREMIUM:
-      "bg-gradient-to-r from-amber-200 to-yellow-300 text-amber-900 dark:from-amber-700 dark:to-yellow-800 dark:text-amber-100",
-  }
+const STATUS_TONE: Record<string, string> = {
+  active: "bg-neon/14 text-neon",
+  trialing: "bg-neon/12 text-neon",
+  cancelling: "bg-warm/15 text-warm",
+  expired: "bg-danger/15 text-danger",
+  inactive: "bg-bg-3 text-fg-mute",
+}
 
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold tracking-wide ${styles[tier]}`}
-    >
-      {tier}
-    </span>
-  )
+const TIER_TONE: Record<PlanTier, string> = {
+  FREE: "bg-bg-3 text-fg-dim",
+  PRO: "bg-neon/14 text-neon",
+  PREMIUM: "bg-warm/14 text-warm",
 }
 
 export function SubscriptionStatus({
@@ -78,79 +59,117 @@ export function SubscriptionStatus({
         ? "expired"
         : status
 
-  // For plain-FREE accounts the tier badge already conveys everything; an
-  // extra "Free" status pill next to it is redundant. Hide the status badge
-  // in that case and show only the tier badge.
   const isPlainFree = tier === "FREE" && status !== "trialing"
 
   const cycleLabel =
     planType === "annual" ? "Anual" : planType === "monthly" ? "Lunar" : null
 
   return (
-    <div className="rounded-lg border bg-card p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-lg font-semibold">Starea abonamentului</h3>
+    <section className="rounded-[14px] border border-line bg-bg-2 p-5 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <MonoLabel size="cell">Plan curent</MonoLabel>
+          <h2 className="mt-1.5 text-[20px] font-semibold tracking-[-0.015em] text-fg">
+            Starea abonamentului
+          </h2>
+        </div>
         <div className="flex items-center gap-2">
-          <TierBadge tier={tier} />
-          {!isPlainFree && <StatusBadge status={displayStatus} />}
+          <span
+            className={cn(
+              "rounded-[3px] px-2 py-0.5 font-mono text-[10.5px] font-bold uppercase tracking-mono-tight",
+              TIER_TONE[tier],
+            )}
+          >
+            {tier}
+          </span>
+          {!isPlainFree && (
+            <span
+              className={cn(
+                "rounded-[3px] px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-mono-tight",
+                STATUS_TONE[displayStatus] ?? STATUS_TONE.inactive,
+              )}
+            >
+              {STATUS_LABELS[displayStatus] ?? displayStatus}
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <dl className="mt-5 space-y-2.5 text-[14px]">
         {cycleLabel && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Ciclu de facturare</span>
-            <span className="font-medium">{cycleLabel}</span>
-          </div>
+          <Row label="Ciclu de facturare" value={cycleLabel} />
         )}
-
         {currentPeriodEnd && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">
-              {cancelAtPeriodEnd
-                ? "Acces pana la"
-                : "Urmatoarea facturare"}
-            </span>
-            <span className="font-medium">
-              {formatDate(currentPeriodEnd)}
-            </span>
-          </div>
+          <Row
+            label={cancelAtPeriodEnd ? "Acces până la" : "Următoarea facturare"}
+            value={formatDate(currentPeriodEnd)}
+          />
         )}
-
         {trialDaysRemaining !== undefined && trialDaysRemaining > 0 && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Zile ramase trial</span>
-            <span className="font-medium">{trialDaysRemaining}</span>
-          </div>
+          <Row
+            label="Zile rămase trial"
+            value={
+              <span className="font-mono text-neon">
+                {trialDaysRemaining}
+              </span>
+            }
+          />
         )}
-      </div>
+      </dl>
 
       {cancelAtPeriodEnd && currentPeriodEnd && (
-        <div className="mt-4 rounded-md bg-orange-50 p-3 text-sm text-orange-700 dark:bg-orange-950 dark:text-orange-300">
-          Abonamentul se va anula pe {formatDate(currentPeriodEnd)}. Vei avea
-          acces pana atunci, apoi contul va trece pe planul FREE.
+        <div className="mt-5 flex items-start gap-2.5 rounded-[10px] border border-warm/30 bg-warm/8 px-3.5 py-3 text-[13px] leading-[1.55]">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warm" />
+          <span className="text-fg-dim">
+            Abonamentul se va anula pe{" "}
+            <span className="text-fg">{formatDate(currentPeriodEnd)}</span>.
+            Vei avea acces până atunci, apoi contul trece pe FREE.
+          </span>
         </div>
       )}
 
       {tier === "FREE" && status !== "trialing" && (
-        <div className="mt-4 rounded-md bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-          Esti pe planul FREE (20 intrebari/zi).{" "}
-          <a href="/pricing" className="font-medium underline">
-            Activeaza PRO sau PREMIUM
-          </a>{" "}
-          pentru acces complet.
+        <div className="mt-5 rounded-[10px] border border-neon/25 bg-neon/8 px-3.5 py-3 text-[13px] leading-[1.55]">
+          <span className="text-fg-dim">
+            Plan FREE · 20 întrebări/zi.{" "}
+          </span>
+          <Link
+            href="/pricing"
+            className="font-medium text-neon underline-offset-2 hover:underline"
+          >
+            Activează PRO sau PREMIUM
+          </Link>{" "}
+          <span className="text-fg-dim">pentru acces complet.</span>
         </div>
       )}
 
       {displayStatus === "expired" && tier !== "FREE" && (
-        <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-          Abonamentul tau a expirat.{" "}
-          <a href="/pricing" className="font-medium underline">
-            Reaboneaza-te
-          </a>{" "}
+        <div className="mt-5 rounded-[10px] border border-danger/30 bg-danger/10 px-3.5 py-3 text-[13px] leading-[1.55] text-fg-dim">
+          Abonamentul a expirat.{" "}
+          <Link
+            href="/pricing"
+            className="font-medium text-danger underline-offset-2 hover:underline"
+          >
+            Reabonează-te
+          </Link>{" "}
           pentru a recupera accesul.
         </div>
       )}
+    </section>
+  )
+}
+
+function Row({
+  label,
+  value,
+}: {
+  label: string
+  value: React.ReactNode
+}) {
+  return (
+    <div className="flex items-baseline justify-between border-b border-line pb-2.5 last:border-b-0 last:pb-0">
+      <dt className="text-fg-mute">{label}</dt>
+      <dd className="font-mono text-[13px] text-fg">{value}</dd>
     </div>
   )
 }

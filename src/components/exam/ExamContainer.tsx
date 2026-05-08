@@ -4,12 +4,17 @@ import { useState, useRef, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import { toast } from "sonner"
+import { ChevronRight, Send } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
+import { MonoLabel } from "@/components/branded"
+import { batchSaveAnswers, submitExam } from "@/lib/actions/exam"
+import { cn } from "@/lib/utils"
+
 import { ExamTimer } from "./ExamTimer"
 import { ExamQuestion } from "./ExamQuestion"
+import { ExamNavigator } from "./ExamNavigator"
 import { SubmitConfirmModal } from "./SubmitConfirmModal"
-import { batchSaveAnswers, submitExam } from "@/lib/actions/exam"
-import { ChevronRight, Send } from "lucide-react"
 
 interface QuestionOption {
   label: string
@@ -63,7 +68,7 @@ export function ExamContainer({
     return new Set(
       Array.from(initialAnswers.entries())
         .filter(([, ans]) => ans.selectedOptions.length > 0)
-        .map(([qId]) => qId)
+        .map(([qId]) => qId),
     )
   })
 
@@ -211,97 +216,128 @@ export function ExamContainer({
   }
 
   const unansweredCount = questions.length - answeredIds.size
+  const progressPct = ((currentIndex + 1) / questions.length) * 100
+
+  // Listă întrebări pentru navigator (pentru drawer view)
+  const navigatorQuestions = questions.map((q, i) => ({
+    id: q.id,
+    number: i + 1,
+  }))
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      {/* Sticky top bar */}
-      <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-2 rounded-b-xl border-b bg-background/95 px-4 py-3 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex flex-col bg-bg">
+      {/* Top bar: timer center, counter dreapta, submit */}
+      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-line bg-bg/[0.85] px-4 backdrop-blur-xl sm:px-6">
+        <div className="flex min-w-[200px] items-center gap-3">
+          <MonoLabel size="cell">Simulare</MonoLabel>
+          <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
+        </div>
+
         <ExamTimer deadline={deadline} onTimeUp={handleTimeUp} />
 
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold tabular-nums text-muted-foreground">
-            {currentIndex + 1} / {questions.length}
+        <div className="flex min-w-[200px] items-center justify-end gap-2">
+          <span className="hidden font-mono text-[12px] text-fg-mute sm:inline">
+            <span className="text-fg">{currentIndex + 1}</span>
+            <span> / {questions.length}</span>
           </span>
-
-          {isSaving && (
-            <span className="hidden text-xs text-muted-foreground animate-pulse sm:inline">
-              Salvare...
-            </span>
-          )}
-          {!isSaving && lastSaved && (
-            <span className="hidden text-xs text-muted-foreground sm:inline">Salvat</span>
-          )}
-
+          <ExamNavigator
+            questions={navigatorQuestions}
+            answeredIds={answeredIds}
+            flaggedIds={flaggedIds}
+            currentQuestionId={currentQuestion?.id ?? ""}
+          />
           <Button
             size="sm"
             onClick={() => setShowSubmitModal(true)}
             disabled={isSubmitting}
-            className="min-h-[44px] gap-2 text-xs sm:text-sm"
           >
-            <Send className="h-3.5 w-3.5" />
-            Trimite
+            <Send className="size-3.5" />
+            <span className="hidden sm:inline">Trimite</span>
           </Button>
+        </div>
+      </header>
+
+      {/* Progress bar — 200 segmente fine */}
+      <div className="border-b border-line bg-bg-2/50 px-4 py-2 sm:px-6">
+        <div className="flex w-full gap-[1px]">
+          {questions.map((q, i) => {
+            const isAnswered = answeredIds.has(q.id)
+            const isCurrent = i === currentIndex
+            return (
+              <span
+                key={q.id}
+                aria-hidden
+                className={cn(
+                  "h-[3px] flex-1 transition-colors",
+                  isCurrent
+                    ? "bg-neon shadow-[0_0_4px_var(--neon)]"
+                    : isAnswered
+                      ? "bg-neon-2"
+                      : "bg-bg-3",
+                )}
+              />
+            )
+          })}
+        </div>
+        <div className="mt-1.5 flex items-center justify-between font-mono text-[10.5px] tracking-mono-tight text-fg-mute">
+          <span>{Math.round(progressPct)}% parcurs</span>
+          <span>
+            <span className="text-fg-dim">{answeredIds.size}</span> răspunse ·{" "}
+            <span className="text-warm">{flaggedIds.size}</span> marcate
+          </span>
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="mx-4">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
-            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
-          />
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto px-4 py-8 sm:px-6 sm:py-10">
+        <div className="mx-auto w-full max-w-[720px]">
+          <AnimatePresence mode="wait">
+            {currentQuestion && (
+              <motion.div
+                key={currentQuestion.id}
+                initial={{ opacity: 0, x: 32 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -32 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <ExamQuestion
+                  question={currentQuestion}
+                  questionNumber={currentIndex + 1}
+                  totalQuestions={questions.length}
+                  selected={answers.get(currentQuestion.id) ?? []}
+                  onAnswer={handleAnswer}
+                  onFlag={handleFlag}
+                  isFlagged={flaggedIds.has(currentQuestion.id)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Forward-only navigation */}
+          <div className="mt-6 flex justify-end">
+            {isLastQuestion ? (
+              <Button
+                size="lg"
+                onClick={() => setShowSubmitModal(true)}
+                disabled={isSubmitting}
+              >
+                <Send className="size-4" />
+                Trimite examenul
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                onClick={handleNext}
+                disabled={!currentHasAnswer}
+              >
+                Următoarea
+                <ChevronRight className="size-4" />
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      </main>
 
-      {/* Current question */}
-      <AnimatePresence mode="wait">
-        {currentQuestion && (
-          <motion.div
-            key={currentQuestion.id}
-            initial={{ opacity: 0, x: 32 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -32 }}
-            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="px-2 sm:px-0"
-          >
-            <ExamQuestion
-            question={currentQuestion}
-            questionNumber={currentIndex + 1}
-            totalQuestions={questions.length}
-            selected={answers.get(currentQuestion.id) ?? []}
-            onAnswer={handleAnswer}
-            onFlag={handleFlag}
-              isFlagged={flaggedIds.has(currentQuestion.id)}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Forward-only navigation */}
-      <div className="flex justify-end px-2 pb-20 sm:px-0 md:pb-4">
-        {isLastQuestion ? (
-          <Button
-            onClick={() => setShowSubmitModal(true)}
-            disabled={isSubmitting}
-            className="min-h-[48px] gap-2 px-8 text-base"
-          >
-            <Send className="h-4 w-4" />
-            Trimite examenul
-          </Button>
-        ) : (
-          <Button
-            onClick={handleNext}
-            disabled={!currentHasAnswer}
-            className="min-h-[48px] gap-2 px-8 text-base"
-          >
-            Urmatoarea
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-
-      {/* Submit confirmation modal */}
       <SubmitConfirmModal
         isOpen={showSubmitModal}
         onClose={() => setShowSubmitModal(false)}
@@ -312,4 +348,30 @@ export function ExamContainer({
       />
     </div>
   )
+}
+
+function SaveIndicator({
+  isSaving,
+  lastSaved,
+}: {
+  isSaving: boolean
+  lastSaved: Date | null
+}) {
+  if (isSaving) {
+    return (
+      <span className="hidden items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-mono-tight text-fg-mute sm:inline-flex">
+        <span className="size-1.5 animate-pulse rounded-full bg-warm" />
+        salvare
+      </span>
+    )
+  }
+  if (lastSaved) {
+    return (
+      <span className="hidden items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-mono-tight text-fg-mute sm:inline-flex">
+        <span className="size-1.5 rounded-full bg-neon" />
+        salvat
+      </span>
+    )
+  }
+  return null
 }

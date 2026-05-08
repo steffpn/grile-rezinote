@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react"
 import { WifiOff } from "lucide-react"
 
+/**
+ * OfflineIndicator — banner sticky la top când conexiunea cade. Folosește
+ * paleta `--warm` (galben atenuat, nu roșu de panică).
+ */
 export function OfflineIndicator() {
   const [isOnline, setIsOnline] = useState(true)
 
@@ -24,11 +28,12 @@ export function OfflineIndicator() {
   if (isOnline) return null
 
   return (
-    <div className="fixed left-0 right-0 top-0 z-[100] flex items-center justify-center gap-2 bg-yellow-500 px-4 py-2 text-center text-sm font-medium text-yellow-900 dark:bg-yellow-600 dark:text-yellow-50">
-      <WifiOff className="h-4 w-4 shrink-0" />
-      <span>
-        Nu exista conexiune la internet. Unele functii nu sunt disponibile.
-      </span>
+    <div
+      role="status"
+      className="fixed inset-x-0 top-0 z-[100] flex items-center justify-center gap-2 border-b border-warm/40 bg-warm/14 px-4 py-2 font-mono text-[12px] uppercase tracking-mono text-warm backdrop-blur-md"
+    >
+      <WifiOff className="size-3.5 shrink-0" aria-hidden />
+      <span>Offline · unele funcții nu sunt disponibile</span>
     </div>
   )
 }

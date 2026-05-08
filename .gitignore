@@ -51,3 +51,7 @@ public/workbox-*.js.map
 
 # internal audit reports — keep local only, may contain security details
 .audit/
+
+# Local dev screenshot helpers — not commit-ed
+.shots/
+.tmp_screenshots/

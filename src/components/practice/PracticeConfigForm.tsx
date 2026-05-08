@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from "react"
 import { Drawer } from "vaul"
+import { Check, ChevronDown, Rocket } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -11,12 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ChevronDown, Check } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { MonoLabel } from "@/components/branded"
 import { ChapterSelector } from "./ChapterSelector"
 import { createPracticeAttempt } from "@/lib/actions/practice"
-import { Rocket } from "lucide-react"
 
 interface Chapter {
   id: string
@@ -28,6 +28,30 @@ interface Chapter {
 interface PracticeConfigFormProps {
   chapters: Chapter[]
   wrongAnswerCount?: number
+}
+
+function ConfigSection({
+  label,
+  title,
+  children,
+}: {
+  label: string
+  title?: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="rounded-[14px] border border-line bg-bg-2 p-5 sm:p-6">
+      <div className="mb-4">
+        <MonoLabel size="cell">{label}</MonoLabel>
+        {title && (
+          <h3 className="mt-1.5 text-[16px] font-semibold tracking-[-0.015em] text-fg">
+            {title}
+          </h3>
+        )}
+      </div>
+      {children}
+    </section>
+  )
 }
 
 export function PracticeConfigForm({
@@ -45,7 +69,7 @@ export function PracticeConfigForm({
       const result = await createPracticeAttempt(formData)
       return result
     },
-    null
+    null,
   )
 
   const selectedQuestionCount = chapters
@@ -71,7 +95,9 @@ export function PracticeConfigForm({
       <input
         type="hidden"
         name="type"
-        value={selectedChapterIds.length === 1 ? "practice_chapter" : "practice_mixed"}
+        value={
+          selectedChapterIds.length === 1 ? "practice_chapter" : "practice_mixed"
+        }
       />
       <input
         type="hidden"
@@ -95,166 +121,176 @@ export function PracticeConfigForm({
         value={wrongAnswersOnly ? "true" : "false"}
       />
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Wrong answers only toggle */}
         {wrongAnswerCount > 0 && (
-          <Card className="border-amber-200/50 bg-amber-50/30 dark:border-amber-800/50 dark:bg-amber-950/20">
-            <CardContent className="pt-6">
-              <label className="flex cursor-pointer items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={wrongAnswersOnly}
-                  onChange={(e) => setWrongAnswersOnly(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-primary accent-primary"
-                />
-                <div>
-                  <span className="font-semibold">Doar intrebari gresite</span>
-                  <p className="text-sm text-muted-foreground">
-                    Exerseaza doar intrebarile la care ai gresit anterior ({wrongAnswerCount} disponibile)
-                  </p>
-                </div>
-              </label>
-            </CardContent>
-          </Card>
+          <div className="rounded-[14px] border border-warm/30 bg-warm/8 p-4">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={wrongAnswersOnly}
+                onChange={(e) => setWrongAnswersOnly(e.target.checked)}
+                className="mt-1 size-4 rounded border-line-2 bg-bg-3 accent-neon"
+              />
+              <div className="min-w-0">
+                <span className="block text-[14px] font-semibold text-fg">
+                  Doar întrebări greșite
+                </span>
+                <p className="mt-0.5 text-[13px] text-fg-dim">
+                  Exersează doar întrebările la care ai greșit anterior ·{" "}
+                  <span className="font-mono text-warm">
+                    {wrongAnswerCount} disponibile
+                  </span>
+                </p>
+              </div>
+            </label>
+          </div>
         )}
 
         {/* Chapter Selection */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">Alege capitolele</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChapterSelector
-              chapters={chapters}
-              selectedIds={selectedChapterIds}
-              onChange={setSelectedChapterIds}
-              selectedSubchapters={selectedSubchapters}
-              onChangeSubchapters={setSelectedSubchapters}
-            />
-          </CardContent>
-        </Card>
+        <ConfigSection label="01 / Capitole" title="Alege capitolele">
+          <ChapterSelector
+            chapters={chapters}
+            selectedIds={selectedChapterIds}
+            onChange={setSelectedChapterIds}
+            selectedSubchapters={selectedSubchapters}
+            onChangeSubchapters={setSelectedSubchapters}
+          />
+        </ConfigSection>
 
         {/* Question Count */}
         {!wrongAnswersOnly && (
-          <Card className="border-border/50">
-            <CardHeader>
-              <CardTitle className="text-lg">Numar de intrebari</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Desktop: native select */}
-              <div className="hidden sm:block">
-                <Select value={questionCount} onValueChange={setQuestionCount}>
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Alege numarul de intrebari" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10 intrebari</SelectItem>
-                    <SelectItem value="20">20 intrebari</SelectItem>
-                    <SelectItem value="50">50 intrebari</SelectItem>
-                    <SelectItem value="100">100 intrebari</SelectItem>
-                    <SelectItem value="999">Toate intrebarile</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <ConfigSection label="02 / Volum" title="Număr de întrebări">
+            {/* Desktop: native select */}
+            <div className="hidden sm:block">
+              <Select value={questionCount} onValueChange={setQuestionCount}>
+                <SelectTrigger className="rounded-[7px] border-line bg-bg-3 text-[14px]">
+                  <SelectValue placeholder="Alege numărul" />
+                </SelectTrigger>
+                <SelectContent className="border-line bg-bg-2">
+                  <SelectItem value="10">10 întrebări</SelectItem>
+                  <SelectItem value="20">20 întrebări</SelectItem>
+                  <SelectItem value="50">50 întrebări</SelectItem>
+                  <SelectItem value="100">100 întrebări</SelectItem>
+                  <SelectItem value="999">Toate întrebările</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Mobile: vaul drawer */}
-              <div className="sm:hidden">
-                <Drawer.Root>
-                  <Drawer.Trigger asChild>
-                    <button
-                      type="button"
-                      className="flex min-h-[44px] w-full items-center justify-between rounded-xl border border-input bg-background px-4 text-sm"
-                    >
-                      <span>
-                        {questionCount === "999"
-                          ? "Toate intrebarile"
-                          : `${questionCount} intrebari`}
-                      </span>
-                      <ChevronDown className="h-4 w-4 opacity-60" />
-                    </button>
-                  </Drawer.Trigger>
-                  <Drawer.Portal>
-                    <Drawer.Overlay className="fixed inset-0 z-50 bg-black/50" />
-                    <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl border bg-background">
-                      <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-muted" />
-                      <div className="p-4">
-                        <Drawer.Title className="mb-3 text-base font-semibold">
-                          Numar de intrebari
-                        </Drawer.Title>
-                        <div className="space-y-1 pb-6">
-                          {[
-                            { v: "10", l: "10 intrebari" },
-                            { v: "20", l: "20 intrebari" },
-                            { v: "50", l: "50 intrebari" },
-                            { v: "100", l: "100 intrebari" },
-                            { v: "999", l: "Toate intrebarile" },
-                          ].map((opt) => (
-                            <Drawer.Close key={opt.v} asChild>
-                              <button
-                                type="button"
-                                onClick={() => setQuestionCount(opt.v)}
-                                className="flex min-h-[48px] w-full items-center justify-between rounded-xl px-4 text-left text-sm hover:bg-accent"
-                              >
-                                <span>{opt.l}</span>
-                                {questionCount === opt.v && (
-                                  <Check className="h-4 w-4 text-primary" />
-                                )}
-                              </button>
-                            </Drawer.Close>
-                          ))}
-                        </div>
+            {/* Mobile: vaul drawer */}
+            <div className="sm:hidden">
+              <Drawer.Root>
+                <Drawer.Trigger asChild>
+                  <button
+                    type="button"
+                    className="flex min-h-[44px] w-full items-center justify-between rounded-[7px] border border-line bg-bg-3 px-3.5 text-[14px] text-fg"
+                  >
+                    <span>
+                      {questionCount === "999"
+                        ? "Toate întrebările"
+                        : `${questionCount} întrebări`}
+                    </span>
+                    <ChevronDown className="size-4 opacity-60" />
+                  </button>
+                </Drawer.Trigger>
+                <Drawer.Portal>
+                  <Drawer.Overlay className="fixed inset-0 z-50 bg-black/50" />
+                  <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[18px] border border-line bg-bg-2">
+                    <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-line-2" />
+                    <div className="p-4">
+                      <Drawer.Title className="mb-3 text-[16px] font-semibold text-fg">
+                        Număr de întrebări
+                      </Drawer.Title>
+                      <div className="space-y-1 pb-6">
+                        {[
+                          { v: "10", l: "10 întrebări" },
+                          { v: "20", l: "20 întrebări" },
+                          { v: "50", l: "50 întrebări" },
+                          { v: "100", l: "100 întrebări" },
+                          { v: "999", l: "Toate întrebările" },
+                        ].map((opt) => (
+                          <Drawer.Close key={opt.v} asChild>
+                            <button
+                              type="button"
+                              onClick={() => setQuestionCount(opt.v)}
+                              className="flex min-h-[48px] w-full items-center justify-between rounded-[8px] px-3.5 text-left text-[14px] text-fg-dim hover:bg-bg-3 hover:text-fg"
+                            >
+                              <span>{opt.l}</span>
+                              {questionCount === opt.v && (
+                                <Check className="size-4 text-neon" />
+                              )}
+                            </button>
+                          </Drawer.Close>
+                        ))}
                       </div>
-                    </Drawer.Content>
-                  </Drawer.Portal>
-                </Drawer.Root>
-              </div>
-              {selectedChapterIds.length > 0 &&
-                effectiveCount < parseInt(questionCount) && (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Se vor folosi {effectiveCount}{" "}
-                    {effectiveCount === 1 ? "intrebare" : "intrebari"}.
-                  </p>
-                )}
-            </CardContent>
-          </Card>
+                    </div>
+                  </Drawer.Content>
+                </Drawer.Portal>
+              </Drawer.Root>
+            </div>
+
+            {selectedChapterIds.length > 0 &&
+              effectiveCount < parseInt(questionCount) && (
+                <p className="mt-2.5 font-mono text-[11.5px] text-fg-mute">
+                  Disponibile: {effectiveCount}{" "}
+                  {effectiveCount === 1 ? "întrebare" : "întrebări"}.
+                </p>
+              )}
+          </ConfigSection>
         )}
 
         {/* Feedback Mode */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">Mod de feedback</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={feedbackMode}
-              onValueChange={setFeedbackMode}
-              className="space-y-3"
+        <ConfigSection label="03 / Feedback" title="Când vezi rezultatele">
+          <RadioGroup
+            value={feedbackMode}
+            onValueChange={setFeedbackMode}
+            className="space-y-2.5"
+          >
+            <Label
+              htmlFor="immediate"
+              className="flex min-h-[52px] cursor-pointer items-start gap-3 rounded-[10px] border border-line bg-bg-3 p-3.5 transition-colors hover:border-line-2 has-[[data-state=checked]]:border-neon has-[[data-state=checked]]:bg-neon/8"
             >
-              <div className="flex min-h-[44px] items-start gap-3 rounded-xl border border-border/50 p-3 transition-colors hover:bg-accent/50">
-                <RadioGroupItem value="immediate" id="immediate" className="mt-1" />
-                <Label htmlFor="immediate" className="cursor-pointer">
-                  <div className="font-semibold">Feedback imediat</div>
-                  <p className="text-sm text-muted-foreground">
-                    Vezi raspunsul corect dupa fiecare intrebare
-                  </p>
-                </Label>
+              <RadioGroupItem
+                value="immediate"
+                id="immediate"
+                className="mt-0.5"
+              />
+              <div className="min-w-0">
+                <div className="text-[14px] font-medium text-fg">
+                  Feedback imediat
+                </div>
+                <p className="mt-0.5 text-[12.5px] text-fg-dim">
+                  Vezi răspunsul corect după fiecare întrebare.
+                </p>
               </div>
-              <div className="flex min-h-[44px] items-start gap-3 rounded-xl border border-border/50 p-3 transition-colors hover:bg-accent/50">
-                <RadioGroupItem value="deferred" id="deferred" className="mt-1" />
-                <Label htmlFor="deferred" className="cursor-pointer">
-                  <div className="font-semibold">Feedback la final</div>
-                  <p className="text-sm text-muted-foreground">
-                    Vezi toate rezultatele la finalul testului
-                  </p>
-                </Label>
+            </Label>
+            <Label
+              htmlFor="deferred"
+              className="flex min-h-[52px] cursor-pointer items-start gap-3 rounded-[10px] border border-line bg-bg-3 p-3.5 transition-colors hover:border-line-2 has-[[data-state=checked]]:border-neon has-[[data-state=checked]]:bg-neon/8"
+            >
+              <RadioGroupItem
+                value="deferred"
+                id="deferred"
+                className="mt-0.5"
+              />
+              <div className="min-w-0">
+                <div className="text-[14px] font-medium text-fg">
+                  Feedback la final
+                </div>
+                <p className="mt-0.5 text-[12.5px] text-fg-dim">
+                  Vezi toate rezultatele la finalul testului.
+                </p>
               </div>
-            </RadioGroup>
-          </CardContent>
-        </Card>
+            </Label>
+          </RadioGroup>
+        </ConfigSection>
 
         {/* Error Display */}
         {state?.error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+          <div
+            role="alert"
+            className="rounded-[10px] border border-danger/30 bg-danger/10 px-3.5 py-3 text-[13px] text-danger"
+          >
             {typeof state.error === "string"
               ? state.error
               : Object.values(state.error).flat().join(", ")}
@@ -265,19 +301,13 @@ export function PracticeConfigForm({
         <Button
           type="submit"
           size="lg"
-          className="min-h-[52px] w-full rounded-xl gradient-primary border-0 text-white text-base shadow-lg shadow-primary-500/20 hover:shadow-xl transition-all"
+          className="w-full"
           disabled={
             (!wrongAnswersOnly && selectedChapterIds.length === 0) || isPending
           }
         >
-          {isPending ? (
-            "Se creeaza testul..."
-          ) : (
-            <>
-              <Rocket className="mr-2 h-5 w-5" />
-              Incepe testul
-            </>
-          )}
+          <Rocket className="size-4" />
+          {isPending ? "Se creează testul..." : "Începe testul"}
         </Button>
       </div>
     </form>

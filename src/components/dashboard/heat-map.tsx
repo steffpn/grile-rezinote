@@ -1,7 +1,10 @@
 "use client"
 
 import { useState } from "react"
+
 import type { HeatmapCell } from "@/types/dashboard"
+import { MonoLabel } from "@/components/branded"
+import { cn } from "@/lib/utils"
 
 interface HeatMapProps {
   data: HeatmapCell[]
@@ -9,16 +12,25 @@ interface HeatMapProps {
   dates: string[]
 }
 
-function getColor(accuracy: number | null): string {
-  if (accuracy === null) return "bg-muted"
-  if (accuracy >= 80) return "bg-green-500 dark:bg-green-600"
-  if (accuracy >= 60) return "bg-yellow-500 dark:bg-yellow-600"
-  if (accuracy >= 40) return "bg-orange-500 dark:bg-orange-600"
-  return "bg-red-500 dark:bg-red-600"
+/** 5 trepte oklch — mapate la accuracy. */
+const TONES = [
+  "bg-bg-3", // null / no activity
+  "bg-[oklch(0.30_0.06_162)]", // <40%
+  "bg-[oklch(0.45_0.12_162)]", // 40-59%
+  "bg-[oklch(0.62_0.16_162)]", // 60-79%
+  "bg-neon", // 80%+
+] as const
+
+function bucketFor(accuracy: number | null): number {
+  if (accuracy === null) return 0
+  if (accuracy >= 80) return 4
+  if (accuracy >= 60) return 3
+  if (accuracy >= 40) return 2
+  return 1
 }
 
 function getLabel(accuracy: number | null): string {
-  if (accuracy === null) return "Fara activitate"
+  if (accuracy === null) return "Fără activitate"
   if (accuracy >= 80) return "Excelent"
   if (accuracy >= 60) return "Bun"
   if (accuracy >= 40) return "Mediu"
@@ -30,6 +42,10 @@ function formatDateShort(dateStr: string): string {
   return `${d.getDate()}/${d.getMonth() + 1}`
 }
 
+/**
+ * HeatMap pe capitole × zile cu paleta brand (5 trepte de la `--bg-3` la
+ * `--neon`). Spec § 3.7 Statistici · § 8 mini-bento.
+ */
 export function HeatMap({ data, chapters, dates }: HeatMapProps) {
   const [tooltip, setTooltip] = useState<{
     x: number
@@ -39,13 +55,13 @@ export function HeatMap({ data, chapters, dates }: HeatMapProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center text-muted-foreground">
-        Nicio activitate in perioada selectata
+      <div className="flex h-40 items-center justify-center font-mono text-[11px] uppercase tracking-mono text-fg-mute">
+        Nicio activitate
       </div>
     )
   }
 
-  // Build lookup map: chapterName-date -> cell
+  // Build lookup map
   const cellMap = new Map<string, HeatmapCell>()
   for (const cell of data) {
     cellMap.set(`${cell.chapterName}-${cell.date}`, cell)
@@ -54,27 +70,20 @@ export function HeatMap({ data, chapters, dates }: HeatMapProps) {
   return (
     <div className="relative overflow-x-auto">
       {/* Legend */}
-      <div className="mb-4 flex items-center gap-4 text-xs text-muted-foreground">
-        <span>Legenda:</span>
-        <div className="flex items-center gap-1">
-          <div className="h-3 w-3 rounded-sm bg-muted" />
-          <span>Fara activitate</span>
+      <div className="mb-4 flex flex-wrap items-center gap-4">
+        <MonoLabel size="cell">Legendă</MonoLabel>
+        <div className="flex items-center gap-1.5">
+          {TONES.map((tone, i) => (
+            <span
+              key={i}
+              aria-hidden
+              className={cn("size-3 rounded-[2px]", tone)}
+            />
+          ))}
         </div>
-        <div className="flex items-center gap-1">
-          <div className="h-3 w-3 rounded-sm bg-red-500" />
-          <span>Slab</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="h-3 w-3 rounded-sm bg-orange-500" />
-          <span>Mediu</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="h-3 w-3 rounded-sm bg-yellow-500" />
-          <span>Bun</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="h-3 w-3 rounded-sm bg-green-500" />
-          <span>Excelent</span>
+        <div className="flex items-center gap-3 font-mono text-[10.5px] uppercase tracking-mono-tight text-fg-mute">
+          <span>0%</span>
+          <span>100%</span>
         </div>
       </div>
 
@@ -82,30 +91,27 @@ export function HeatMap({ data, chapters, dates }: HeatMapProps) {
       <div
         className="grid gap-1"
         style={{
-          gridTemplateColumns: `160px repeat(${dates.length}, 1fr)`,
+          gridTemplateColumns: `160px repeat(${dates.length}, minmax(12px, 1fr))`,
         }}
       >
-        {/* Header row: empty corner + dates */}
         <div />
         {dates.map((date, i) =>
           i % 7 === 0 ? (
             <div
               key={date}
-              className="text-center text-[10px] text-muted-foreground"
+              className="text-center font-mono text-[10px] text-fg-mute"
             >
               {formatDateShort(date)}
             </div>
           ) : (
             <div key={date} />
-          )
+          ),
         )}
 
-        {/* Data rows */}
         {chapters.map((chapter) => (
-          <>
+          <div key={chapter} className="contents">
             <div
-              key={`label-${chapter}`}
-              className="truncate pr-2 text-xs text-muted-foreground leading-4"
+              className="truncate pr-2 text-[12px] leading-4 text-fg-dim"
               title={chapter}
             >
               {chapter}
@@ -113,32 +119,37 @@ export function HeatMap({ data, chapters, dates }: HeatMapProps) {
             {dates.map((date) => {
               const cell = cellMap.get(`${chapter}-${date}`)
               const accuracy = cell?.accuracyPct ?? null
+              const tone = TONES[bucketFor(accuracy)]
               const questionCount = cell?.questionCount ?? 0
-
               return (
                 <div
                   key={`${chapter}-${date}`}
-                  className={`h-4 w-full min-w-[16px] rounded-sm ${getColor(accuracy)} cursor-pointer transition-transform hover:scale-110`}
+                  className={cn(
+                    "h-4 w-full min-w-[12px] cursor-pointer rounded-[2px] transition-transform hover:scale-110",
+                    tone,
+                  )}
                   onMouseEnter={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect()
                     setTooltip({
                       x: rect.left + rect.width / 2,
                       y: rect.top - 8,
-                      content: `${chapter}\n${formatDateShort(date)}\n${getLabel(accuracy)}${accuracy !== null ? ` (${accuracy}%)` : ""}\n${questionCount} intrebari`,
+                      content: `${chapter}\n${formatDateShort(date)}\n${getLabel(
+                        accuracy,
+                      )}${accuracy !== null ? ` · ${accuracy}%` : ""}\n${questionCount} întrebări`,
                     })
                   }}
                   onMouseLeave={() => setTooltip(null)}
                 />
               )
             })}
-          </>
+          </div>
         ))}
       </div>
 
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="fixed z-50 rounded-lg border bg-card px-3 py-2 text-xs shadow-md"
+          className="pointer-events-none fixed z-50 rounded-[8px] border border-line bg-bg-2/95 px-3 py-2 font-mono text-[11px] shadow-dashboard backdrop-blur-xl"
           style={{
             left: tooltip.x,
             top: tooltip.y,
@@ -146,7 +157,12 @@ export function HeatMap({ data, chapters, dates }: HeatMapProps) {
           }}
         >
           {tooltip.content.split("\n").map((line, i) => (
-            <div key={i}>{line}</div>
+            <div
+              key={i}
+              className={i === 0 ? "font-semibold text-fg" : "text-fg-dim"}
+            >
+              {line}
+            </div>
           ))}
         </div>
       )}
