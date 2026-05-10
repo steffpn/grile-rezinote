@@ -66,7 +66,7 @@ export function AppSidebar({
   const pathname = usePathname()
 
   return (
-    <aside className="hidden h-svh w-60 shrink-0 flex-col border-r border-line bg-bg-2 lg:flex">
+    <aside className="sticky top-0 hidden h-svh w-60 shrink-0 self-start flex-col border-r border-line bg-bg-2 lg:flex">
       {/* Brand */}
       <Link
         href={userEmail ? "/dashboard" : "/"}
