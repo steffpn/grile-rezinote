@@ -115,14 +115,16 @@ export async function getAdmissionDataForExplorer() {
   >()
 
   for (const row of data) {
-    if (!grouped.has(row.specialtyId)) {
-      grouped.set(row.specialtyId, {
-        id: row.specialtyId,
+    // INNER JOIN guarantees specialtyId is non-null at runtime.
+    const specialtyId = row.specialtyId!
+    if (!grouped.has(specialtyId)) {
+      grouped.set(specialtyId, {
+        id: specialtyId,
         name: row.specialtyName,
         data: [],
       })
     }
-    grouped.get(row.specialtyId)!.data.push({
+    grouped.get(specialtyId)!.data.push({
       year: row.year,
       thresholdScore: row.thresholdScore,
       availableSpots: row.availableSpots,

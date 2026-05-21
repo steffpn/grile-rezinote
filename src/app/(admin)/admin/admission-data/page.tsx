@@ -36,7 +36,11 @@ export default async function AdmissionDataPage() {
 
         <TabsContent value="table" className="pt-6">
           <AdmissionDataTable
-            entries={entries}
+            // INNER JOIN on specialty in the query guarantees specialtyId is set.
+            entries={entries.map((e) => ({
+              ...e,
+              specialtyId: e.specialtyId!,
+            }))}
             specialties={specialtyOptions}
           />
         </TabsContent>

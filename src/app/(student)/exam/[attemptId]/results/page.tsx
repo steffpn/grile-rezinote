@@ -1,7 +1,12 @@
 import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth/get-user"
-import { getExamResults } from "@/lib/db/queries/exam"
+import {
+  getExamResults,
+  getAdmissionThresholds,
+} from "@/lib/db/queries/exam"
+import { checkSubscriptionAccess } from "@/lib/subscription/check"
+import { canAccessAdmissionModule } from "@/lib/subscription/gating"
 import { ExamResults } from "@/components/exam/ExamResults"
 import { PostTestMessage } from "@/components/motivation/post-test-message"
 
@@ -13,11 +18,19 @@ export default async function ExamResultsPage({
   const { attemptId } = await params
   const user = await getCurrentUser()
 
-  const data = await getExamResults(attemptId, user.id)
+  const [data, access] = await Promise.all([
+    getExamResults(attemptId, user.id),
+    checkSubscriptionAccess(user.id),
+  ])
 
   if (!data) {
     redirect("/exam")
   }
+
+  const hasAdmissionModule = canAccessAdmissionModule(access.tier)
+  const admissionThresholds = hasAdmissionModule
+    ? await getAdmissionThresholds()
+    : []
 
   // Compute accuracy metrics for post-test motivation message
   const testTotal = data.questions.length
@@ -52,11 +65,15 @@ export default async function ExamResultsPage({
           type: q.type,
           sourceBook: q.sourceBook,
           sourcePage: q.sourcePage,
-          options: q.options.map((o) => ({ label: o.label, text: o.text })),
+          options: [...q.options]
+            .sort((a, b) => a.label.localeCompare(b.label))
+            .map((o) => ({ label: o.label, text: o.text })),
         }))}
         answers={data.answers}
         correctOptions={data.correctOptions}
         chapterBreakdown={data.chapterBreakdown}
+        hasAdmissionModule={hasAdmissionModule}
+        admissionThresholds={admissionThresholds}
       />
     </div>
   )

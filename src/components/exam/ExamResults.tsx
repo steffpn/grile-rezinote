@@ -54,6 +54,14 @@ interface ChapterBreakdown {
   percentage: number
 }
 
+interface AdmissionThreshold {
+  umf: string
+  specialty: string
+  year: number
+  thresholdScore: number
+  availableSpots: number
+}
+
 interface ExamResultsProps {
   attempt: {
     id: string
@@ -67,6 +75,8 @@ interface ExamResultsProps {
   answers: Map<string, AnswerData>
   correctOptions: Map<string, string[]>
   chapterBreakdown: ChapterBreakdown[]
+  hasAdmissionModule?: boolean
+  admissionThresholds?: AdmissionThreshold[]
 }
 
 function formatDuration(seconds: number): string {
@@ -81,6 +91,8 @@ export function ExamResults({
   answers,
   correctOptions,
   chapterBreakdown,
+  hasAdmissionModule = false,
+  admissionThresholds = [],
 }: ExamResultsProps) {
   const score = attempt.score ?? 0
   const maxScore = attempt.maxScore ?? 950
@@ -126,12 +138,20 @@ export function ExamResults({
   const timeRemainingSeconds = Math.max(0, timeLimitSeconds - timeTakenSeconds)
   const timeUsedPct = Math.min(100, (timeTakenSeconds / timeLimitSeconds) * 100)
 
-  // Mock distribution curve (until cohort data is available)
-  const distributionCurve = useMemo(
-    () => mockBellCurve(720, 80, 500, 950),
-    [],
-  )
+  // Mock distribution curve (until cohort data is available).
+  // Extend the X range downward if the user scored below 500 so their marker
+  // sits inside the chart instead of being clipped off the left edge.
   const cohortMean = 720
+  const distributionCurve = useMemo(
+    () =>
+      mockBellCurve(
+        cohortMean,
+        80,
+        Math.min(500, Math.floor((score - 50) / 50) * 50),
+        950,
+      ),
+    [score],
+  )
 
   // Chart data pentru ChapterBreakdownChart
   const chapterChartData = chapterBreakdown.map((c) => ({
@@ -324,31 +344,12 @@ export function ExamResults({
         </DashboardWindowGrid>
       </DashboardWindow>
 
-      {/* Admitere — placeholder cu disclaimer (date reale vin via PREMIUM) */}
-      <section>
-        <div className="mb-3 flex items-baseline justify-between gap-2">
-          <div>
-            <SectionTag>Admiterea ta</SectionTag>
-            <p className="mt-1.5 text-[14px] text-fg-dim">
-              Comparație cu pragurile reale 2025 — disponibil cu PREMIUM.
-            </p>
-          </div>
-          <span className="inline-flex items-center gap-1 rounded-[3px] bg-warm/15 px-2 py-1 font-mono text-[10px] uppercase tracking-mono-tight text-warm">
-            <Lock className="size-2.5" /> PREMIUM
-          </span>
-        </div>
-        <div className="rounded-[14px] border border-dashed border-line-2 bg-bg-2/40 p-8 text-center">
-          <p className="mx-auto max-w-md text-[14px] leading-[1.55] text-fg-dim">
-            Vezi instant dacă ai fi fost admis la oricare din cele{" "}
-            <span className="text-fg">6 UMF-uri</span> din România. Praguri din
-            2021–2025, calculul exact al diferenței față de prag, recomandări
-            per capitol pentru +50 puncte.
-          </p>
-          <Button asChild className="mt-5" size="lg">
-            <Link href="/pricing">Treci la PREMIUM</Link>
-          </Button>
-        </div>
-      </section>
+      {/* Admitere — date reale pentru PREMIUM, upsell pentru restul */}
+      <AdmissionSection
+        hasAdmissionModule={hasAdmissionModule}
+        thresholds={admissionThresholds}
+        userScore={score}
+      />
 
       {/* Tabs detail */}
       <section>
@@ -461,5 +462,214 @@ function StatPill({
       </span>
       <MonoLabel size="cell">{label}</MonoLabel>
     </div>
+  )
+}
+
+function AdmissionSection({
+  hasAdmissionModule,
+  thresholds,
+  userScore,
+}: {
+  hasAdmissionModule: boolean
+  thresholds: AdmissionThreshold[]
+  userScore: number
+}) {
+  // Specialties list (deduplicated, in encounter order).
+  const specialties = useMemo(() => {
+    const seen = new Set<string>()
+    const out: string[] = []
+    for (const t of thresholds) {
+      if (!seen.has(t.specialty)) {
+        seen.add(t.specialty)
+        out.push(t.specialty)
+      }
+    }
+    return out
+  }, [thresholds])
+
+  // Default specialty = the one with the lowest threshold across all rows
+  // (i.e. the easiest target), so users start optimistic.
+  const defaultSpecialty = useMemo(() => {
+    if (specialties.length === 0) return ""
+    const minByName = new Map<string, number>()
+    for (const t of thresholds) {
+      const cur = minByName.get(t.specialty) ?? Infinity
+      if (t.thresholdScore < cur) minByName.set(t.specialty, t.thresholdScore)
+    }
+    let best = specialties[0]
+    let bestScore = minByName.get(best) ?? Infinity
+    for (const s of specialties) {
+      const sc = minByName.get(s) ?? Infinity
+      if (sc < bestScore) {
+        best = s
+        bestScore = sc
+      }
+    }
+    return best
+  }, [specialties, thresholds])
+
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string>("")
+  const activeSpecialty = selectedSpecialty || defaultSpecialty
+
+  // Non-PREMIUM users see the upsell.
+  if (!hasAdmissionModule) {
+    return (
+      <section>
+        <div className="mb-3 flex items-baseline justify-between gap-2">
+          <div>
+            <SectionTag>Admiterea ta</SectionTag>
+            <p className="mt-1.5 text-[14px] text-fg-dim">
+              Comparație cu pragurile reale — disponibil cu PREMIUM.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1 rounded-[3px] bg-warm/15 px-2 py-1 font-mono text-[10px] uppercase tracking-mono-tight text-warm">
+            <Lock className="size-2.5" /> PREMIUM
+          </span>
+        </div>
+        <div className="rounded-[14px] border border-dashed border-line-2 bg-bg-2/40 p-8 text-center">
+          <p className="mx-auto max-w-md text-[14px] leading-[1.55] text-fg-dim">
+            Vezi instant dacă ai fi fost admis la oricare din cele{" "}
+            <span className="text-fg">6 UMF-uri</span> din România. Praguri din
+            anii precedenți, calculul exact al diferenței față de prag,
+            recomandări per capitol pentru +50 puncte.
+          </p>
+          <Button asChild className="mt-5" size="lg">
+            <Link href="/pricing">Treci la PREMIUM</Link>
+          </Button>
+        </div>
+      </section>
+    )
+  }
+
+  // PREMIUM but no data yet.
+  if (thresholds.length === 0) {
+    return (
+      <section>
+        <div className="mb-3">
+          <SectionTag>Admiterea ta</SectionTag>
+          <p className="mt-1.5 text-[14px] text-fg-dim">
+            Pragurile de admitere se încarcă în curând.
+          </p>
+        </div>
+        <div className="rounded-[14px] border border-dashed border-line-2 bg-bg-2/40 p-8 text-center">
+          <p className="mx-auto max-w-md text-[14px] leading-[1.55] text-fg-dim">
+            Datele istorice de admitere nu sunt încă disponibile. Reveniți în
+            scurt timp — vor apărea automat aici după ce administratorul
+            populează baza de date.
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  // Filter to the selected specialty, then group by UMF.
+  const filtered = thresholds.filter((t) => t.specialty === activeSpecialty)
+  const byUmf = new Map<string, AdmissionThreshold[]>()
+  for (const row of filtered) {
+    if (!byUmf.has(row.umf)) byUmf.set(row.umf, [])
+    byUmf.get(row.umf)!.push(row)
+  }
+
+  const umfs = Array.from(byUmf.entries()).map(([umf, rows]) => {
+    const sorted = [...rows].sort((a, b) => b.year - a.year)
+    const latest = sorted[0]
+    const admittedLatest = latest ? userScore >= latest.thresholdScore : false
+    return { umf, rows: sorted, latest, admittedLatest }
+  })
+
+  const admittedCount = umfs.filter((u) => u.admittedLatest).length
+  const latestYear = umfs[0]?.latest?.year
+
+  return (
+    <section>
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <SectionTag>Admiterea ta</SectionTag>
+          <p className="mt-1.5 text-[14px] text-fg-dim">
+            Cu scorul de <span className="text-fg">{userScore}</span> ai fi fost
+            admis la <span className="text-neon">{admittedCount}</span> din{" "}
+            <span className="text-fg">{umfs.length}</span> UMF-uri pentru{" "}
+            <span className="text-fg">{activeSpecialty}</span>
+            {latestYear ? ` în ${latestYear}` : ""}.
+          </p>
+        </div>
+      </div>
+
+      {/* Specialty selector */}
+      <div className="mb-4 flex flex-wrap gap-1.5">
+        {specialties.map((s) => {
+          const active = s === activeSpecialty
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setSelectedSpecialty(s)}
+              className={cn(
+                "rounded-full border px-3 py-1 font-mono text-[11px] uppercase tracking-mono-tight transition-colors",
+                active
+                  ? "border-neon bg-neon/10 text-neon"
+                  : "border-line bg-bg-2 text-fg-dim hover:bg-bg-3 hover:text-fg",
+              )}
+            >
+              {s}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {umfs.map(({ umf, rows, admittedLatest }) => (
+          <div
+            key={umf}
+            className={cn(
+              "rounded-[14px] border bg-bg-2 p-4",
+              admittedLatest ? "border-neon/40" : "border-line",
+            )}
+          >
+            <div className="flex items-baseline justify-between gap-2">
+              <h3 className="text-[14px] font-semibold text-fg">{umf}</h3>
+              <span
+                className={cn(
+                  "rounded-[3px] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight",
+                  admittedLatest
+                    ? "bg-neon/15 text-neon"
+                    : "bg-danger/15 text-danger",
+                )}
+              >
+                {admittedLatest ? "admis" : "neadmis"}
+              </span>
+            </div>
+            <ul className="mt-3 space-y-1.5">
+              {rows.map((r) => {
+                const diff = userScore - r.thresholdScore
+                const passed = diff >= 0
+                return (
+                  <li
+                    key={r.year}
+                    className="flex items-baseline justify-between gap-3 font-mono text-[12px]"
+                  >
+                    <span className="text-fg-mute">{r.year}</span>
+                    <span className="flex items-baseline gap-2">
+                      <span className="text-fg-dim">
+                        prag {r.thresholdScore}
+                      </span>
+                      <span
+                        className={cn(
+                          "tabular-nums",
+                          passed ? "text-neon" : "text-danger",
+                        )}
+                      >
+                        {passed ? "+" : ""}
+                        {diff}
+                      </span>
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }

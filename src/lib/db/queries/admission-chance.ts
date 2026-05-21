@@ -91,7 +91,8 @@ export async function getAdmissionChanceForUser(
     }
   >()
   for (const r of rows) {
-    const key = r.specialtyId
+    // INNER JOIN with specialties guarantees specialtyId is non-null at runtime.
+    const key = r.specialtyId!
     if (!bySpecialty.has(key)) {
       bySpecialty.set(key, { name: r.specialtyName, entries: [] })
     }

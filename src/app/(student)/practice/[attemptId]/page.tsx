@@ -29,10 +29,13 @@ export default async function QuizPage({ params }: QuizPageProps) {
           id: q.id,
           text: q.text,
           type: q.type,
+          chapterName: q.chapterName,
           subchapter: q.subchapter,
           sourceBook: q.sourceBook,
           sourcePage: q.sourcePage,
-          options: q.options.map((o) => ({ label: o.label, text: o.text })),
+          options: [...q.options]
+            .sort((a, b) => a.label.localeCompare(b.label))
+            .map((o) => ({ label: o.label, text: o.text })),
         }))}
         feedbackMode={(data.attempt.feedbackMode as "immediate" | "deferred") ?? "deferred"}
         initialAnswers={data.answers}

@@ -6,8 +6,9 @@ import {
   questions,
   options,
   chapters,
+  admissionData,
 } from "@/lib/db/schema"
-import { eq, and, inArray, isNull, asc, sql } from "drizzle-orm"
+import { eq, and, inArray, isNull, asc, sql, desc } from "drizzle-orm"
 
 const DEFAULT_EXAM_DURATION_SECONDS = 14400 // 4 hours
 
@@ -62,18 +63,20 @@ export async function getExamAttemptWithQuestions(
     return { attempt, questions: [], answers: new Map(), deadline }
   }
 
-  // Fetch all questions
+  // Fetch all questions (with chapter name via join)
   const questionRows = await db
     .select({
       id: questions.id,
       text: questions.text,
       type: questions.type,
       chapterId: questions.chapterId,
+      chapterName: chapters.name,
       subchapter: questions.subchapter,
       sourceBook: questions.sourceBook,
       sourcePage: questions.sourcePage,
     })
     .from(questions)
+    .leftJoin(chapters, eq(chapters.id, questions.chapterId))
     .where(inArray(questions.id, questionOrder))
 
   // Fetch options for all questions
@@ -120,6 +123,7 @@ export async function getExamAttemptWithQuestions(
     text: string
     type: "CS" | "CM"
     chapterId: string
+    chapterName: string | null
     subchapter: string | null
     sourceBook: string | null
     sourcePage: string | null
@@ -240,6 +244,39 @@ export async function getExamResults(attemptId: string, userId: string) {
     correctOptions: correctByQuestion,
     chapterBreakdown,
   }
+}
+
+export interface AdmissionRow {
+  umf: string
+  specialty: string
+  year: number
+  thresholdScore: number
+  availableSpots: number
+}
+
+/**
+ * Fetch all admission threshold rows (UMF × specialty × year × score).
+ * Used by the simulation results page to show PREMIUM users where their
+ * score would have landed them in past years.
+ */
+export async function getAdmissionThresholds(): Promise<AdmissionRow[]> {
+  const rows = await db
+    .select({
+      umf: admissionData.umf,
+      specialty: admissionData.specialty,
+      year: admissionData.year,
+      thresholdScore: admissionData.thresholdScore,
+      availableSpots: admissionData.availableSpots,
+    })
+    .from(admissionData)
+    .orderBy(
+      asc(admissionData.umf),
+      asc(admissionData.specialty),
+      desc(admissionData.year),
+    )
+
+  return rows
+    .filter((r): r is AdmissionRow => r.umf != null)
 }
 
 /**

@@ -35,9 +35,25 @@ export function ScoreDistribution({
   curve,
   userScore,
   cohortMean,
-  domain = [500, 950],
+  domain,
   height = 220,
 }: ScoreDistributionProps) {
+  // Expand the X domain so the user's score is always visible.
+  // Default [500, 950] but pad down to userScore - 50 if they scored lower.
+  const baseMin = 500
+  const baseMax = 950
+  const effectiveDomain: [number, number] = domain ?? [
+    Math.min(baseMin, Math.floor((userScore - 50) / 50) * 50),
+    baseMax,
+  ]
+  const tickStep = 100
+  const ticks: number[] = []
+  for (let t = effectiveDomain[0]; t <= effectiveDomain[1]; t += tickStep) {
+    ticks.push(t)
+  }
+  if (ticks[ticks.length - 1] !== effectiveDomain[1]) {
+    ticks.push(effectiveDomain[1])
+  }
   return (
     <div>
       <ResponsiveContainer width="100%" height={height}>
@@ -62,8 +78,8 @@ export function ScoreDistribution({
           <XAxis
             type="number"
             dataKey="score"
-            domain={domain}
-            ticks={[500, 600, 700, 800, 900, 950]}
+            domain={effectiveDomain}
+            ticks={ticks}
             tickLine={false}
             axisLine={false}
             tick={{ fill: "oklch(0.55 0.015 95)", fontSize: 10 }}

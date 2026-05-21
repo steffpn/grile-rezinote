@@ -138,8 +138,9 @@ export function ChapterSelector({
         )}
       </AnimatePresence>
 
-      {/* Chapter list */}
-      <div className="grid gap-2 sm:grid-cols-2">
+      {/* Chapter list — one chapter per row to avoid the "co-expand" visual
+          glitch where an adjacent grid cell stretched to match an opened card. */}
+      <div className="flex flex-col gap-2">
         {chapters.map((chapter) => {
           const isSelected = selectedIds.includes(chapter.id)
           const subs = subchaptersByChapter.get(chapter.id) ?? []

@@ -118,18 +118,20 @@ export async function getAttemptWithQuestions(
   const questionOrder = attempt.questionOrder ?? []
   if (questionOrder.length === 0) return { attempt, questions: [], answers: new Map() }
 
-  // Fetch all questions in one query
+  // Fetch all questions in one query (with chapter name)
   const questionRows = await db
     .select({
       id: questions.id,
       text: questions.text,
       type: questions.type,
       chapterId: questions.chapterId,
+      chapterName: chapters.name,
       subchapter: questions.subchapter,
       sourceBook: questions.sourceBook,
       sourcePage: questions.sourcePage,
     })
     .from(questions)
+    .leftJoin(chapters, eq(chapters.id, questions.chapterId))
     .where(inArray(questions.id, questionOrder))
 
   // Fetch options for all questions
@@ -178,6 +180,7 @@ export async function getAttemptWithQuestions(
     text: string
     type: "CS" | "CM"
     chapterId: string
+    chapterName: string | null
     subchapter: string | null
     sourceBook: string | null
     sourcePage: string | null

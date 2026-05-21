@@ -198,9 +198,11 @@ export const specialties = pgTable("specialties", {
 
 export const admissionData = pgTable("admission_data", {
   id: uuid("id").defaultRandom().primaryKey(),
-  specialtyId: uuid("specialty_id")
-    .references(() => specialties.id)
-    .notNull(),
+  // FK to specialties is optional — the (umf, specialty, year) triple is the
+  // logical key. Some imported rows may not map to the lookup table.
+  specialtyId: uuid("specialty_id").references(() => specialties.id),
+  // University (UMF) name, e.g. "București (Carol Davila)", "Cluj-Napoca".
+  umf: text("umf"),
   specialty: text("specialty").notNull(), // denormalized name for display
   year: integer("year").notNull(),
   thresholdScore: integer("threshold_score").notNull(),

@@ -19,6 +19,7 @@ interface Question {
   id: string
   text: string
   type: "CS" | "CM"
+  chapterName?: string | null
   subchapter: string | null
   sourceBook: string | null
   sourcePage: string | null
@@ -118,10 +119,10 @@ export function QuizContainer({
 
       if ("error" in result) {
         console.error("Submit answer error:", result.error)
-        toast.error("Nu am putut salva raspunsul")
+        toast.error("Nu am putut salva raspunsul", { id: "answer-save" })
         return
       }
-      toast.success("Raspuns salvat")
+      toast.success("Raspuns salvat", { id: "answer-save", duration: 1500 })
 
       setAnsweredIds((prev) => {
         const next = new Set(prev)
@@ -268,6 +269,7 @@ export function QuizContainer({
               id: currentQuestion.id,
               text: currentQuestion.text,
               type: currentQuestion.type,
+              chapterName: currentQuestion.chapterName,
               subchapter: currentQuestion.subchapter,
               options: currentQuestion.options.map((o) => ({
                 label: o.label,

@@ -18,6 +18,7 @@ interface ExamQuestionProps {
     id: string
     text: string
     type: "CS" | "CM"
+    chapterName?: string | null
     subchapter?: string | null
     options: QuestionOption[]
   }
@@ -84,10 +85,22 @@ export function ExamQuestion({
 
       {/* Body */}
       <div className="space-y-5 p-5 sm:p-6">
-        {question.subchapter && (
-          <MonoLabel size="cell" tone="accent">
-            {question.subchapter}
-          </MonoLabel>
+        {(question.chapterName || question.subchapter) && (
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            {question.chapterName && (
+              <MonoLabel size="cell" tone="accent">
+                {question.chapterName}
+              </MonoLabel>
+            )}
+            {question.chapterName && question.subchapter && (
+              <span className="font-mono text-[10px] text-fg-mute/60">·</span>
+            )}
+            {question.subchapter && (
+              <MonoLabel size="cell" tone="mute">
+                {question.subchapter}
+              </MonoLabel>
+            )}
+          </div>
         )}
         <p className="break-words text-[15px] leading-[1.55] text-fg sm:text-[16px]">
           {question.text}

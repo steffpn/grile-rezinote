@@ -303,7 +303,7 @@ export async function submitExam(attemptId: string) {
     await db
       .update(attemptAnswers)
       .set({
-        isCorrect: result.score > 0,
+        isCorrect: result.score === result.maxScore,
         score: result.score,
       })
       .where(eq(attemptAnswers.id, answer.id))

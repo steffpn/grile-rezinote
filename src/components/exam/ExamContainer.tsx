@@ -25,6 +25,7 @@ interface Question {
   id: string
   text: string
   type: "CS" | "CM"
+  chapterName?: string | null
   subchapter: string | null
   options: QuestionOption[]
 }
@@ -225,9 +226,9 @@ export function ExamContainer({
   }))
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-bg">
+    <div className="flex min-h-screen flex-col bg-bg">
       {/* Top bar: timer center, counter dreapta, submit */}
-      <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-line bg-bg/[0.85] px-4 backdrop-blur-xl sm:px-6">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-bg/[0.85] px-4 backdrop-blur-xl sm:px-6">
         <div className="flex min-w-[200px] items-center gap-3">
           <MonoLabel size="cell">Simulare</MonoLabel>
           <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
@@ -258,7 +259,7 @@ export function ExamContainer({
       </header>
 
       {/* Progress bar — 200 segmente fine */}
-      <div className="border-b border-line bg-bg-2/50 px-4 py-2 sm:px-6">
+      <div className="sticky top-16 z-20 border-b border-line bg-bg-2/95 px-4 py-2 backdrop-blur-xl sm:px-6">
         <div className="flex w-full gap-[1px]">
           {questions.map((q, i) => {
             const isAnswered = answeredIds.has(q.id)
@@ -289,7 +290,7 @@ export function ExamContainer({
       </div>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto px-4 py-8 sm:px-6 sm:py-10">
+      <main className="flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <div className="mx-auto w-full max-w-[720px]">
           <AnimatePresence mode="wait">
             {currentQuestion && (
