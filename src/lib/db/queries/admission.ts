@@ -88,13 +88,18 @@ export async function getAdmissionDataForComparison() {
 }
 
 /**
- * Get admission data structured for the explorer charts
+ * Get admission data structured for the explorer charts.
+ *
+ * Each specialty groups its data points by (year, umf). The chart consumes one
+ * line per specialty per UMF, and the table renders one row per (specialty,
+ * UMF, year).
  */
 export async function getAdmissionDataForExplorer() {
   const data = await db
     .select({
       specialtyId: admissionData.specialtyId,
       specialtyName: specialties.name,
+      umf: admissionData.umf,
       year: admissionData.year,
       thresholdScore: admissionData.thresholdScore,
       availableSpots: admissionData.availableSpots,
@@ -102,7 +107,7 @@ export async function getAdmissionDataForExplorer() {
     .from(admissionData)
     .innerJoin(specialties, eq(admissionData.specialtyId, specialties.id))
     .where(isNull(specialties.archivedAt))
-    .orderBy(asc(specialties.name), asc(admissionData.year))
+    .orderBy(asc(specialties.name), asc(admissionData.umf), asc(admissionData.year))
 
   // Group by specialty for chart rendering
   const grouped = new Map<
@@ -110,7 +115,12 @@ export async function getAdmissionDataForExplorer() {
     {
       id: string
       name: string
-      data: { year: number; thresholdScore: number; availableSpots: number }[]
+      data: {
+        umf: string | null
+        year: number
+        thresholdScore: number
+        availableSpots: number
+      }[]
     }
   >()
 
@@ -125,6 +135,7 @@ export async function getAdmissionDataForExplorer() {
       })
     }
     grouped.get(specialtyId)!.data.push({
+      umf: row.umf,
       year: row.year,
       thresholdScore: row.thresholdScore,
       availableSpots: row.availableSpots,
@@ -132,6 +143,17 @@ export async function getAdmissionDataForExplorer() {
   }
 
   return Array.from(grouped.values())
+}
+
+/**
+ * Get the distinct UMF names present in admission_data, in display order.
+ */
+export async function getAvailableUmfs(): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ umf: admissionData.umf })
+    .from(admissionData)
+    .orderBy(asc(admissionData.umf))
+  return rows.map((r) => r.umf).filter((u): u is string => u != null)
 }
 
 /**

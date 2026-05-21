@@ -5,6 +5,7 @@ import { canAccessAdmissionModule } from "@/lib/subscription/gating"
 import {
   getAdmissionDataForExplorer,
   getAvailableYears,
+  getAvailableUmfs,
 } from "@/lib/db/queries/admission"
 import { getAdmissionChanceForUser } from "@/lib/db/queries/admission-chance"
 import { AdmissionExplorer } from "@/components/admission/AdmissionExplorer"
@@ -46,11 +47,13 @@ export default async function AdmissionExplorerPage() {
     )
   }
 
-  const [specialtyData, availableYears, chanceReport] = await Promise.all([
-    getAdmissionDataForExplorer(),
-    getAvailableYears(),
-    getAdmissionChanceForUser(user.id),
-  ])
+  const [specialtyData, availableYears, availableUmfs, chanceReport] =
+    await Promise.all([
+      getAdmissionDataForExplorer(),
+      getAvailableYears(),
+      getAvailableUmfs(),
+      getAdmissionChanceForUser(user.id),
+    ])
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 px-4 py-6">
@@ -87,6 +90,7 @@ export default async function AdmissionExplorerPage() {
         <AdmissionExplorer
           specialtyData={specialtyData}
           availableYears={availableYears}
+          availableUmfs={availableUmfs}
         />
       </section>
     </div>

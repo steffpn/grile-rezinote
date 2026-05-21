@@ -33,12 +33,18 @@ import {
 interface SpecialtyChartData {
   id: string
   name: string
-  data: { year: number; thresholdScore: number; availableSpots: number }[]
+  data: {
+    umf: string | null
+    year: number
+    thresholdScore: number
+    availableSpots: number
+  }[]
 }
 
 interface AdmissionExplorerProps {
   specialtyData: SpecialtyChartData[]
   availableYears: number[]
+  availableUmfs: string[]
 }
 
 // Color palette for chart lines
@@ -58,10 +64,15 @@ const CHART_COLORS = [
 export function AdmissionExplorer({
   specialtyData,
   availableYears,
+  availableUmfs,
 }: AdmissionExplorerProps) {
   // All specialties selected by default
   const [selectedSpecialties, setSelectedSpecialties] = useState<Set<string>>(
     new Set(specialtyData.map((s) => s.id))
+  )
+  // Default to the first UMF only to keep the chart readable; user can add more.
+  const [selectedUmfs, setSelectedUmfs] = useState<Set<string>>(
+    new Set(availableUmfs.slice(0, 1)),
   )
   const [yearFrom, setYearFrom] = useState<string>("all")
   const [yearTo, setYearTo] = useState<string>("all")
@@ -75,36 +86,51 @@ export function AdmissionExplorer({
         data: s.data.filter((d) => {
           if (yearFrom !== "all" && d.year < parseInt(yearFrom)) return false
           if (yearTo !== "all" && d.year > parseInt(yearTo)) return false
+          if (d.umf && !selectedUmfs.has(d.umf)) return false
           return true
         }),
       }))
-  }, [specialtyData, selectedSpecialties, yearFrom, yearTo])
+  }, [specialtyData, selectedSpecialties, selectedUmfs, yearFrom, yearTo])
 
-  // Build chart data: array of { year, [specialty_name]: threshold }
+  // Build chart series: one line per (specialty, UMF) combo.
+  const chartSeries = useMemo(() => {
+    const series: { key: string; specialtyName: string; umf: string }[] = []
+    for (const s of filteredData) {
+      const umfsInData = new Set<string>()
+      for (const d of s.data) if (d.umf) umfsInData.add(d.umf)
+      for (const u of umfsInData) {
+        series.push({
+          key: `${s.name} · ${u}`,
+          specialtyName: s.name,
+          umf: u,
+        })
+      }
+    }
+    return series
+  }, [filteredData])
+
   const chartData = useMemo(() => {
-    const yearMap = new Map<
-      number,
-      Record<string, number>
-    >()
-
+    const yearMap = new Map<number, Record<string, number>>()
     for (const specialty of filteredData) {
       for (const point of specialty.data) {
+        if (!point.umf) continue
         if (!yearMap.has(point.year)) {
           yearMap.set(point.year, { year: point.year })
         }
-        yearMap.get(point.year)![specialty.name] = point.thresholdScore
+        const key = `${specialty.name} · ${point.umf}`
+        yearMap.get(point.year)![key] = point.thresholdScore
       }
     }
-
     return Array.from(yearMap.values()).sort(
       (a, b) => (a.year as number) - (b.year as number)
     )
   }, [filteredData])
 
-  // Flat table data for summary
+  // Flat table data for summary (one row per specialty/UMF/year).
   const tableData = useMemo(() => {
     const rows: {
       specialty: string
+      umf: string
       year: number
       thresholdScore: number
       availableSpots: number
@@ -113,17 +139,19 @@ export function AdmissionExplorer({
       for (const d of s.data) {
         rows.push({
           specialty: s.name,
+          umf: d.umf ?? "—",
           year: d.year,
           thresholdScore: d.thresholdScore,
           availableSpots: d.availableSpots,
         })
       }
     }
-    return rows.sort((a, b) =>
-      a.specialty === b.specialty
-        ? a.year - b.year
-        : a.specialty.localeCompare(b.specialty, "ro")
-    )
+    return rows.sort((a, b) => {
+      if (a.specialty !== b.specialty)
+        return a.specialty.localeCompare(b.specialty, "ro")
+      if (a.umf !== b.umf) return a.umf.localeCompare(b.umf, "ro")
+      return a.year - b.year
+    })
   }, [filteredData])
 
   function toggleSpecialty(id: string) {
@@ -134,6 +162,15 @@ export function AdmissionExplorer({
       } else {
         next.add(id)
       }
+      return next
+    })
+  }
+
+  function toggleUmf(name: string) {
+    setSelectedUmfs((prev) => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
       return next
     })
   }
@@ -162,7 +199,7 @@ export function AdmissionExplorer({
               Specialitati
             </Label>
             <div className="flex flex-wrap gap-4">
-              {specialtyData.map((s, idx) => (
+              {specialtyData.map((s) => (
                 <div key={s.id} className="flex items-center gap-2">
                   <Checkbox
                     id={`spec-${s.id}`}
@@ -172,9 +209,30 @@ export function AdmissionExplorer({
                   <Label
                     htmlFor={`spec-${s.id}`}
                     className="cursor-pointer text-sm"
-                    style={{ color: CHART_COLORS[idx % CHART_COLORS.length] }}
                   >
                     {s.name}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* UMF checkboxes */}
+          <div>
+            <Label className="mb-2 block text-sm font-medium">UMF-uri</Label>
+            <div className="flex flex-wrap gap-4">
+              {availableUmfs.map((u) => (
+                <div key={u} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`umf-${u}`}
+                    checked={selectedUmfs.has(u)}
+                    onCheckedChange={() => toggleUmf(u)}
+                  />
+                  <Label
+                    htmlFor={`umf-${u}`}
+                    className="cursor-pointer text-sm"
+                  >
+                    {u}
                   </Label>
                 </div>
               ))}
@@ -226,6 +284,10 @@ export function AdmissionExplorer({
             <CardTitle className="text-base">
               Tendinta praguri admitere
             </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              O linie per (specialitate, UMF). Bifeaza UMF-uri suplimentare in
+              filtru pentru comparatii.
+            </p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -235,15 +297,16 @@ export function AdmissionExplorer({
                 <YAxis domain={[0, 950]} />
                 <Tooltip />
                 <Legend />
-                {filteredData.map((s, idx) => (
+                {chartSeries.map((s, idx) => (
                   <Line
-                    key={s.id}
+                    key={s.key}
                     type="monotone"
-                    dataKey={s.name}
+                    dataKey={s.key}
+                    name={s.key}
                     stroke={CHART_COLORS[idx % CHART_COLORS.length]}
                     strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
                     connectNulls
                   />
                 ))}
@@ -261,13 +324,14 @@ export function AdmissionExplorer({
           </CardHeader>
           <CardContent>
             <div className="max-h-96 overflow-x-auto overflow-y-auto rounded-md border">
-              <Table className="min-w-[500px]">
+              <Table className="min-w-[640px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Specialitate</TableHead>
-                    <TableHead className="w-24">An</TableHead>
-                    <TableHead className="w-32">Prag admitere</TableHead>
-                    <TableHead className="w-32">Locuri disponibile</TableHead>
+                    <TableHead>UMF</TableHead>
+                    <TableHead className="w-20">An</TableHead>
+                    <TableHead className="w-28">Prag</TableHead>
+                    <TableHead className="w-24">Locuri</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -276,9 +340,16 @@ export function AdmissionExplorer({
                       <TableCell className="font-medium">
                         {row.specialty}
                       </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {row.umf}
+                      </TableCell>
                       <TableCell>{row.year}</TableCell>
-                      <TableCell>{row.thresholdScore}</TableCell>
-                      <TableCell>{row.availableSpots}</TableCell>
+                      <TableCell className="tabular-nums">
+                        {row.thresholdScore}
+                      </TableCell>
+                      <TableCell className="tabular-nums">
+                        {row.availableSpots}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

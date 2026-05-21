@@ -1,5 +1,14 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
-import { Target, TrendingUp, AlertCircle, Trophy } from "lucide-react"
+import {
+  Target,
+  TrendingUp,
+  AlertCircle,
+  Trophy,
+  ChevronDown,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { AdmissionChanceReport } from "@/lib/db/queries/admission-chance"
 
@@ -44,6 +53,17 @@ function confidenceTone(rate: number): {
 export function AdmissionChanceEstimator({
   report,
 }: AdmissionChanceEstimatorProps) {
+  const [expandedSpecialties, setExpandedSpecialties] = useState<Set<string>>(
+    new Set(),
+  )
+  const toggleExpand = (id: string) =>
+    setExpandedSpecialties((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+
   if (!report.hasSimulation) {
     return (
       <Card className="border-dashed">
@@ -161,14 +181,26 @@ export function AdmissionChanceEstimator({
             report.specialties.map((s) => {
               const pct = Math.round(s.qualifyingRate * 100)
               const tone = confidenceTone(s.qualifyingRate)
+              const expanded = expandedSpecialties.has(s.specialtyId)
               return (
                 <div
                   key={s.specialtyId}
-                  className="rounded-lg border border-border/60 p-4"
+                  className="rounded-lg border border-border/60"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(s.specialtyId)}
+                    className="flex w-full flex-wrap items-center justify-between gap-2 p-4 text-left transition-colors hover:bg-muted/40"
+                  >
                     <div>
-                      <p className="font-semibold">{s.specialtyName}</p>
+                      <p className="flex items-center gap-2 font-semibold">
+                        {s.specialtyName}
+                        <ChevronDown
+                          className={`h-4 w-4 text-muted-foreground transition-transform ${
+                            expanded ? "rotate-180" : ""
+                          }`}
+                        />
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Ultim prag ({s.latestYear}):{" "}
                         <span className="font-medium tabular-nums">
@@ -178,6 +210,11 @@ export function AdmissionChanceEstimator({
                         <span className="font-medium tabular-nums">
                           {Math.round(s.avgThreshold)}
                         </span>
+                        {" · "}
+                        <span className="font-medium">
+                          {s.umfsQualifiedLatest}/{s.umfsTotalLatest} UMF-uri
+                        </span>{" "}
+                        in {s.latestYear}
                       </p>
                     </div>
                     <span
@@ -185,19 +222,76 @@ export function AdmissionChanceEstimator({
                     >
                       {tone.label}
                     </span>
+                  </button>
+
+                  <div className="px-4 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={`h-full rounded-full transition-all ${tone.barClass}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="min-w-[80px] text-right text-sm font-semibold tabular-nums">
+                        {s.yearsQualified}/{s.yearsEvaluated} ani ({pct}%)
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="mt-3 flex items-center gap-3">
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className={`h-full rounded-full transition-all ${tone.barClass}`}
-                        style={{ width: `${pct}%` }}
-                      />
+                  {/* Per-UMF breakdown */}
+                  {expanded && (
+                    <div className="border-t border-border/60 p-4">
+                      <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Defalcare pe UMF
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {s.umfs.map((u) => {
+                          const upct = Math.round(u.qualifyingRate * 100)
+                          const utone = confidenceTone(u.qualifyingRate)
+                          return (
+                            <div
+                              key={u.umf}
+                              className="rounded-md border border-border/40 p-3"
+                            >
+                              <div className="flex items-baseline justify-between gap-2">
+                                <p className="text-sm font-medium">{u.umf}</p>
+                                <span
+                                  className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-tight ${
+                                    u.latestQualified
+                                      ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                      : "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                                  }`}
+                                >
+                                  {u.latestQualified ? "admis" : "neadmis"}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {u.latestYear}: prag{" "}
+                                <span className="font-medium tabular-nums">
+                                  {u.latestThreshold}
+                                </span>{" "}
+                                · mediu{" "}
+                                <span className="font-medium tabular-nums">
+                                  {Math.round(u.avgThreshold)}
+                                </span>
+                              </p>
+                              <div className="mt-2 flex items-center gap-2">
+                                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                                  <div
+                                    className={`h-full rounded-full ${utone.barClass}`}
+                                    style={{ width: `${upct}%` }}
+                                  />
+                                </div>
+                                <span className="min-w-[60px] text-right text-xs tabular-nums">
+                                  {u.yearsQualified}/{u.yearsEvaluated} ({upct}%)
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
-                    <span className="min-w-[80px] text-right text-sm font-semibold tabular-nums">
-                      {s.yearsQualified}/{s.yearsEvaluated} ani ({pct}%)
-                    </span>
-                  </div>
+                  )}
                 </div>
               )
             })

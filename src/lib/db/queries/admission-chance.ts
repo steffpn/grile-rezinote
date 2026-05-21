@@ -2,15 +2,34 @@ import { db } from "@/lib/db"
 import { attempts, admissionData, specialties } from "@/lib/db/schema"
 import { eq, and, isNull, sql, desc } from "drizzle-orm"
 
-export type SpecialtyChance = {
-  specialtyId: string
-  specialtyName: string
+export type UmfChance = {
+  umf: string
   yearsQualified: number
   yearsEvaluated: number
   qualifyingRate: number // 0–1
   avgThreshold: number
   latestThreshold: number
   latestYear: number
+  /** True if user's best score >= latest year's threshold for this (specialty, UMF). */
+  latestQualified: boolean
+}
+
+export type SpecialtyChance = {
+  specialtyId: string
+  specialtyName: string
+  /** Aggregate stats across all UMFs for this specialty. */
+  yearsQualified: number
+  yearsEvaluated: number
+  qualifyingRate: number // 0–1
+  avgThreshold: number
+  latestThreshold: number
+  latestYear: number
+  /** Per-UMF breakdown. */
+  umfs: UmfChance[]
+  /** Number of UMFs where user would have qualified in the latest year. */
+  umfsQualifiedLatest: number
+  /** Total UMFs evaluated in the latest year (typically 6 minus any N/A). */
+  umfsTotalLatest: number
 }
 
 export type AdmissionChanceReport = {
@@ -69,62 +88,111 @@ export async function getAdmissionChanceForUser(
     }
   }
 
-  // 2. Fetch admission thresholds per specialty, grouped across years.
+  // 2. Fetch admission thresholds per (specialty, UMF, year).
   const rows = await db
     .select({
       specialtyId: admissionData.specialtyId,
       specialtyName: specialties.name,
+      umf: admissionData.umf,
       year: admissionData.year,
       threshold: admissionData.thresholdScore,
     })
     .from(admissionData)
     .innerJoin(specialties, eq(admissionData.specialtyId, specialties.id))
     .where(isNull(specialties.archivedAt))
-    .orderBy(specialties.name, desc(admissionData.year))
+    .orderBy(specialties.name, admissionData.umf, desc(admissionData.year))
 
-  // Group by specialty.
+  // Group by specialty → UMF → entries.
+  type Entry = { year: number; threshold: number }
   const bySpecialty = new Map<
     string,
     {
       name: string
-      entries: { year: number; threshold: number }[]
+      umfs: Map<string, Entry[]>
     }
   >()
   for (const r of rows) {
     // INNER JOIN with specialties guarantees specialtyId is non-null at runtime.
-    const key = r.specialtyId!
-    if (!bySpecialty.has(key)) {
-      bySpecialty.set(key, { name: r.specialtyName, entries: [] })
+    const sid = r.specialtyId!
+    const umfName = r.umf ?? "—"
+    if (!bySpecialty.has(sid)) {
+      bySpecialty.set(sid, { name: r.specialtyName, umfs: new Map() })
     }
-    bySpecialty.get(key)!.entries.push({
+    const specGroup = bySpecialty.get(sid)!
+    if (!specGroup.umfs.has(umfName)) {
+      specGroup.umfs.set(umfName, [])
+    }
+    specGroup.umfs.get(umfName)!.push({
       year: r.year,
       threshold: r.threshold,
     })
   }
 
-  // 3. For each specialty, compute qualifying rate across its recorded years.
+  // 3. For each specialty, build per-UMF breakdown and aggregate stats.
   const specialtyResults: SpecialtyChance[] = []
-  for (const [specialtyId, { name, entries }] of bySpecialty) {
-    if (entries.length === 0) continue
-    const yearsEvaluated = entries.length
-    const yearsQualified = entries.filter(
-      (e) => bestScore >= e.threshold
-    ).length
-    const qualifyingRate =
-      yearsEvaluated === 0 ? 0 : yearsQualified / yearsEvaluated
-    const avgThreshold =
-      entries.reduce((s, e) => s + e.threshold, 0) / yearsEvaluated
-    const latest = entries[0] // entries are ordered year DESC
+  for (const [specialtyId, { name, umfs: umfMap }] of bySpecialty) {
+    const umfChances: UmfChance[] = []
+    let allYearsQualified = 0
+    let allYearsEvaluated = 0
+    let allThresholdSum = 0
+    let latestYearOverall = 0
+    let latestThresholdOverall = 0
+    let umfsQualifiedLatest = 0
+    let umfsTotalLatest = 0
+
+    for (const [umf, entries] of umfMap) {
+      if (entries.length === 0) continue
+      const yearsEvaluated = entries.length
+      const yearsQualified = entries.filter(
+        (e) => bestScore >= e.threshold,
+      ).length
+      const qualifyingRate = yearsQualified / yearsEvaluated
+      const avgThreshold =
+        entries.reduce((s, e) => s + e.threshold, 0) / yearsEvaluated
+      const latest = entries[0] // entries ordered year DESC
+      const latestQualified = bestScore >= latest.threshold
+
+      umfChances.push({
+        umf,
+        yearsQualified,
+        yearsEvaluated,
+        qualifyingRate,
+        avgThreshold,
+        latestThreshold: latest.threshold,
+        latestYear: latest.year,
+        latestQualified,
+      })
+
+      allYearsQualified += yearsQualified
+      allYearsEvaluated += yearsEvaluated
+      allThresholdSum += entries.reduce((s, e) => s + e.threshold, 0)
+      if (latest.year > latestYearOverall) {
+        latestYearOverall = latest.year
+        latestThresholdOverall = latest.threshold
+      }
+      umfsTotalLatest++
+      if (latestQualified) umfsQualifiedLatest++
+    }
+
+    if (umfChances.length === 0) continue
+
+    // Sort UMFs by latest threshold ascending (easiest first).
+    umfChances.sort((a, b) => a.latestThreshold - b.latestThreshold)
 
     specialtyResults.push({
       specialtyId,
       specialtyName: name,
-      yearsQualified,
-      yearsEvaluated,
-      qualifyingRate,
-      avgThreshold,
-      latestThreshold: latest.threshold,
-      latestYear: latest.year,
+      yearsQualified: allYearsQualified,
+      yearsEvaluated: allYearsEvaluated,
+      qualifyingRate:
+        allYearsEvaluated === 0 ? 0 : allYearsQualified / allYearsEvaluated,
+      avgThreshold:
+        allYearsEvaluated === 0 ? 0 : allThresholdSum / allYearsEvaluated,
+      latestThreshold: latestThresholdOverall,
+      latestYear: latestYearOverall,
+      umfs: umfChances,
+      umfsQualifiedLatest,
+      umfsTotalLatest,
     })
   }
 
