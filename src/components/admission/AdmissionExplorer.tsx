@@ -66,16 +66,19 @@ export function AdmissionExplorer({
   availableYears,
   availableUmfs,
 }: AdmissionExplorerProps) {
-  // All specialties selected by default
+  // Start with a minimal default: first specialty + first UMF. Users add more
+  // explicitly via the checkboxes so the chart and table never start cluttered.
   const [selectedSpecialties, setSelectedSpecialties] = useState<Set<string>>(
-    new Set(specialtyData.map((s) => s.id))
+    new Set(specialtyData.slice(0, 1).map((s) => s.id)),
   )
-  // All UMFs selected by default — user can deselect to narrow the chart.
   const [selectedUmfs, setSelectedUmfs] = useState<Set<string>>(
-    new Set(availableUmfs),
+    new Set(availableUmfs.slice(0, 1)),
   )
   const [yearFrom, setYearFrom] = useState<string>("all")
   const [yearTo, setYearTo] = useState<string>("all")
+
+  const nothingSelected =
+    selectedSpecialties.size === 0 || selectedUmfs.size === 0
 
   // Filter data based on selections
   const filteredData = useMemo(() => {
@@ -193,10 +196,35 @@ export function AdmissionExplorer({
         <CardContent className="space-y-4">
           {/* Specialty checkboxes */}
           <div>
-            <Label className="mb-2 block text-sm font-medium">
-              Specialitati
-            </Label>
-            <div className="flex flex-wrap gap-4">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <Label className="text-sm font-medium">
+                Specialitati{" "}
+                <span className="text-xs text-muted-foreground">
+                  ({selectedSpecialties.size}/{specialtyData.length})
+                </span>
+              </Label>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedSpecialties(
+                      new Set(specialtyData.map((s) => s.id)),
+                    )
+                  }
+                  className="rounded-md border border-border/60 px-2 py-1 text-xs font-medium hover:bg-muted/40"
+                >
+                  Selecteaza tot
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSpecialties(new Set())}
+                  className="rounded-md border border-border/60 px-2 py-1 text-xs font-medium hover:bg-muted/40"
+                >
+                  Deselecteaza tot
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
               {specialtyData.map((s) => (
                 <div key={s.id} className="flex items-center gap-2">
                   <Checkbox
@@ -217,8 +245,31 @@ export function AdmissionExplorer({
 
           {/* UMF checkboxes */}
           <div>
-            <Label className="mb-2 block text-sm font-medium">UMF-uri</Label>
-            <div className="flex flex-wrap gap-4">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <Label className="text-sm font-medium">
+                UMF-uri{" "}
+                <span className="text-xs text-muted-foreground">
+                  ({selectedUmfs.size}/{availableUmfs.length})
+                </span>
+              </Label>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setSelectedUmfs(new Set(availableUmfs))}
+                  className="rounded-md border border-border/60 px-2 py-1 text-xs font-medium hover:bg-muted/40"
+                >
+                  Selecteaza tot
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedUmfs(new Set())}
+                  className="rounded-md border border-border/60 px-2 py-1 text-xs font-medium hover:bg-muted/40"
+                >
+                  Deselecteaza tot
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
               {availableUmfs.map((u) => (
                 <div key={u} className="flex items-center gap-2">
                   <Checkbox
@@ -276,18 +327,22 @@ export function AdmissionExplorer({
       </Card>
 
       {/* Chart */}
-      {chartData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              Tendinta praguri admitere
-            </CardTitle>
-            <p className="text-xs text-muted-foreground">
-              O linie per (specialitate, UMF). Bifeaza UMF-uri suplimentare in
-              filtru pentru comparatii.
-            </p>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">
+            Tendinta praguri admitere
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            O linie per (specialitate, UMF). Bifeaza ce vrei sa compari in
+            filtrul de mai sus.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {nothingSelected || chartData.length === 0 ? (
+            <div className="rounded-md border border-dashed border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">
+              Bifeaza cel putin o specialitate si un UMF pentru a vedea graficul.
+            </div>
+          ) : (
             <ResponsiveContainer width="100%" height={420}>
               <LineChart
                 data={chartData}
@@ -327,17 +382,26 @@ export function AdmissionExplorer({
                 ))}
               </LineChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* Summary table */}
-      {tableData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Date detaliate</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Date detaliate</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            {tableData.length} {tableData.length === 1 ? "rand" : "randuri"}{" "}
+            dupa filtrele curente.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {nothingSelected || tableData.length === 0 ? (
+            <div className="rounded-md border border-dashed border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">
+              Bifeaza cel putin o specialitate si un UMF pentru a vedea
+              tabelul.
+            </div>
+          ) : (
             <div className="max-h-96 overflow-x-auto overflow-y-auto rounded-md border">
               <Table className="min-w-[560px]">
                 <TableHeader>
@@ -366,9 +430,9 @@ export function AdmissionExplorer({
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
