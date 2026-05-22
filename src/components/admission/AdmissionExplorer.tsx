@@ -70,9 +70,9 @@ export function AdmissionExplorer({
   const [selectedSpecialties, setSelectedSpecialties] = useState<Set<string>>(
     new Set(specialtyData.map((s) => s.id))
   )
-  // Default to the first UMF only to keep the chart readable; user can add more.
+  // All UMFs selected by default — user can deselect to narrow the chart.
   const [selectedUmfs, setSelectedUmfs] = useState<Set<string>>(
-    new Set(availableUmfs.slice(0, 1)),
+    new Set(availableUmfs),
   )
   const [yearFrom, setYearFrom] = useState<string>("all")
   const [yearTo, setYearTo] = useState<string>("all")
