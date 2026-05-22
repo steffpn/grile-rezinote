@@ -133,7 +133,6 @@ export function AdmissionExplorer({
       umf: string
       year: number
       thresholdScore: number
-      availableSpots: number
     }[] = []
     for (const s of filteredData) {
       for (const d of s.data) {
@@ -142,7 +141,6 @@ export function AdmissionExplorer({
           umf: d.umf ?? "—",
           year: d.year,
           thresholdScore: d.thresholdScore,
-          availableSpots: d.availableSpots,
         })
       }
     }
@@ -290,13 +288,30 @@ export function AdmissionExplorer({
             </p>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
+            <ResponsiveContainer width="100%" height={420}>
+              <LineChart
+                data={chartData}
+                margin={{ top: 12, right: 24, left: 0, bottom: 8 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="year" />
-                <YAxis domain={[0, 950]} />
-                <Tooltip />
-                <Legend />
+                <YAxis domain={[500, 950]} />
+                <Tooltip
+                  wrapperStyle={{ outline: "none" }}
+                  contentStyle={{
+                    background: "var(--popover, #0f172a)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 8,
+                    fontSize: 11,
+                    padding: "8px 10px",
+                  }}
+                  itemStyle={{ padding: "1px 0", lineHeight: 1.3 }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  wrapperStyle={{ paddingTop: 12, fontSize: 11 }}
+                  iconSize={10}
+                />
                 {chartSeries.map((s, idx) => (
                   <Line
                     key={s.key}
@@ -324,14 +339,13 @@ export function AdmissionExplorer({
           </CardHeader>
           <CardContent>
             <div className="max-h-96 overflow-x-auto overflow-y-auto rounded-md border">
-              <Table className="min-w-[640px]">
+              <Table className="min-w-[560px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Specialitate</TableHead>
                     <TableHead>UMF</TableHead>
                     <TableHead className="w-20">An</TableHead>
                     <TableHead className="w-28">Prag</TableHead>
-                    <TableHead className="w-24">Locuri</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -346,9 +360,6 @@ export function AdmissionExplorer({
                       <TableCell>{row.year}</TableCell>
                       <TableCell className="tabular-nums">
                         {row.thresholdScore}
-                      </TableCell>
-                      <TableCell className="tabular-nums">
-                        {row.availableSpots}
                       </TableCell>
                     </TableRow>
                   ))}
