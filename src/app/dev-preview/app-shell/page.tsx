@@ -33,6 +33,7 @@ export default function AppShellPreviewPage() {
       userEmail="ana.popescu@yahoo.com"
       showMobileTabBar
       context="student"
+      isAdmin
     >
       <div className="space-y-8">
         <div>

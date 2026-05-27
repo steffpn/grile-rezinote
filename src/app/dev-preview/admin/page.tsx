@@ -108,6 +108,7 @@ export default function AdminPreview() {
       links={adminLinks}
       userEmail="admin@grile-rezinote.ro"
       context="admin"
+      isAdmin
     >
       <div className="space-y-10">
         {/* Sumar dashboard */}

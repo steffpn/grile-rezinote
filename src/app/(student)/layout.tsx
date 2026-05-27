@@ -4,6 +4,7 @@ import {
   type NavLink,
 } from "@/components/shared/app-shell"
 import { getAuthUser } from "@/lib/auth/get-user"
+import { isAdminEmail } from "@/lib/db/queries/admin"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt"
 import { AntiCopy } from "@/components/shared/anti-copy"
@@ -53,6 +54,7 @@ export default async function StudentLayout({
       userEmail={user?.email ?? null}
       showMobileTabBar
       context="student"
+      isAdmin={isAdminEmail(user?.email)}
     >
       <AntiCopy />
       {/* Trial banner — active trial in progress */}

@@ -15,6 +15,7 @@ import {
   type LucideIcon,
   Rocket,
   Settings,
+  ShieldCheck,
   Target,
   Wallet,
 } from "lucide-react"
@@ -68,12 +69,19 @@ export interface AppSidebarProps {
    * but different sublabel.
    */
   context?: "student" | "admin"
+  /**
+   * Render an "Panou admin" shortcut above the user pill. Computed
+   * server-side from the email whitelist — don't leak the list to the
+   * client by checking env vars here.
+   */
+  isAdmin?: boolean
 }
 
 export function AppSidebar({
   links,
   userEmail,
   context = "student",
+  isAdmin = false,
 }: AppSidebarProps) {
   const pathname = usePathname()
 
@@ -145,8 +153,21 @@ export function AppSidebar({
         </a>
       </nav>
 
-      {/* Footer — user pill */}
-      <div className="border-t border-line p-3">
+      {/* Footer — admin shortcut + user pill */}
+      <div className="border-t border-line p-3 space-y-2">
+        {isAdmin && context !== "admin" && (
+          <Link
+            href="/admin"
+            className="flex items-center gap-2.5 rounded-[8px] border border-neon/30 bg-neon/8 px-3 py-2 text-[13px] text-neon transition-colors hover:border-neon/60 hover:bg-neon/12"
+            aria-label="Deschide panoul de admin"
+          >
+            <ShieldCheck className="size-4 shrink-0" aria-hidden />
+            <span className="flex-1 truncate font-medium">Panou admin</span>
+            <span className="font-mono text-[9.5px] uppercase tracking-mono-tight text-neon/70">
+              ↗
+            </span>
+          </Link>
+        )}
         {userEmail ? (
           <SidebarUserPill userEmail={userEmail} />
         ) : (

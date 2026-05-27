@@ -32,6 +32,12 @@ interface AppShellProps {
   topbarTrailing?: React.ReactNode
   /** Variantă brand — default `student`. */
   context?: "student" | "admin"
+  /**
+   * When true, the sidebar/mobile-drawer footer renders a "Panou admin"
+   * shortcut. Compute this server-side from the email whitelist — don't
+   * leak the list to the browser.
+   */
+  isAdmin?: boolean
 }
 
 /**
@@ -50,10 +56,16 @@ export function AppShell({
   showMobileTabBar = false,
   topbarTrailing,
   context = "student",
+  isAdmin = false,
 }: AppShellProps) {
   return (
     <div className="flex min-h-svh bg-bg text-fg">
-      <AppSidebar links={links} userEmail={userEmail} context={context} />
+      <AppSidebar
+        links={links}
+        userEmail={userEmail}
+        context={context}
+        isAdmin={isAdmin}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar
@@ -64,6 +76,7 @@ export function AppShell({
                 links={links}
                 userEmail={userEmail}
                 context={context}
+                isAdmin={isAdmin}
               />
             </div>
           }
