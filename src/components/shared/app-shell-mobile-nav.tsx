@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation"
 import {
   BookOpen,
   ExternalLink,
+  FileSpreadsheet,
+  HelpCircle,
   Menu,
+  Settings,
   X,
   type LucideIcon,
   LayoutDashboard,
@@ -31,16 +34,25 @@ import type { NavLink } from "./app-shell"
 const REFERENCE_BOOKS_URL = "https://rezidentiat-medicina-dentara.ro/"
 
 const ROUTE_ICONS: Record<string, LucideIcon> = {
+  // student
   "/dashboard": LayoutDashboard,
   "/practice": Target,
   "/practice/mistakes": BarChart3,
   "/exam": GraduationCap,
   "/admission": Rocket,
   "/subscription": Wallet,
+  // admin
+  "/admin": LayoutDashboard,
+  "/admin/chapters": BookOpen,
+  "/admin/questions": HelpCircle,
+  "/admin/import-export": FileSpreadsheet,
+  "/admin/specialties": GraduationCap,
+  "/admin/admission-data": BarChart3,
+  "/admin/settings": Settings,
 }
 
 function resolveIcon(link: NavLink): LucideIcon {
-  return link.icon ?? ROUTE_ICONS[link.href] ?? LayoutDashboard
+  return ROUTE_ICONS[link.href] ?? LayoutDashboard
 }
 
 function isActive(pathname: string, href: string) {

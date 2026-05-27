@@ -1,5 +1,4 @@
 import * as React from "react"
-import type { LucideIcon } from "lucide-react"
 
 import { AppSidebar } from "./app-sidebar"
 import { AppShellMobileNav } from "./app-shell-mobile-nav"
@@ -10,8 +9,14 @@ import type { PlanTier } from "@/lib/subscription/tiers"
 export interface NavLink {
   href: string
   label: string
-  /** Icon Lucide opțional — sidebar-ul are un default per route. */
-  icon?: LucideIcon
+  /**
+   * Icon picked by href via the client-side ROUTE_ICONS map in
+   * app-sidebar / app-shell-mobile-nav. We deliberately do NOT accept
+   * a component override here — that would force server components to
+   * pass React component references across the server→client boundary,
+   * which RSC cannot serialize (manifests as a runtime "Functions
+   * cannot be passed directly to Client Components" error in prod).
+   */
   /** Tier required to access the target page. Optional for non-tiered links. */
   requiredTier?: PlanTier
   /** True when the current user's tier is below requiredTier. Renders a lock icon. */

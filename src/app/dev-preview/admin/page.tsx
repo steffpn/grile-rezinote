@@ -4,7 +4,7 @@
  */
 "use client"
 
-import { ArrowLeft, BookOpen, CheckCircle2, HelpCircle, ListChecks } from "lucide-react"
+import { BookOpen, CheckCircle2, HelpCircle, ListChecks } from "lucide-react"
 
 import {
   AppShell,
@@ -21,7 +21,7 @@ const adminLinks: NavLink[] = [
   { href: "/admin/specialties", label: "Specialități" },
   { href: "/admin/admission-data", label: "Date admitere" },
   { href: "/admin/settings", label: "Setări" },
-  { href: "/dashboard", label: "← Înapoi la student", icon: ArrowLeft },
+  { href: "/dashboard", label: "← Înapoi la student" },
 ]
 
 const mockChapters = [

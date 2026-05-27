@@ -1,14 +1,4 @@
 import type { Metadata } from "next"
-import {
-  ArrowLeft,
-  BarChart3,
-  BookOpen,
-  FileSpreadsheet,
-  GraduationCap,
-  HelpCircle,
-  LayoutDashboard,
-  Settings,
-} from "lucide-react"
 
 import {
   AppShell,
@@ -20,15 +10,17 @@ export const metadata: Metadata = {
   title: "Admin | grile-ReziNOTE",
 }
 
+// Icons resolved by href in app-sidebar / app-shell-mobile-nav.
+// Don't pass component refs from here — RSC can't serialize them.
 const links: NavLink[] = [
-  { href: "/admin", label: "Sumar", icon: LayoutDashboard },
-  { href: "/admin/chapters", label: "Capitole", icon: BookOpen },
-  { href: "/admin/questions", label: "Întrebări", icon: HelpCircle },
-  { href: "/admin/import-export", label: "Import / Export", icon: FileSpreadsheet },
-  { href: "/admin/specialties", label: "Specialități", icon: GraduationCap },
-  { href: "/admin/admission-data", label: "Date admitere", icon: BarChart3 },
-  { href: "/admin/settings", label: "Setări", icon: Settings },
-  { href: "/dashboard", label: "← Înapoi la student", icon: ArrowLeft },
+  { href: "/admin", label: "Sumar" },
+  { href: "/admin/chapters", label: "Capitole" },
+  { href: "/admin/questions", label: "Întrebări" },
+  { href: "/admin/import-export", label: "Import / Export" },
+  { href: "/admin/specialties", label: "Specialități" },
+  { href: "/admin/admission-data", label: "Date admitere" },
+  { href: "/admin/settings", label: "Setări" },
+  { href: "/dashboard", label: "← Înapoi la student" },
 ]
 
 export default async function AdminLayout({
