@@ -15,7 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 interface Props {
   imported: number
   updated: number
-  errors: { row: number; message: string }[]
+  errors: { row: number; message: string; column?: string }[]
   onClose: () => void
 }
 
@@ -38,13 +38,17 @@ export function ImportValidationReport({
           <AlertDescription>
             {imported > 0 && (
               <span>
-                {imported} {imported === 1 ? "intrebare importata" : "intrebari importate"}
+                {imported}{" "}
+                {imported === 1 ? "întrebare importată" : "întrebări importate"}
               </span>
             )}
             {imported > 0 && updated > 0 && <span>, </span>}
             {updated > 0 && (
               <span>
-                {updated} {updated === 1 ? "intrebare actualizata" : "intrebari actualizate"}
+                {updated}{" "}
+                {updated === 1
+                  ? "întrebare actualizată"
+                  : "întrebări actualizate"}
               </span>
             )}
             .
@@ -56,9 +60,9 @@ export function ImportValidationReport({
       {!hasSuccess && hasErrors && (
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
-          <AlertTitle>Import esuat</AlertTitle>
+          <AlertTitle>Import eșuat</AlertTitle>
           <AlertDescription>
-            Nicio intrebare nu a fost importata. Verifica erorile de mai jos.
+            Nicio întrebare nu a fost importată. Verifică erorile de mai jos.
           </AlertDescription>
         </Alert>
       )}
@@ -69,7 +73,8 @@ export function ImportValidationReport({
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <p className="text-sm font-medium">
-              {errors.length} {errors.length === 1 ? "eroare" : "erori"} gasite
+              {errors.length}{" "}
+              {errors.length === 1 ? "eroare" : "erori"} găsite
             </p>
           </div>
 
@@ -77,7 +82,8 @@ export function ImportValidationReport({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-24">Rand</TableHead>
+                  <TableHead className="w-20">Rând</TableHead>
+                  <TableHead className="w-40">Coloană</TableHead>
                   <TableHead>Eroare</TableHead>
                 </TableRow>
               </TableHeader>
@@ -85,7 +91,16 @@ export function ImportValidationReport({
                 {errors.map((error, idx) => (
                   <TableRow key={idx}>
                     <TableCell className="font-mono text-sm">
-                      {error.row > 0 ? `#${error.row}` : "General"}
+                      {error.row > 0 ? `#${error.row}` : "—"}
+                    </TableCell>
+                    <TableCell>
+                      {error.column ? (
+                        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
+                          {error.column}
+                        </code>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm text-destructive">
                       {error.message}
@@ -99,7 +114,7 @@ export function ImportValidationReport({
       )}
 
       <Button variant="outline" onClick={onClose}>
-        Inchide
+        Închide
       </Button>
     </div>
   )
