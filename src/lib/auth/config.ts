@@ -209,7 +209,11 @@ export const authConfig: NextAuthConfig = {
         return Response.redirect(new URL("/dashboard", request.nextUrl))
       }
 
-      // Protect app routes
+      // Protect app routes (login redirect). `/admin` is intentionally
+      // excluded — admin is gated by an email whitelist in the layout
+      // and we want non-admins (incl. anonymous visitors) to get a 404
+      // instead of a redirect, so the admin surface doesn't even
+      // advertise its existence.
       const protectedPrefixes = [
         "/dashboard",
         "/practice",
@@ -217,7 +221,6 @@ export const authConfig: NextAuthConfig = {
         "/admission",
         "/subscription",
         "/profile",
-        "/admin",
       ]
 
       if (!isLoggedIn && protectedPrefixes.some((p) => pathname.startsWith(p))) {
