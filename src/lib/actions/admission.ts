@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { specialties, admissionData } from "@/lib/db/schema"
-import { eq, and, isNull, max } from "drizzle-orm"
+import { eq, and, isNull, max, sql, ne } from "drizzle-orm"
 import { getCurrentAdmin, logAudit } from "@/lib/db/queries/admin"
 import {
   specialtySchema,
@@ -29,6 +29,27 @@ export async function createSpecialty(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors }
   }
 
+  const normalizedName = parsed.data.name.trim()
+
+  // Friendly pre-check before hitting the UNIQUE INDEX on
+  // lower(trim(name)) (migration 0004) — without it the user would only
+  // see a generic Postgres error from the failed insert.
+  const [conflict] = await db
+    .select({ id: specialties.id, name: specialties.name })
+    .from(specialties)
+    .where(sql`lower(trim(${specialties.name})) = ${normalizedName.toLowerCase()}`)
+    .limit(1)
+
+  if (conflict) {
+    return {
+      error: {
+        name: [
+          `Există deja o specialitate cu acest nume: "${conflict.name}".`,
+        ],
+      },
+    }
+  }
+
   // Get next sort order
   const [maxOrder] = await db
     .select({ value: max(specialties.sortOrder) })
@@ -39,14 +60,14 @@ export async function createSpecialty(formData: FormData) {
   const [newSpecialty] = await db
     .insert(specialties)
     .values({
-      name: parsed.data.name,
+      name: normalizedName,
       description: parsed.data.description || null,
       sortOrder: nextOrder,
     })
     .returning({ id: specialties.id })
 
   await logAudit(admin.id, "create", "specialty", newSpecialty.id, {
-    name: parsed.data.name,
+    name: normalizedName,
     description: parsed.data.description,
   })
 
@@ -66,6 +87,30 @@ export async function updateSpecialty(id: string, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors }
   }
 
+  const normalizedName = parsed.data.name.trim()
+
+  // Pre-check: another row already owns this name (case-insensitive).
+  const [conflict] = await db
+    .select({ id: specialties.id, name: specialties.name })
+    .from(specialties)
+    .where(
+      and(
+        sql`lower(trim(${specialties.name})) = ${normalizedName.toLowerCase()}`,
+        ne(specialties.id, id),
+      ),
+    )
+    .limit(1)
+
+  if (conflict) {
+    return {
+      error: {
+        name: [
+          `Există deja o specialitate cu acest nume: "${conflict.name}".`,
+        ],
+      },
+    }
+  }
+
   // Fetch old values for audit
   const [old] = await db
     .select({ name: specialties.name, description: specialties.description })
@@ -75,13 +120,13 @@ export async function updateSpecialty(id: string, formData: FormData) {
   await db
     .update(specialties)
     .set({
-      name: parsed.data.name,
+      name: normalizedName,
       description: parsed.data.description || null,
     })
     .where(eq(specialties.id, id))
 
   await logAudit(admin.id, "update", "specialty", id, {
-    name: { old: old?.name, new: parsed.data.name },
+    name: { old: old?.name, new: normalizedName },
     description: { old: old?.description, new: parsed.data.description },
   })
 

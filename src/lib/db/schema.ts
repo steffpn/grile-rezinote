@@ -6,7 +6,9 @@ import {
   boolean,
   timestamp,
   pgEnum,
+  uniqueIndex,
 } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
 // Enums
 export const questionTypeEnum = pgEnum("question_type", ["CS", "CM"])
@@ -187,14 +189,26 @@ export const subscriptions = pgTable("subscriptions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
-export const specialties = pgTable("specialties", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  sortOrder: integer("sort_order").notNull().default(0),
-  archivedAt: timestamp("archived_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-})
+export const specialties = pgTable(
+  "specialties",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    description: text("description"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    archivedAt: timestamp("archived_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    // Case-insensitive uniqueness on the trimmed name — prevents
+    // duplicates like "Endodonție" vs "endodonție " vs "ENDODONȚIE"
+    // creeping back in via any insert path. Created in migration
+    // 0004_dedup_unique_specialties.sql.
+    nameCiUnique: uniqueIndex("specialties_name_ci_unique").on(
+      sql`lower(trim(${t.name}))`,
+    ),
+  }),
+)
 
 export const admissionData = pgTable("admission_data", {
   id: uuid("id").defaultRandom().primaryKey(),
