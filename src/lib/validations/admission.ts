@@ -16,6 +16,10 @@ export type SpecialtyInput = z.infer<typeof specialtySchema>
 
 export const admissionDataSchema = z.object({
   specialtyId: z.string().uuid("ID specialitate invalid"),
+  umf: z
+    .string()
+    .min(1, "UMF este obligatoriu")
+    .max(120, "UMF poate avea maxim 120 de caractere"),
   year: z
     .coerce.number()
     .int("Anul trebuie sa fie numar intreg")
@@ -29,7 +33,7 @@ export const admissionDataSchema = z.object({
   availableSpots: z
     .coerce.number()
     .int("Numarul de locuri trebuie sa fie numar intreg")
-    .min(1, "Numarul minim de locuri este 1"),
+    .min(0, "Numarul de locuri nu poate fi negativ"),
 })
 
 export type AdmissionDataInput = z.infer<typeof admissionDataSchema>
@@ -38,6 +42,10 @@ export const admissionImportRowSchema = z.object({
   specialty: z
     .string()
     .min(1, "Numele specialitatii este obligatoriu"),
+  umf: z
+    .string()
+    .min(1, "UMF este obligatoriu")
+    .max(120, "UMF poate avea maxim 120 de caractere"),
   year: z
     .coerce.number()
     .int("Anul trebuie sa fie numar intreg")
@@ -51,7 +59,7 @@ export const admissionImportRowSchema = z.object({
   availableSpots: z
     .coerce.number()
     .int("Numarul de locuri trebuie sa fie numar intreg")
-    .min(1, "Numarul minim de locuri este 1"),
+    .min(0, "Numarul de locuri nu poate fi negativ"),
 })
 
 export type AdmissionImportRow = z.infer<typeof admissionImportRowSchema>

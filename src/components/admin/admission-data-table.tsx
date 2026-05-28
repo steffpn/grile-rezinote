@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { useMemo, useState } from "react"
+import { Plus, Pencil, Trash2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -37,6 +37,7 @@ interface AdmissionEntry {
   id: string
   specialtyId: string
   specialtyName: string
+  umf: string | null
   year: number
   thresholdScore: number
   availableSpots: number
@@ -50,11 +51,15 @@ interface SpecialtyOption {
 interface AdmissionDataTableProps {
   entries: AdmissionEntry[]
   specialties: SpecialtyOption[]
+  umfs: string[]
 }
+
+const ALL = "all"
 
 export function AdmissionDataTable({
   entries: initialEntries,
   specialties,
+  umfs,
 }: AdmissionDataTableProps) {
   const [entries, setEntries] = useState(initialEntries)
   const [formOpen, setFormOpen] = useState(false)
@@ -62,18 +67,31 @@ export function AdmissionDataTable({
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string[]>>({})
 
-  // Filter state
-  const [filterSpecialty, setFilterSpecialty] = useState<string>("all")
-  const [filterYear, setFilterYear] = useState<string>("all")
+  // Filters
+  const [filterSpecialty, setFilterSpecialty] = useState<string>(ALL)
+  const [filterUmf, setFilterUmf] = useState<string>(ALL)
+  const [filterYear, setFilterYear] = useState<string>(ALL)
+  const [search, setSearch] = useState("")
 
-  const years = [...new Set(entries.map((e) => e.year))].sort((a, b) => b - a)
+  const years = useMemo(
+    () => [...new Set(entries.map((e) => e.year))].sort((a, b) => b - a),
+    [entries],
+  )
 
-  const filteredEntries = entries.filter((e) => {
-    if (filterSpecialty !== "all" && e.specialtyId !== filterSpecialty)
-      return false
-    if (filterYear !== "all" && e.year !== parseInt(filterYear)) return false
-    return true
-  })
+  const filteredEntries = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    return entries.filter((e) => {
+      if (filterSpecialty !== ALL && e.specialtyId !== filterSpecialty)
+        return false
+      if (filterUmf !== ALL && (e.umf ?? "") !== filterUmf) return false
+      if (filterYear !== ALL && e.year !== parseInt(filterYear)) return false
+      if (term) {
+        const hay = `${e.specialtyName} ${e.umf ?? ""}`.toLowerCase()
+        if (!hay.includes(term)) return false
+      }
+      return true
+    })
+  }, [entries, filterSpecialty, filterUmf, filterYear, search])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -83,6 +101,7 @@ export function AdmissionDataTable({
     const formData = new FormData(e.currentTarget)
     const data = {
       specialtyId: formData.get("specialtyId") as string,
+      umf: (formData.get("umf") as string)?.trim() ?? "",
       year: parseInt(formData.get("year") as string),
       thresholdScore: parseInt(formData.get("thresholdScore") as string),
       availableSpots: parseInt(formData.get("availableSpots") as string),
@@ -111,6 +130,19 @@ export function AdmissionDataTable({
     setEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
+  function resetFilters() {
+    setFilterSpecialty(ALL)
+    setFilterUmf(ALL)
+    setFilterYear(ALL)
+    setSearch("")
+  }
+
+  const hasFilters =
+    filterSpecialty !== ALL ||
+    filterUmf !== ALL ||
+    filterYear !== ALL ||
+    search !== ""
+
   return (
     <div className="space-y-4">
       {/* Actions row */}
@@ -127,37 +159,77 @@ export function AdmissionDataTable({
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4">
-        <div className="w-64">
-          <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
-            <SelectTrigger>
-              <SelectValue placeholder="Toate specialitatile" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toate specialitatile</SelectItem>
-              {specialties.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative min-w-[220px] flex-1">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-mute" />
+          <Input
+            placeholder="Caută în specialitate sau UMF..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
-        <div className="w-40">
-          <Select value={filterYear} onValueChange={setFilterYear}>
-            <SelectTrigger>
-              <SelectValue placeholder="Toti anii" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toti anii</SelectItem>
-              {years.map((y) => (
-                <SelectItem key={y} value={y.toString()}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+
+        <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
+          <SelectTrigger className="w-[220px]">
+            <SelectValue placeholder="Toate specialitățile" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Toate specialitățile</SelectItem>
+            {specialties.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={filterUmf}
+          onValueChange={setFilterUmf}
+          disabled={umfs.length === 0}
+        >
+          <SelectTrigger className="w-[220px]">
+            <SelectValue
+              placeholder={
+                umfs.length === 0 ? "(fără UMF)" : "Toate UMF-urile"
+              }
+            />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Toate UMF-urile</SelectItem>
+            {umfs.map((u) => (
+              <SelectItem key={u} value={u}>
+                {u}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={filterYear} onValueChange={setFilterYear}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Toți anii" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Toți anii</SelectItem>
+            {years.map((y) => (
+              <SelectItem key={y} value={y.toString()}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {hasFilters && (
+          <Button variant="ghost" size="sm" onClick={resetFilters}>
+            Resetează
+          </Button>
+        )}
+
+        <p className="ml-auto text-[12px] text-fg-mute">
+          <strong className="text-fg">{filteredEntries.length}</strong> din{" "}
+          {entries.length}
+        </p>
       </div>
 
       {/* Table */}
@@ -175,10 +247,11 @@ export function AdmissionDataTable({
             <TableHeader>
               <TableRow>
                 <TableHead>Specialitate</TableHead>
+                <TableHead>UMF</TableHead>
                 <TableHead className="w-24">An</TableHead>
                 <TableHead className="w-32">Prag admitere</TableHead>
-                <TableHead className="w-32">Locuri disponibile</TableHead>
-                <TableHead className="w-24">Actiuni</TableHead>
+                <TableHead className="w-32">Locuri</TableHead>
+                <TableHead className="w-24">Acțiuni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -186,6 +259,11 @@ export function AdmissionDataTable({
                 <TableRow key={entry.id}>
                   <TableCell className="font-medium">
                     {entry.specialtyName}
+                  </TableCell>
+                  <TableCell className="text-fg-dim">
+                    {entry.umf ?? (
+                      <span className="italic text-fg-mute">—</span>
+                    )}
                   </TableCell>
                   <TableCell>{entry.year}</TableCell>
                   <TableCell>{entry.thresholdScore}</TableCell>
@@ -199,7 +277,7 @@ export function AdmissionDataTable({
                           setEditEntry(entry)
                           setFormOpen(true)
                         }}
-                        title="Editeaza"
+                        title="Editează"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -207,7 +285,7 @@ export function AdmissionDataTable({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(entry.id)}
-                        title="Sterge"
+                        title="Șterge"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -234,7 +312,7 @@ export function AdmissionDataTable({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editEntry ? "Editeaza Intrare" : "Intrare Noua"}
+              {editEntry ? "Editează intrare" : "Intrare nouă"}
             </DialogTitle>
           </DialogHeader>
 
@@ -247,7 +325,7 @@ export function AdmissionDataTable({
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecteaza specialitatea" />
+                  <SelectValue placeholder="Selectează specialitatea" />
                 </SelectTrigger>
                 <SelectContent>
                   {specialties.map((s) => (
@@ -265,19 +343,59 @@ export function AdmissionDataTable({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="year">An</Label>
+              <Label htmlFor="umf">UMF</Label>
               <Input
-                id="year"
-                name="year"
-                type="number"
-                min={2000}
-                max={2100}
-                defaultValue={editEntry?.year ?? new Date().getFullYear()}
+                id="umf"
+                name="umf"
+                list="umf-list"
+                defaultValue={editEntry?.umf ?? ""}
+                placeholder="ex: București (Carol Davila)"
                 required
               />
-              {errors.year && (
-                <p className="text-sm text-destructive">{errors.year[0]}</p>
+              <datalist id="umf-list">
+                {umfs.map((u) => (
+                  <option key={u} value={u} />
+                ))}
+              </datalist>
+              {errors.umf && (
+                <p className="text-sm text-destructive">{errors.umf[0]}</p>
               )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="year">An</Label>
+                <Input
+                  id="year"
+                  name="year"
+                  type="number"
+                  min={2000}
+                  max={2100}
+                  defaultValue={editEntry?.year ?? new Date().getFullYear()}
+                  required
+                />
+                {errors.year && (
+                  <p className="text-sm text-destructive">{errors.year[0]}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="availableSpots">Locuri</Label>
+                <Input
+                  id="availableSpots"
+                  name="availableSpots"
+                  type="number"
+                  min={0}
+                  defaultValue={editEntry?.availableSpots ?? 0}
+                  placeholder="ex: 25"
+                  required
+                />
+                {errors.availableSpots && (
+                  <p className="text-sm text-destructive">
+                    {errors.availableSpots[0]}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -299,24 +417,6 @@ export function AdmissionDataTable({
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="availableSpots">Locuri disponibile</Label>
-              <Input
-                id="availableSpots"
-                name="availableSpots"
-                type="number"
-                min={1}
-                defaultValue={editEntry?.availableSpots ?? ""}
-                placeholder="ex: 25"
-                required
-              />
-              {errors.availableSpots && (
-                <p className="text-sm text-destructive">
-                  {errors.availableSpots[0]}
-                </p>
-              )}
-            </div>
-
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
@@ -327,14 +427,14 @@ export function AdmissionDataTable({
                   setErrors({})
                 }}
               >
-                Anuleaza
+                Anulează
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading
-                  ? "Se salveaza..."
+                  ? "Se salvează..."
                   : editEntry
-                    ? "Salveaza"
-                    : "Adauga"}
+                    ? "Salvează"
+                    : "Adaugă"}
               </Button>
             </div>
           </form>

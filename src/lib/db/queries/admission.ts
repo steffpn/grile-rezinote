@@ -58,6 +58,7 @@ export async function getAdmissionData() {
       id: admissionData.id,
       specialtyId: admissionData.specialtyId,
       specialtyName: specialties.name,
+      umf: admissionData.umf,
       year: admissionData.year,
       thresholdScore: admissionData.thresholdScore,
       availableSpots: admissionData.availableSpots,
@@ -65,7 +66,19 @@ export async function getAdmissionData() {
     })
     .from(admissionData)
     .innerJoin(specialties, eq(admissionData.specialtyId, specialties.id))
-    .orderBy(asc(specialties.name), desc(admissionData.year))
+    .orderBy(asc(specialties.name), asc(admissionData.umf), desc(admissionData.year))
+}
+
+/**
+ * Distinct UMF values across admission_data, for filter dropdowns and
+ * autocomplete in the admin edit form.
+ */
+export async function getDistinctUmfs(): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ umf: admissionData.umf })
+    .from(admissionData)
+    .orderBy(asc(admissionData.umf))
+  return rows.map((r) => r.umf).filter((u): u is string => !!u && u.length > 0)
 }
 
 /**

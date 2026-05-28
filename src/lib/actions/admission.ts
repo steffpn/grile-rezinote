@@ -168,6 +168,7 @@ export async function restoreSpecialty(id: string) {
 
 export async function createAdmissionEntry(data: {
   specialtyId: string
+  umf: string
   year: number
   thresholdScore: number
   availableSpots: number
@@ -195,6 +196,7 @@ export async function createAdmissionEntry(data: {
     .values({
       specialtyId: parsed.data.specialtyId,
       specialty: specialty.name,
+      umf: parsed.data.umf.trim(),
       year: parsed.data.year,
       thresholdScore: parsed.data.thresholdScore,
       availableSpots: parsed.data.availableSpots,
@@ -203,6 +205,7 @@ export async function createAdmissionEntry(data: {
 
   await logAudit(admin.id, "create", "admission_data", entry.id, {
     specialty: specialty.name,
+    umf: parsed.data.umf,
     year: parsed.data.year,
     thresholdScore: parsed.data.thresholdScore,
     availableSpots: parsed.data.availableSpots,
@@ -216,6 +219,7 @@ export async function updateAdmissionEntry(
   id: string,
   data: {
     specialtyId: string
+    umf: string
     year: number
     thresholdScore: number
     availableSpots: number
@@ -244,6 +248,7 @@ export async function updateAdmissionEntry(
     .set({
       specialtyId: parsed.data.specialtyId,
       specialty: specialty.name,
+      umf: parsed.data.umf.trim(),
       year: parsed.data.year,
       thresholdScore: parsed.data.thresholdScore,
       availableSpots: parsed.data.availableSpots,
@@ -252,6 +257,7 @@ export async function updateAdmissionEntry(
 
   await logAudit(admin.id, "update", "admission_data", id, {
     specialty: specialty.name,
+    umf: parsed.data.umf,
     year: parsed.data.year,
     thresholdScore: parsed.data.thresholdScore,
     availableSpots: parsed.data.availableSpots,
@@ -342,15 +348,20 @@ export async function importAdmissionData(
 
     for (const { data, specialtyId, specialtyName, rowNum } of batch) {
       try {
-        // Check if entry already exists for this specialty+year
+        const umf = data.umf.trim()
+        // Upsert key is (specialty_id, umf, year) — collapsing it to just
+        // (specialty, year) like the old code did meant any import with
+        // multiple UMFs per (specialty, year) silently dropped all but the
+        // first row.
         const [existing] = await db
           .select({ id: admissionData.id })
           .from(admissionData)
           .where(
             and(
               eq(admissionData.specialtyId, specialtyId),
-              eq(admissionData.year, data.year)
-            )
+              eq(admissionData.umf, umf),
+              eq(admissionData.year, data.year),
+            ),
           )
           .limit(1)
 
@@ -362,12 +373,14 @@ export async function importAdmissionData(
               thresholdScore: data.thresholdScore,
               availableSpots: data.availableSpots,
               specialty: specialtyName,
+              umf,
             })
             .where(eq(admissionData.id, existing.id))
 
           await logAudit(admin.id, "update", "admission_data", existing.id, {
             source: "import",
             specialty: specialtyName,
+            umf,
             year: data.year,
             thresholdScore: data.thresholdScore,
             availableSpots: data.availableSpots,
@@ -379,6 +392,7 @@ export async function importAdmissionData(
             .values({
               specialtyId,
               specialty: specialtyName,
+              umf,
               year: data.year,
               thresholdScore: data.thresholdScore,
               availableSpots: data.availableSpots,
@@ -388,6 +402,7 @@ export async function importAdmissionData(
           await logAudit(admin.id, "create", "admission_data", entry.id, {
             source: "import",
             specialty: specialtyName,
+            umf,
             year: data.year,
             thresholdScore: data.thresholdScore,
             availableSpots: data.availableSpots,
@@ -423,16 +438,18 @@ export async function exportAdmissionData() {
   const data = await db
     .select({
       specialtyName: specialties.name,
+      umf: admissionData.umf,
       year: admissionData.year,
       thresholdScore: admissionData.thresholdScore,
       availableSpots: admissionData.availableSpots,
     })
     .from(admissionData)
     .innerJoin(specialties, eq(admissionData.specialtyId, specialties.id))
-    .orderBy(specialties.name, admissionData.year)
+    .orderBy(specialties.name, admissionData.umf, admissionData.year)
 
   return data.map((d) => ({
     specialty: d.specialtyName,
+    umf: d.umf ?? "",
     year: d.year,
     thresholdScore: d.thresholdScore,
     availableSpots: d.availableSpots,

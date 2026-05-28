@@ -33,6 +33,9 @@ interface AdmissionDataImportProps {
 const COLUMN_MAP: Record<string, keyof AdmissionImportRow> = {
   specialitate: "specialty",
   specialty: "specialty",
+  umf: "umf",
+  universitate: "umf",
+  facultate: "umf",
   an: "year",
   year: "year",
   "prag admitere": "thresholdScore",
@@ -60,10 +63,11 @@ function mapHeaders(
     }
   }
 
-  if (!mapped.specialty || !mapped.year) return null
+  if (!mapped.specialty || !mapped.umf || !mapped.year) return null
 
   return {
     specialty: String(mapped.specialty),
+    umf: String(mapped.umf),
     year: Number(mapped.year),
     thresholdScore: Number(mapped.thresholdScore),
     availableSpots: Number(mapped.availableSpots),
@@ -109,7 +113,7 @@ export function AdmissionDataImport({ specialties }: AdmissionDataImportProps) {
 
         if (rows.length === 0) {
           setParseError(
-            "Nu s-au gasit date valide. Verificati ca fisierul contine coloanele: Specialitate, An, Prag admitere, Locuri disponibile"
+            "Nu s-au gasit date valide. Verificati ca fisierul contine coloanele: Specialitate, UMF, An, Prag admitere, Locuri disponibile"
           )
           return
         }
@@ -149,7 +153,7 @@ export function AdmissionDataImport({ specialties }: AdmissionDataImportProps) {
 
         if (rows.length === 0) {
           setParseError(
-            "Nu s-au gasit date valide. Verificati ca fisierul contine coloanele: Specialitate, An, Prag admitere, Locuri disponibile"
+            "Nu s-au gasit date valide. Verificati ca fisierul contine coloanele: Specialitate, UMF, An, Prag admitere, Locuri disponibile"
           )
           return
         }
@@ -184,10 +188,28 @@ export function AdmissionDataImport({ specialties }: AdmissionDataImportProps) {
     setIsExporting(true)
     try {
       const data = await exportAdmissionData()
-      // Generate CSV with UTF-8 BOM for Romanian diacritics in Excel
-      const headers = ["Specialitate", "An", "Prag admitere", "Locuri disponibile"]
+      // Generate CSV with UTF-8 BOM for Romanian diacritics in Excel.
+      // Quote text columns so commas inside ("București (Carol Davila)") don't
+      // break the row.
+      const headers = [
+        "Specialitate",
+        "UMF",
+        "An",
+        "Prag admitere",
+        "Locuri disponibile",
+      ]
+      const csvCell = (v: string | number) => {
+        const s = String(v ?? "")
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+      }
       const csvRows = data.map((d) =>
-        [d.specialty, d.year, d.thresholdScore, d.availableSpots].join(",")
+        [
+          csvCell(d.specialty),
+          csvCell(d.umf),
+          d.year,
+          d.thresholdScore,
+          d.availableSpots,
+        ].join(",")
       )
       const bom = "\uFEFF"
       const csv = bom + [headers.join(","), ...csvRows].join("\n")
@@ -207,9 +229,10 @@ export function AdmissionDataImport({ specialties }: AdmissionDataImportProps) {
     const bom = "\uFEFF"
     const template =
       bom +
-      "Specialitate,An,Prag admitere,Locuri disponibile\n" +
-      "Ortodontie,2024,780,25\n" +
-      "Chirurgie orala,2024,720,30\n"
+      "Specialitate,UMF,An,Prag admitere,Locuri disponibile\n" +
+      'Ortodon\u021Bie \u0219i Ortopedie Dento-Facial\u0103,"Bucure\u0219ti (Carol Davila)",2025,890,0\n' +
+      'Ortodon\u021Bie \u0219i Ortopedie Dento-Facial\u0103,Cluj-Napoca,2025,922,0\n' +
+      'Pedodon\u021Bie,Ia\u0219i,2025,798,0\n'
     const blob = new Blob([template], { type: "text/csv;charset=utf-8" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -260,7 +283,7 @@ export function AdmissionDataImport({ specialties }: AdmissionDataImportProps) {
                 {fileName || "Alege fisier CSV sau Excel"}
               </p>
               <p className="text-sm text-muted-foreground">
-                Coloane: Specialitate, An, Prag admitere, Locuri disponibile
+                Coloane: Specialitate, UMF, An, Prag admitere, Locuri disponibile
               </p>
             </div>
           </Card>
@@ -312,15 +335,17 @@ export function AdmissionDataImport({ specialties }: AdmissionDataImportProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Specialitate</TableHead>
+                  <TableHead>UMF</TableHead>
                   <TableHead>An</TableHead>
-                  <TableHead>Prag admitere</TableHead>
-                  <TableHead>Locuri disponibile</TableHead>
+                  <TableHead>Prag</TableHead>
+                  <TableHead>Locuri</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {parsedRows.slice(0, 10).map((row, i) => (
                   <TableRow key={i}>
                     <TableCell>{row.specialty}</TableCell>
+                    <TableCell>{row.umf}</TableCell>
                     <TableCell>{row.year}</TableCell>
                     <TableCell>{row.thresholdScore}</TableCell>
                     <TableCell>{row.availableSpots}</TableCell>
@@ -329,7 +354,7 @@ export function AdmissionDataImport({ specialties }: AdmissionDataImportProps) {
                 {parsedRows.length > 10 && (
                   <TableRow>
                     <TableCell
-                      colSpan={4}
+                      colSpan={5}
                       className="text-center text-muted-foreground"
                     >
                       ... si inca {parsedRows.length - 10} randuri

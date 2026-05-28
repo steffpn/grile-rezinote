@@ -1,13 +1,18 @@
-import { getAdmissionData, getSpecialties } from "@/lib/db/queries/admission"
+import {
+  getAdmissionData,
+  getDistinctUmfs,
+  getSpecialties,
+} from "@/lib/db/queries/admission"
 import { AdmissionDataTable } from "@/components/admin/admission-data-table"
 import { AdmissionDataImport } from "@/components/admin/admission-data-import"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SectionTag } from "@/components/branded"
 
 export default async function AdmissionDataPage() {
-  const [entries, specialties] = await Promise.all([
+  const [entries, specialties, umfs] = await Promise.all([
     getAdmissionData(),
     getSpecialties(),
+    getDistinctUmfs(),
   ])
 
   const specialtyOptions = specialties.map((s) => ({
@@ -23,8 +28,8 @@ export default async function AdmissionDataPage() {
           Praguri istorice.
         </h1>
         <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-fg-dim">
-          Pragurile oficiale de admitere per specialitate, UMF și an. Sursa
-          tot ce face killer feature-ul să meargă.
+          Pragurile oficiale de admitere per specialitate, UMF și an. Câte un
+          rând pe combinație (specialitate, UMF, an).
         </p>
       </div>
 
@@ -42,6 +47,7 @@ export default async function AdmissionDataPage() {
               specialtyId: e.specialtyId!,
             }))}
             specialties={specialtyOptions}
+            umfs={umfs}
           />
         </TabsContent>
 
