@@ -24,6 +24,14 @@
 --
 -- Run from the repo root:
 --   psql "$DATABASE_PUBLIC_URL" -f src/lib/db/migrations/0004_dedup_unique_specialties.sql
+--
+-- On Windows: the diagnostic SELECTs print Romanian names (ă, î, ș, ț).
+-- The SET client_encoding below tells the server to send results as UTF-8
+-- regardless of psql's default. If you still see mojibake in your terminal
+-- output, also run `chcp 65001` in PowerShell before invoking psql — that
+-- switches the Windows console to UTF-8.
+
+SET client_encoding TO 'UTF8';
 
 BEGIN;
 
