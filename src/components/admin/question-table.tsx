@@ -46,6 +46,9 @@ import {
   Loader2,
   Filter,
   CheckCircle2,
+  Trash2,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react"
 import {
   archiveQuestion,
@@ -53,6 +56,7 @@ import {
   bulkArchiveQuestions,
   bulkRestoreQuestions,
   bulkMoveQuestions,
+  bulkArchiveAllActiveQuestions,
   getQuestionOptions,
   type QuestionSortBy,
   type SortDir,
@@ -71,6 +75,7 @@ interface QuestionRow {
   sourceBook: string | null
   sourcePage: string | null
   archivedAt: Date | null
+  reviewedAt: Date | null
   createdAt: Date
   updatedAt: Date
 }
@@ -97,6 +102,7 @@ interface QuestionTableProps {
     sourceBook?: string
     search?: string
     status?: string
+    reviewed?: string
     sortBy?: string
     sortDir?: string
   }
@@ -165,11 +171,44 @@ export function QuestionTable({
   const [bulkBusy, setBulkBusy] = useState<
     null | "archive" | "restore" | "move" | "export"
   >(null)
+  // "Review & retire" — bulk soft-delete of every ACTIVE question matching the
+  // current filters. Gated behind a typed confirmation because it is large and
+  // (intentionally) irreversible for users: retired grile never re-enter a test.
+  const [archiveAllOpen, setArchiveAllOpen] = useState(false)
+  const [archiveAllConfirm, setArchiveAllConfirm] = useState("")
+  const [archivingAll, setArchivingAll] = useState(false)
 
   const totalPages = Math.ceil(total / pageSize) || 1
   const status = filters.status ?? "active"
   const sortBy = (filters.sortBy ?? "createdAt") as QuestionSortBy
   const sortDir = (filters.sortDir ?? "desc") as SortDir
+
+  // Filters as the server action expects them (ALL sentinel → undefined). The
+  // action forces status:"active" itself, so we only forward the discriminators.
+  const currentFilters = useMemo(
+    () => ({
+      chapterId:
+        filters.chapterId && filters.chapterId !== ALL
+          ? filters.chapterId
+          : undefined,
+      subchapter:
+        filters.subchapter && filters.subchapter !== ALL
+          ? filters.subchapter
+          : undefined,
+      type: (filters.type === "CS" || filters.type === "CM"
+        ? filters.type
+        : undefined) as "CS" | "CM" | undefined,
+      sourceBook:
+        filters.sourceBook && filters.sourceBook !== ALL
+          ? filters.sourceBook
+          : undefined,
+      search: filters.search || undefined,
+      reviewed: (filters.reviewed === "yes" || filters.reviewed === "no"
+        ? filters.reviewed
+        : undefined) as "yes" | "no" | undefined,
+    }),
+    [filters],
+  )
 
   // ── URL helpers ─────────────────────────────────────────────────────
   const applyFilters = useCallback(
@@ -181,6 +220,7 @@ export function QuestionTable({
         sourceBook: string
         search: string
         status: string
+        reviewed: string
         sortBy: string
         sortDir: string
         page: string
@@ -199,6 +239,8 @@ export function QuestionTable({
       if (merged.search) params.set("search", merged.search)
       if (merged.status && merged.status !== "active")
         params.set("status", merged.status)
+      if (merged.reviewed && merged.reviewed !== ALL)
+        params.set("reviewed", merged.reviewed)
       if (merged.sortBy && merged.sortBy !== "createdAt")
         params.set("sortBy", merged.sortBy)
       if (merged.sortDir && merged.sortDir !== "desc")
@@ -211,6 +253,7 @@ export function QuestionTable({
         patch.sourceBook !== undefined ||
         patch.search !== undefined ||
         patch.status !== undefined ||
+        patch.reviewed !== undefined ||
         patch.sortBy !== undefined ||
         patch.sortDir !== undefined ||
         patch.pageSize !== undefined
@@ -252,6 +295,8 @@ export function QuestionTable({
     (filters.type && filters.type !== ALL) ||
     (filters.sourceBook && filters.sourceBook !== ALL) ||
     (filters.status && filters.status !== "active") ||
+    filters.reviewed === "yes" ||
+    filters.reviewed === "no" ||
     !!filters.search
 
   // ── Selection ───────────────────────────────────────────────────────
@@ -393,6 +438,28 @@ export function QuestionTable({
     }
   }
 
+  // ── Review & retire (bulk soft-delete of all active matches) ────────
+  const CONFIRM_PHRASE = "RETRAGE"
+  const archiveAllArmed =
+    archiveAllConfirm.trim().toUpperCase() === CONFIRM_PHRASE
+
+  async function handleArchiveAll() {
+    if (!archiveAllArmed) return
+    setArchivingAll(true)
+    try {
+      const res = await bulkArchiveAllActiveQuestions(currentFilters)
+      setArchiveAllOpen(false)
+      setArchiveAllConfirm("")
+      clearSelection()
+      startTransition(() => router.refresh())
+      alert(
+        `${res.count} ${res.count === 1 ? "întrebare a fost retrasă" : "întrebări au fost retrase"} și marcate ca revizuite.`,
+      )
+    } finally {
+      setArchivingAll(false)
+    }
+  }
+
   // ── Render ──────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
@@ -500,6 +567,20 @@ export function QuestionTable({
             </SelectContent>
           </Select>
 
+          <Select
+            value={filters.reviewed ?? ALL}
+            onValueChange={(v) => applyFilters({ reviewed: v })}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Revizuire" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Toate (revizuire)</SelectItem>
+              <SelectItem value="yes">Revizuite</SelectItem>
+              <SelectItem value="no">Nerevizuite</SelectItem>
+            </SelectContent>
+          </Select>
+
           {hasActiveFilters && (
             <Button variant="ghost" size="sm" onClick={resetAll}>
               <X className="size-3.5" />
@@ -508,6 +589,19 @@ export function QuestionTable({
           )}
 
           <div className="ml-auto flex shrink-0 gap-2">
+            {status === "active" && total > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setArchiveAllConfirm("")
+                  setArchiveAllOpen(true)
+                }}
+                title="Revizuiește și retrage toate întrebările active care corespund filtrelor curente. Nu mai apar în niciun test sau simulare."
+              >
+                <Trash2 className="size-4" />
+                Revizuiește și retrage ({total})
+              </Button>
+            )}
             <Button asChild>
               <Link href="/admin/questions/new">
                 <Plus className="size-4" />
@@ -780,6 +874,102 @@ export function QuestionTable({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Review & retire — typed-confirmation modal */}
+      <Dialog
+        open={archiveAllOpen}
+        onOpenChange={(o) => {
+          setArchiveAllOpen(o)
+          if (!o) setArchiveAllConfirm("")
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-destructive" />
+              Revizuiește și retrage {total}{" "}
+              {total === 1 ? "întrebare" : "întrebări"}
+            </DialogTitle>
+            <DialogDescription className="space-y-2 pt-1">
+              <span className="block">
+                {hasActiveFilters ? (
+                  <>
+                    Se retrag <strong className="text-fg">{total}</strong>{" "}
+                    întrebări active care corespund{" "}
+                    <strong className="text-fg">filtrelor curente</strong>.
+                  </>
+                ) : (
+                  <>
+                    Se retrag <strong className="text-fg">toate</strong> cele{" "}
+                    <strong className="text-fg">{total}</strong> întrebări
+                    active din bancă.
+                  </>
+                )}
+              </span>
+              <span className="block">
+                Sunt marcate ca <strong className="text-fg">revizuite</strong>{" "}
+                și <strong className="text-fg">nu vor mai apărea</strong> în
+                niciun test sau simulare. Istoricul, testele și simulările deja
+                făcute de utilizatori rămân neatinse.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-[8px] border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-[12.5px] text-fg-dim">
+            <span className="flex items-center gap-1.5 font-medium text-fg">
+              <ShieldCheck className="size-3.5 text-destructive" />
+              Acțiune ireversibilă pentru utilizatori
+            </span>
+            <span className="mt-1 block">
+              Poți restaura manual fiecare întrebare din filtrul „Arhivate”, dar
+              nu există un buton de anulare în masă.
+            </span>
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="archive-all-confirm"
+              className="text-[12.5px] text-fg-dim"
+            >
+              Scrie <strong className="text-fg">{CONFIRM_PHRASE}</strong> pentru
+              a confirma.
+            </label>
+            <Input
+              id="archive-all-confirm"
+              value={archiveAllConfirm}
+              onChange={(e) => setArchiveAllConfirm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && archiveAllArmed) handleArchiveAll()
+              }}
+              placeholder={CONFIRM_PHRASE}
+              autoComplete="off"
+              autoFocus
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setArchiveAllOpen(false)}
+              disabled={archivingAll}
+            >
+              Anulează
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleArchiveAll}
+              disabled={!archiveAllArmed || archivingAll}
+            >
+              {archivingAll ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
+              Retrage {total} {total === 1 ? "întrebare" : "întrebări"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -842,10 +1032,23 @@ function Row({
         </td>
         <td className="px-3 py-2.5 align-top">
           <p className="line-clamp-2 text-fg">{q.text}</p>
-          {isArchived && (
-            <span className="mt-0.5 inline-flex items-center gap-1 rounded-[3px] bg-bg-3 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight text-fg-mute">
-              arhivată
-            </span>
+          {(isArchived || q.reviewedAt) && (
+            <div className="mt-1 flex flex-wrap items-center gap-1">
+              {isArchived && (
+                <span className="inline-flex items-center gap-1 rounded-[3px] bg-bg-3 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight text-fg-mute">
+                  arhivată
+                </span>
+              )}
+              {q.reviewedAt && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-[3px] border border-neon/30 bg-neon/10 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight text-neon"
+                  title="Retrasă prin revizuire — nu mai apare în teste sau simulări"
+                >
+                  <ShieldCheck className="size-3" />
+                  revizuită
+                </span>
+              )}
+            </div>
           )}
         </td>
         <td className="px-3 py-2.5 align-top">

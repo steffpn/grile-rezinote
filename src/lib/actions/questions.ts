@@ -37,6 +37,9 @@ export interface QuestionFilters {
   sourceBook?: string
   search?: string
   status?: "active" | "archived" | "all"
+  // Independent of status: filter by whether the row was retired via the
+  // bulk "review & retire" action (reviewedAt set) or not.
+  reviewed?: "yes" | "no"
   sortBy?: QuestionSortBy
   sortDir?: SortDir
   page?: number
@@ -48,6 +51,8 @@ function buildWhereClause(filters: QuestionFilters): SQL | undefined {
   const status = filters.status ?? "active"
   if (status === "active") conds.push(isNull(questions.archivedAt))
   if (status === "archived") conds.push(isNotNull(questions.archivedAt))
+  if (filters.reviewed === "yes") conds.push(isNotNull(questions.reviewedAt))
+  if (filters.reviewed === "no") conds.push(isNull(questions.reviewedAt))
   if (filters.chapterId) conds.push(eq(questions.chapterId, filters.chapterId))
   if (filters.subchapter)
     conds.push(eq(questions.subchapter, filters.subchapter))
@@ -113,6 +118,7 @@ export async function getQuestions(filters: QuestionFilters = {}) {
       sourceBook: questions.sourceBook,
       sourcePage: questions.sourcePage,
       archivedAt: questions.archivedAt,
+      reviewedAt: questions.reviewedAt,
       createdAt: questions.createdAt,
       updatedAt: questions.updatedAt,
     })
@@ -344,9 +350,12 @@ export async function archiveQuestion(id: string) {
 export async function restoreQuestion(id: string) {
   const admin = await getCurrentAdmin()
 
+  // Clear reviewedAt too: restoring fully un-retires the question, so it
+  // becomes eligible for user tests again and loses the "revizuită" badge.
+  // Keeps the reviewed ⟹ archived invariant (never reviewed-but-active).
   await db
     .update(questions)
-    .set({ archivedAt: null })
+    .set({ archivedAt: null, reviewedAt: null })
     .where(eq(questions.id, id))
 
   await logAudit(admin.id, "restore", "question", id)
@@ -381,6 +390,58 @@ export async function bulkArchiveQuestions(ids: string[]) {
   return { success: true, count: ids.length }
 }
 
+// Sentinel entity id for audit entries describing a bulk operation over many
+// rows rather than one entity (audit_logs.entity_id is NOT NULL).
+const BULK_AUDIT_ENTITY_ID = "00000000-0000-0000-0000-000000000000"
+
+/**
+ * Soft-archive AND mark-reviewed every ACTIVE question matching the given
+ * filters (chapter / subchapter / type / source / search). With no filters
+ * this retires the entire active bank. Unlike bulkArchiveQuestions there is no
+ * id list and no 1000 cap — it targets whatever the admin is currently
+ * filtering.
+ *
+ * Sets archivedAt + reviewedAt together (reviewed ⟹ archived), so the rows
+ * drop out of every practice/simulation pool immediately while staying intact
+ * for historical stats and already-taken attempts (which load by snapshot).
+ * Writes a single summary audit entry, not one per row.
+ */
+export async function bulkArchiveAllActiveQuestions(
+  filters: QuestionFilters = {},
+) {
+  const admin = await getCurrentAdmin()
+
+  // Always scope to active rows; reuse the table's filter builder so the
+  // affected set matches exactly what the admin sees.
+  const where =
+    buildWhereClause({ ...filters, status: "active" }) ??
+    isNull(questions.archivedAt)
+
+  const now = new Date()
+  const updated = await db
+    .update(questions)
+    .set({ archivedAt: now, reviewedAt: now })
+    .where(where)
+    .returning({ id: questions.id })
+
+  await logAudit(admin.id, "delete", "question", BULK_AUDIT_ENTITY_ID, {
+    source: "bulk_review_all",
+    count: updated.length,
+    filters: {
+      chapterId: filters.chapterId,
+      subchapter: filters.subchapter,
+      type: filters.type,
+      sourceBook: filters.sourceBook,
+      search: filters.search,
+      reviewed: filters.reviewed,
+    },
+  })
+
+  revalidatePath("/admin/questions")
+  revalidatePath("/admin")
+  return { success: true as const, count: updated.length }
+}
+
 export async function bulkRestoreQuestions(ids: string[]) {
   const admin = await getCurrentAdmin()
   if (ids.length === 0) return { success: true, count: 0 }
@@ -389,7 +450,7 @@ export async function bulkRestoreQuestions(ids: string[]) {
 
   await db
     .update(questions)
-    .set({ archivedAt: null })
+    .set({ archivedAt: null, reviewedAt: null })
     .where(inArray(questions.id, ids))
 
   for (const id of ids) {

@@ -125,6 +125,13 @@ export const questions = pgTable("questions", {
   sourceBook: text("source_book"),
   sourcePage: text("source_page"),
   archivedAt: timestamp("archived_at"),
+  // Stamped when a question is retired via the admin "review & retire" bulk
+  // action. Always set together with archivedAt (reviewed ⟹ archived), so the
+  // existing archivedAt filters already keep reviewed questions out of every
+  // practice/simulation pool. Kept as its own column purely to mark *why* the
+  // row was archived (deliberate review vs. ad-hoc delete) and to drive the
+  // "revizuită" badge/filter. Restoring a question clears both.
+  reviewedAt: timestamp("reviewed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })

@@ -17,6 +17,7 @@ interface Props {
     sourceBook?: string
     search?: string
     status?: string
+    reviewed?: string
     sortBy?: string
     sortDir?: string
     page?: string
@@ -52,6 +53,10 @@ export default async function QuestionsPage({ searchParams }: Props) {
     params.status === "archived" || params.status === "all"
       ? params.status
       : "active"
+  const reviewedParam: "yes" | "no" | undefined =
+    params.reviewed === "yes" || params.reviewed === "no"
+      ? params.reviewed
+      : undefined
 
   const filters = {
     chapterId: params.chapterId,
@@ -60,6 +65,7 @@ export default async function QuestionsPage({ searchParams }: Props) {
     sourceBook: params.sourceBook,
     search: params.search,
     status: statusParam,
+    reviewed: reviewedParam,
     sortBy,
     sortDir,
     page,
@@ -101,6 +107,7 @@ export default async function QuestionsPage({ searchParams }: Props) {
           sourceBook: params.sourceBook,
           search: params.search,
           status: statusParam,
+          reviewed: reviewedParam,
           sortBy,
           sortDir,
         }}
