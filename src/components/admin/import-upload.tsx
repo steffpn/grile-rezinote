@@ -247,14 +247,11 @@ export function ImportUpload() {
 
   // ── Stats / filtered view ───────────────────────────────────────────
   const stats = useMemo(() => {
-    if (!parsedData)
-      return { total: 0, valid: 0, invalid: 0, creates: 0, updates: 0 }
+    if (!parsedData) return { total: 0, valid: 0, invalid: 0 }
     const total = parsedData.rows.length
     const valid = parsedData.rows.filter((r) => r.valid).length
     const invalid = total - valid
-    const creates = parsedData.rows.filter((r) => r.valid && !r.raw.id).length
-    const updates = parsedData.rows.filter((r) => r.valid && r.raw.id).length
-    return { total, valid, invalid, creates, updates }
+    return { total, valid, invalid }
   }, [parsedData])
 
   const filteredRows = useMemo(() => {
@@ -296,7 +293,6 @@ export function ImportUpload() {
       const headers = IMPORT_COLUMNS.join(",")
       const exampleRows = [
         [
-          "",
           "Anatomie",
           "Oase craniene",
           '"Care sunt oasele craniului?"',
@@ -311,7 +307,6 @@ export function ImportUpload() {
           "42",
         ].join(","),
         [
-          "",
           "Endodonție",
           "Pulpitele acute",
           '"Pulpita acută seroasă este caracterizată prin:"',
@@ -496,14 +491,6 @@ export function ImportUpload() {
                       </span>
                     </>
                   )}
-                  {stats.valid > 0 && (
-                    <>
-                      <span className="text-fg-mute">·</span>
-                      <span>
-                        {stats.creates} noi / {stats.updates} actualizări
-                      </span>
-                    </>
-                  )}
                 </p>
               </div>
             </div>
@@ -655,7 +642,7 @@ function FragmentRow({
           {row.valid ? (
             <span className="inline-flex items-center gap-1 rounded-[4px] bg-neon/12 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight text-neon">
               <CheckCircle2 className="size-3" />
-              {r.id ? "update" : "nou"}
+              nou
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 rounded-[4px] bg-destructive/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-mono-tight text-destructive">
@@ -704,7 +691,7 @@ function FragmentRow({
             <div className="grid gap-3 sm:grid-cols-2">
               {IMPORT_COLUMNS.map((col) => {
                 const value = r[col]
-                if (col === "question_text" || col === "id") return null
+                if (col === "question_text") return null
                 return (
                   <div
                     key={col}

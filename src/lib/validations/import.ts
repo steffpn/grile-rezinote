@@ -5,7 +5,7 @@ import { z } from "zod"
  *
  * Canonical (English) column names used by the export pipeline and the
  * CSV/XLSX template generator:
- *   id (optional), chapter_name, subchapter (optional), question_text,
+ *   chapter_name, subchapter (optional), question_text,
  *   type (CS/CM), option_a..option_e,
  *   correct_answers (comma-separated: "A,C,E"),
  *   source_book (optional), source_page (optional)
@@ -27,7 +27,6 @@ const validLabels = ["A", "B", "C", "D", "E"] as const
 
 export const importRowSchema = z
   .object({
-    id: z.string().optional().or(z.literal("")),
     chapter_name: z.string().min(1, "Numele capitolului este obligatoriu"),
     subchapter: z.string().optional().or(z.literal("")),
     question_text: z.string().min(1, "Textul întrebării este obligatoriu"),
@@ -93,7 +92,6 @@ export interface ImportResult {
 }
 
 export const IMPORT_COLUMNS = [
-  "id",
   "chapter_name",
   "subchapter",
   "question_text",
@@ -114,7 +112,6 @@ export type ImportColumn = (typeof IMPORT_COLUMNS)[number]
  * Canonical → user-facing label, used by the XLSX template + UI hints.
  */
 export const COLUMN_LABELS: Record<ImportColumn, string> = {
-  id: "ID (opțional)",
   chapter_name: "Capitol (Materie)",
   subchapter: "Subcapitol (opțional)",
   question_text: "Întrebare",
@@ -131,7 +128,6 @@ export const COLUMN_LABELS: Record<ImportColumn, string> = {
 
 const COLUMN_ALIASES: Record<string, ImportColumn> = {
   // canonical (lowercased)
-  id: "id",
   chapter_name: "chapter_name",
   subchapter: "subchapter",
   question_text: "question_text",
@@ -210,7 +206,6 @@ export function normalizeType(raw: string): string {
  */
 export function buildImportRow(raw: Record<string, string>): ImportRow {
   const out: Record<ImportColumn, string> = {
-    id: "",
     chapter_name: "",
     subchapter: "",
     question_text: "",

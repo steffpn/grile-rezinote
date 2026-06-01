@@ -84,7 +84,7 @@ export async function importQuestions(
   }
 
   let imported = 0
-  let updated = 0
+  const updated = 0
 
   // Process in batches
   for (let i = 0; i < resolvedRows.length; i += BATCH_SIZE) {
@@ -108,50 +108,7 @@ export async function importQuestions(
           isCorrect: correctAnswers.includes(opt.label),
         }))
 
-        if (data.id) {
-          // Try to update existing question
-          const [existing] = await tx
-            .select({ id: questions.id })
-            .from(questions)
-            .where(eq(questions.id, data.id))
-            .limit(1)
-
-          if (existing) {
-            // Update question
-            await tx
-              .update(questions)
-              .set({
-                chapterId,
-                subchapter: data.subchapter || null,
-                text: data.question_text,
-                type: data.type,
-                sourceBook: data.source_book || null,
-                sourcePage: data.source_page || null,
-                updatedAt: new Date(),
-                archivedAt: null, // Restore if archived
-              })
-              .where(eq(questions.id, data.id))
-
-            // Replace options
-            await tx.delete(options).where(eq(options.questionId, data.id))
-            await tx.insert(options).values(
-              optionsData.map((opt) => ({
-                questionId: data.id!,
-                label: opt.label,
-                text: opt.text,
-                isCorrect: opt.isCorrect,
-              })),
-            )
-
-            await logAudit(admin.id, "update", "question", data.id, {
-              source: "import",
-            })
-            updated++
-            continue
-          }
-        }
-
-        // Create new question
+        // Create new question (always insert — IDs are auto-generated)
         const [newQuestion] = await tx
           .insert(questions)
           .values({
@@ -348,7 +305,6 @@ export async function exportQuestionsExcel(
   const sheet = workbook.addWorksheet("Întrebări")
 
   const widthByCol: Record<ImportColumn, number> = {
-    id: 38,
     chapter_name: 25,
     subchapter: 22,
     question_text: 60,
@@ -399,7 +355,6 @@ export async function generateImportTemplate(): Promise<string> {
   const sheet = workbook.addWorksheet("Întrebări")
 
   const cols: { key: ImportColumn; width: number }[] = [
-    { key: "id", width: 38 },
     { key: "chapter_name", width: 25 },
     { key: "subchapter", width: 22 },
     { key: "question_text", width: 60 },
@@ -432,7 +387,6 @@ export async function generateImportTemplate(): Promise<string> {
   // Example rows
   const examples = [
     {
-      id: "",
       chapter_name: "Anatomie",
       subchapter: "Oase craniene",
       question_text: "Care sunt oasele craniului?",
@@ -447,7 +401,6 @@ export async function generateImportTemplate(): Promise<string> {
       source_page: "42",
     },
     {
-      id: "",
       chapter_name: "Endodonție",
       subchapter: "Pulpitele acute",
       question_text: "Pulpita acută seroasă este caracterizată prin:",
@@ -462,7 +415,6 @@ export async function generateImportTemplate(): Promise<string> {
       source_page: "118",
     },
     {
-      id: "",
       chapter_name: "Parodontologie",
       subchapter: "Gingivite",
       question_text: "Gingivita cronică se caracterizează prin:",
@@ -520,11 +472,6 @@ export async function generateImportTemplate(): Promise<string> {
 
   const helpRows = [
     {
-      col: "id",
-      req: "nu",
-      fmt: "UUID existent → actualizează întrebarea. Gol → creează una nouă.",
-    },
-    {
       col: "chapter_name",
       req: "DA",
       fmt: "Numele exact al unui capitol existent (case-insensitive). Aliase acceptate: Materie.",
@@ -576,8 +523,7 @@ export async function generateImportTemplate(): Promise<string> {
     "• Prima linie din \"Întrebări\" trebuie să rămână header.",
     "• Coloanele pot fi în orice ordine; importatorul recunoaște numele.",
     "• Maxim 5000 rânduri / import.",
-    "• Dacă pui un ID existent, întrebarea este actualizată și opțiunile rescrise.",
-    "• Dacă lași ID-ul gol, se creează o întrebare nouă.",
+    "• Fiecare rând creează o întrebare nouă; ID-urile sunt generate automat.",
   ]
   for (let i = 0; i < notes.length; i++) {
     help.getCell(`A${noteStart + 1 + i}`).value = notes[i]
