@@ -132,13 +132,8 @@ export async function getAdmissionChanceForUser(
   const specialtyResults: SpecialtyChance[] = []
   for (const [specialtyId, { name, umfs: umfMap }] of bySpecialty) {
     const umfChances: UmfChance[] = []
-    let allYearsQualified = 0
-    let allYearsEvaluated = 0
-    let allThresholdSum = 0
-    let latestYearOverall = 0
-    let latestThresholdOverall = 0
-    let umfsQualifiedLatest = 0
-    let umfsTotalLatest = 0
+    // All UMF thresholds grouped by admission year for this specialty.
+    const thresholdsByYear = new Map<number, number[]>()
 
     for (const [umf, entries] of umfMap) {
       if (entries.length === 0) continue
@@ -163,15 +158,11 @@ export async function getAdmissionChanceForUser(
         latestQualified,
       })
 
-      allYearsQualified += yearsQualified
-      allYearsEvaluated += yearsEvaluated
-      allThresholdSum += entries.reduce((s, e) => s + e.threshold, 0)
-      if (latest.year > latestYearOverall) {
-        latestYearOverall = latest.year
-        latestThresholdOverall = latest.threshold
+      for (const e of entries) {
+        const list = thresholdsByYear.get(e.year)
+        if (list) list.push(e.threshold)
+        else thresholdsByYear.set(e.year, [e.threshold])
       }
-      umfsTotalLatest++
-      if (latestQualified) umfsQualifiedLatest++
     }
 
     if (umfChances.length === 0) continue
@@ -179,17 +170,42 @@ export async function getAdmissionChanceForUser(
     // Sort UMFs by latest threshold ascending (easiest first).
     umfChances.sort((a, b) => a.latestThreshold - b.latestThreshold)
 
+    // Specialty-level qualification is evaluated per distinct admission year,
+    // NOT per UMF×year combination. In a given year you'd have secured a seat
+    // if your best score clears the lowest UMF cutoff that year (the easiest
+    // place to get in). The denominator is the number of years on record
+    // (e.g. 5), so the UI reads "2/5 ani" rather than "12/30".
+    const yearMins = [...thresholdsByYear.entries()].map(([year, list]) => ({
+      year,
+      min: Math.min(...list),
+    }))
+    const yearsEvaluated = yearMins.length
+    const yearsQualified = yearMins.filter((y) => bestScore >= y.min).length
+    const qualifyingRate =
+      yearsEvaluated === 0 ? 0 : yearsQualified / yearsEvaluated
+    const avgThreshold =
+      yearsEvaluated === 0
+        ? 0
+        : yearMins.reduce((s, y) => s + y.min, 0) / yearsEvaluated
+
+    const latestYear = Math.max(...yearMins.map((y) => y.year))
+    const latestThresholds = thresholdsByYear.get(latestYear) ?? []
+    const latestThreshold =
+      latestThresholds.length > 0 ? Math.min(...latestThresholds) : 0
+    const umfsTotalLatest = latestThresholds.length
+    const umfsQualifiedLatest = latestThresholds.filter(
+      (t) => bestScore >= t,
+    ).length
+
     specialtyResults.push({
       specialtyId,
       specialtyName: name,
-      yearsQualified: allYearsQualified,
-      yearsEvaluated: allYearsEvaluated,
-      qualifyingRate:
-        allYearsEvaluated === 0 ? 0 : allYearsQualified / allYearsEvaluated,
-      avgThreshold:
-        allYearsEvaluated === 0 ? 0 : allThresholdSum / allYearsEvaluated,
-      latestThreshold: latestThresholdOverall,
-      latestYear: latestYearOverall,
+      yearsQualified,
+      yearsEvaluated,
+      qualifyingRate,
+      avgThreshold,
+      latestThreshold,
+      latestYear,
       umfs: umfChances,
       umfsQualifiedLatest,
       umfsTotalLatest,

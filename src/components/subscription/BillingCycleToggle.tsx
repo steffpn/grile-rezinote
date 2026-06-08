@@ -2,25 +2,16 @@
 
 import { useState } from "react"
 import { PricingCard } from "./PricingCard"
-import type { BillingCycle, PlanTier } from "@/lib/subscription/tiers"
+import type { BillingCycle } from "@/lib/subscription/tiers"
+import {
+  resolveDisplayPrice,
+  resolvePeriodLabel,
+  resolveOriginalPrice,
+  resolveDiscountBadge,
+  type PricingCardModel,
+} from "@/lib/subscription/pricing-model"
 
-type TierPriceData = {
-  monthlyAmount: number | null
-  annualAmount: number | null
-  annualMonthlyEquivalent: number | null
-}
-
-export type PricingCardModel = {
-  tier: PlanTier
-  tagline: string
-  features: string[]
-  cta: string
-  popular?: boolean
-  prices: TierPriceData
-  /** Display fallback when Stripe price not configured yet. */
-  fallbackMonthlyPrice: number
-  annualDiscountPct: number
-}
+export type { PricingCardModel }
 
 interface BillingCycleToggleProps {
   tiers: PricingCardModel[]
@@ -99,45 +90,4 @@ export function BillingCycleToggle({
       </div>
     </div>
   )
-}
-
-function resolveDisplayPrice(t: PricingCardModel, cycle: BillingCycle): string {
-  if (t.tier === "FREE") return "0"
-
-  if (cycle === "monthly") {
-    const amount = t.prices.monthlyAmount ?? t.fallbackMonthlyPrice
-    return amount.toString()
-  }
-
-  // Annual — show monthly-equivalent price
-  if (t.prices.annualMonthlyEquivalent != null) {
-    return t.prices.annualMonthlyEquivalent.toString()
-  }
-
-  // Fallback computed from the 20% discount if Stripe not configured yet.
-  const fallback = Math.round(t.fallbackMonthlyPrice * (1 - t.annualDiscountPct))
-  return fallback.toString()
-}
-
-function resolvePeriodLabel(tier: PlanTier, cycle: BillingCycle): string {
-  if (tier === "FREE") return "Pentru totdeauna"
-  return cycle === "monthly" ? "/luna" : "/luna, platit anual"
-}
-
-function resolveOriginalPrice(
-  t: PricingCardModel,
-  cycle: BillingCycle
-): string | undefined {
-  if (t.tier === "FREE" || cycle !== "annual") return undefined
-  const amount = t.prices.monthlyAmount ?? t.fallbackMonthlyPrice
-  return amount.toString()
-}
-
-function resolveDiscountBadge(
-  t: PricingCardModel,
-  cycle: BillingCycle
-): string | undefined {
-  if (t.tier === "FREE") return undefined
-  if (cycle !== "annual") return undefined
-  return "20% reducere"
 }

@@ -1,72 +1,15 @@
-import { STRIPE_CONFIG } from "@/lib/stripe/config"
-import { stripe } from "@/lib/stripe/client"
-import { TIER_DISPLAY, type PlanTier } from "@/lib/subscription/tiers"
-import {
-  BillingCycleToggle,
-  type PricingCardModel,
-} from "@/components/subscription/BillingCycleToggle"
+import { getTierPricing } from "@/lib/stripe/tier-pricing"
+import { BillingCycleToggle } from "@/components/subscription/BillingCycleToggle"
 import { auth } from "@/lib/auth"
 
 // Server component — prices are fetched from Stripe on the server, not hardcoded
 // in the client bundle, so a tampered client cannot misrepresent pricing.
 export const revalidate = 3600 // refresh hourly
 
-async function fetchPrice(priceId: string | undefined) {
-  if (!priceId || !process.env.STRIPE_SECRET_KEY) return null
-  try {
-    const price = await stripe.prices.retrieve(priceId)
-    if (!price.unit_amount) return null
-    return {
-      amount: Math.round(price.unit_amount / 100),
-      currency: price.currency.toUpperCase(),
-      interval: price.recurring?.interval ?? null,
-    }
-  } catch (err) {
-    console.error("[pricing] stripe.prices.retrieve failed:", err)
-    return null
-  }
-}
-
 export default async function PricingPage() {
-  const [proMonthly, proAnnual, premiumMonthly, premiumAnnual, session] =
-    await Promise.all([
-      fetchPrice(STRIPE_CONFIG.proMonthlyPriceId),
-      fetchPrice(STRIPE_CONFIG.proAnnualPriceId),
-      fetchPrice(STRIPE_CONFIG.premiumMonthlyPriceId),
-      fetchPrice(STRIPE_CONFIG.premiumAnnualPriceId),
-      auth(),
-    ])
+  const [tiers, session] = await Promise.all([getTierPricing(), auth()])
 
   const isAuthenticated = Boolean(session?.user?.id)
-
-  const tiers: PricingCardModel[] = (
-    ["FREE", "PRO", "PREMIUM"] as PlanTier[]
-  ).map((tier) => {
-    const display = TIER_DISPLAY[tier]
-    const live =
-      tier === "PRO"
-        ? { monthly: proMonthly, annual: proAnnual }
-        : tier === "PREMIUM"
-          ? { monthly: premiumMonthly, annual: premiumAnnual }
-          : { monthly: null, annual: null }
-
-    return {
-      tier,
-      tagline: display.tagline,
-      features: display.features,
-      cta: display.cta,
-      popular: display.popular,
-      fallbackMonthlyPrice: display.monthlyPrice,
-      annualDiscountPct: display.annualDiscountPct,
-      prices: {
-        monthlyAmount: live.monthly?.amount ?? null,
-        annualAmount: live.annual?.amount ?? null,
-        annualMonthlyEquivalent: live.annual?.amount
-          ? Math.round(live.annual.amount / 12)
-          : null,
-      },
-    }
-  })
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-28 pb-16 sm:px-6 sm:pt-32 lg:px-8">

@@ -20,7 +20,13 @@ import { ScoreDistribution } from "@/components/exam/ScoreDistribution"
 import { mockBellCurve } from "@/components/exam/score-distribution-data"
 import { AdmissionGrid } from "@/components/exam/AdmissionGrid"
 import { Heatmap } from "@/components/branded/heatmap"
+import { LandingPricing } from "@/components/landing/landing-pricing"
+import { getTierPricing } from "@/lib/stripe/tier-pricing"
 import { cn } from "@/lib/utils"
+
+// ISR — refresh the Stripe-backed pricing hourly instead of calling Stripe on
+// every request. Mirrors the /pricing page so both stay in lockstep.
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: "grile-ReziNOTE — Examenul tău, simulat exact",
@@ -47,8 +53,9 @@ const admissionEntries = [
   { umf: "UMF Tg. Mureș", specialty: "Parodontologie", threshold: 859, seats: 9, margin: -12 },
 ]
 
-export default function LandingPage() {
+export default async function LandingPage() {
   const distributionCurve = mockBellCurve(720, 80, 500, 950)
+  const tiers = await getTierPricing()
 
   return (
     <main>
@@ -579,76 +586,7 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-[920px] gap-[1px] overflow-hidden rounded-[18px] bg-line lg:grid-cols-2">
-          {/* Lunar */}
-          <div className="bg-bg-2 p-9">
-            <div className="font-mono text-[11px] uppercase tracking-mono text-fg-dim">
-              Lunar
-            </div>
-            <div className="mt-4 font-mono text-[56px] font-semibold leading-none tracking-[-0.04em]">
-              49<span className="ml-1 text-[22px] text-fg-dim">RON</span>
-            </div>
-            <div className="mt-1.5 font-mono text-[13px] text-fg-mute">
-              pe lună · facturat lunar
-            </div>
-            <ul className="my-6 flex flex-col gap-2.5 border-y border-line py-5 text-[13.5px]">
-              {[
-                "Toate cele 12.000+ grile",
-                "Simulări nelimitate",
-                "Comparație admitere",
-                "Statistici complete",
-                "PWA mobil",
-              ].map((feat) => (
-                <li key={feat} className="flex items-start gap-2.5 text-fg-dim">
-                  <span className="mt-0.5 text-neon">✓</span>
-                  {feat}
-                </li>
-              ))}
-            </ul>
-            <Button asChild variant="outline" size="lg" className="w-full">
-              <Link href="/signup?plan=monthly">Începe lunar</Link>
-            </Button>
-          </div>
-
-          {/* Anual featured */}
-          <div className="relative bg-[radial-gradient(ellipse_at_top,oklch(0.84_0.21_162/0.06),transparent_60%),var(--bg-2)] p-9">
-            <div className="font-mono text-[11px] uppercase tracking-mono text-fg-dim">
-              Anual{" "}
-              <span className="ml-1.5 inline-block rounded-[3px] bg-neon px-1.5 py-0.5 font-mono text-[9.5px] font-bold uppercase tracking-mono-tight text-bg">
-                −33%
-              </span>
-            </div>
-            <div className="mt-4 font-mono text-[56px] font-semibold leading-none tracking-[-0.04em]">
-              33<span className="ml-1 text-[22px] text-fg-dim">RON</span>
-            </div>
-            <div className="mt-1.5 font-mono text-[13px] text-fg-mute">
-              pe lună · 396 RON anual ·{" "}
-              <s className="opacity-50">588 RON</s>
-            </div>
-            <ul className="my-6 flex flex-col gap-2.5 border-y border-line py-5 text-[13.5px]">
-              {[
-                "Tot ce e în Lunar",
-                "7 zile trial gratuit",
-                "Acces până după examen",
-                "Prioritate la features noi",
-                "Economisești 192 RON",
-              ].map((feat) => (
-                <li key={feat} className="flex items-start gap-2.5 text-fg-dim">
-                  <span className="mt-0.5 text-neon">✓</span>
-                  {feat}
-                </li>
-              ))}
-            </ul>
-            <Button asChild size="lg" className="w-full">
-              <Link href="/signup?plan=annual&source=landing-pricing">
-                Începe gratuit 7 zile
-              </Link>
-            </Button>
-            <div className="mt-3 text-center font-mono text-[11px] uppercase tracking-mono-tight text-fg-mute">
-              card cerut doar la final de trial
-            </div>
-          </div>
-        </div>
+        <LandingPricing tiers={tiers} />
       </section>
 
       {/* ===== FAQ ===== */}
