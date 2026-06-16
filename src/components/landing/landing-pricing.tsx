@@ -15,6 +15,8 @@ import {
 
 interface LandingPricingProps {
   tiers: PricingCardModel[]
+  /** When false (pre-launch) every CTA routes to the waitlist instead. */
+  registrationOpen: boolean
 }
 
 /**
@@ -23,7 +25,10 @@ interface LandingPricingProps {
  * two pages can never show different numbers. Paid CTAs route to `/pricing`
  * where the real Stripe checkout lives.
  */
-export function LandingPricing({ tiers }: LandingPricingProps) {
+export function LandingPricing({
+  tiers,
+  registrationOpen,
+}: LandingPricingProps) {
   const [cycle, setCycle] = useState<BillingCycle>("annual")
 
   return (
@@ -79,7 +84,11 @@ export function LandingPricing({ tiers }: LandingPricingProps) {
           const original = resolveOriginalPrice(t, cycle)
           const annualTotal =
             cycle === "annual" ? resolveAnnualTotal(t) : undefined
-          const href = isFree ? "/signup?source=landing-pricing" : "/pricing"
+          const href = !registrationOpen
+            ? "/#waitlist"
+            : isFree
+              ? "/signup?source=landing-pricing"
+              : "/pricing"
 
           return (
             <div
@@ -152,7 +161,9 @@ export function LandingPricing({ tiers }: LandingPricingProps) {
                   variant={isPopular ? "default" : "outline"}
                   className="w-full"
                 >
-                  <Link href={href}>{t.cta}</Link>
+                  <Link href={href}>
+                    {registrationOpen ? t.cta : "Intră pe listă"}
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -161,7 +172,9 @@ export function LandingPricing({ tiers }: LandingPricingProps) {
       </div>
 
       <p className="text-center font-mono text-[11px] uppercase tracking-mono-tight text-fg-mute">
-        7 zile trial gratuit · card cerut doar la final · anulezi oricând
+        {registrationOpen
+          ? "7 zile trial gratuit · card cerut doar la final · anulezi oricând"
+          : "Prețurile se activează la lansare · înscrie-te pe listă"}
       </p>
     </div>
   )

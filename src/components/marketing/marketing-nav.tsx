@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils"
 
 interface MarketingNavProps {
   userEmail: string | null
+  /** When false (pre-launch) the signup CTA becomes a waitlist link. */
+  registrationOpen: boolean
 }
 
 const NAV_LINKS = [
@@ -25,7 +27,10 @@ const NAV_LINKS = [
  * Marketing navigation — sticky, blur backdrop pe `--bg/0.78`, identitate
  * brand cu logo R neon glow. Spec § 1 Nav.
  */
-export function MarketingNav({ userEmail }: MarketingNavProps) {
+export function MarketingNav({
+  userEmail,
+  registrationOpen,
+}: MarketingNavProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const isAuthenticated = Boolean(userEmail)
 
@@ -79,9 +84,11 @@ export function MarketingNav({ userEmail }: MarketingNavProps) {
                 <Link href="/login">Login</Link>
               </Button>
               <Button asChild size="sm">
-                <Link href="/signup?source=landing-nav">
-                  Începe gratuit
-                </Link>
+                {registrationOpen ? (
+                  <Link href="/signup?source=landing-nav">Începe gratuit</Link>
+                ) : (
+                  <Link href="/#waitlist">Vreau acces</Link>
+                )}
               </Button>
             </>
           )}
@@ -139,9 +146,21 @@ export function MarketingNav({ userEmail }: MarketingNavProps) {
                       <Link href="/login">Login</Link>
                     </Button>
                     <Button asChild size="lg" className="w-full">
-                      <Link href="/signup?source=landing-nav">
-                        Începe gratuit
-                      </Link>
+                      {registrationOpen ? (
+                        <Link
+                          href="/signup?source=landing-nav"
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          Începe gratuit
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/#waitlist"
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          Vreau acces
+                        </Link>
+                      )}
                     </Button>
                   </>
                 )}

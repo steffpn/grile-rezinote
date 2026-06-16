@@ -21,17 +21,22 @@ import { mockBellCurve } from "@/components/exam/score-distribution-data"
 import { AdmissionGrid } from "@/components/exam/AdmissionGrid"
 import { Heatmap } from "@/components/branded/heatmap"
 import { LandingPricing } from "@/components/landing/landing-pricing"
+import { WaitlistForm } from "@/components/landing/waitlist-form"
 import { getTierPricing } from "@/lib/stripe/tier-pricing"
+import { getExamDuration } from "@/lib/db/queries/exam"
+import { isRegistrationOpen } from "@/lib/launch"
 import { cn } from "@/lib/utils"
 
 // ISR — refresh the Stripe-backed pricing hourly instead of calling Stripe on
 // every request. Mirrors the /pricing page so both stay in lockstep.
 export const revalidate = 3600
 
-export const metadata: Metadata = {
-  title: "grile-ReziNOTE — Examenul tău, simulat exact",
-  description:
-    "Simulează examene reale de rezidențiat stomatologie. 200 grile, 3 ore. Vezi instant unde ai fi fost admis, pe baza pragurilor reale din ultimii 5 ani.",
+export async function generateMetadata(): Promise<Metadata> {
+  const hours = (await getExamDuration()) / 3600
+  return {
+    title: "grile-ReziNOTE — Examenul tău, simulat exact",
+    description: `Simulează examene reale de rezidențiat stomatologie. 200 grile, ${hours} ore. Vezi instant unde ai fi fost admis, pe baza pragurilor reale din ultimii 5 ani.`,
+  }
 }
 
 // Heat map cells pentru mini-bento — 80 cells (20 cols × 4 rows) cu pattern aleatoriu deterministic
@@ -56,6 +61,13 @@ const admissionEntries = [
 export default async function LandingPage() {
   const distributionCurve = mockBellCurve(720, 80, 500, 950)
   const tiers = await getTierPricing()
+  // Single source of truth for the simulation length — same value the real
+  // exam uses (configurable, default 4h), so the landing copy can never drift
+  // out of sync with the actual cronometru again.
+  const durationHours = (await getExamDuration()) / 3600
+  const oreLabel = durationHours === 1 ? "oră" : "ore"
+  // Pre-launch: account creation is closed, so signup CTAs become the waitlist.
+  const registrationOpen = isRegistrationOpen()
 
   return (
     <main>
@@ -81,32 +93,58 @@ export default async function LandingPage() {
         </h1>
 
         <p className="relative mx-auto mt-7 max-w-[640px] text-[17px] leading-[1.55] text-fg-dim sm:text-[19px]">
-          200 de grile, 3 ore, identic cu examenul oficial. Vezi instant unde
-          ai fi fost admis, pe baza pragurilor reale din ultimii 5 ani.
+          200 de grile, {durationHours} {oreLabel}, identic cu examenul oficial.
+          Vezi instant unde ai fi fost admis, pe baza pragurilor reale din
+          ultimii 5 ani.
         </p>
 
-        <div className="relative mt-9 flex flex-wrap items-center justify-center gap-3">
-          <Button asChild size="lg">
-            <Link href="/signup?source=landing-hero">
-              Începe simularea →
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="#how">Vezi cum scorăm</Link>
-          </Button>
-        </div>
+        {registrationOpen ? (
+          <>
+            <div className="relative mt-9 flex flex-wrap items-center justify-center gap-3">
+              <Button asChild size="lg">
+                <Link href="/signup?source=landing-hero">
+                  Începe simularea →
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="#how">Vezi cum scorăm</Link>
+              </Button>
+            </div>
 
-        <div className="relative mt-6 flex flex-wrap items-center justify-center gap-7 font-mono text-[12.5px] text-fg-mute">
-          <span className="before:mr-1 before:text-neon before:content-['✓_']">
-            7 zile gratuit
-          </span>
-          <span className="before:mr-1 before:text-neon before:content-['✓_']">
-            fără card
-          </span>
-          <span className="before:mr-1 before:text-neon before:content-['✓_']">
-            anulezi oricând
-          </span>
-        </div>
+            <div className="relative mt-6 flex flex-wrap items-center justify-center gap-7 font-mono text-[12.5px] text-fg-mute">
+              <span className="before:mr-1 before:text-neon before:content-['✓_']">
+                7 zile gratuit
+              </span>
+              <span className="before:mr-1 before:text-neon before:content-['✓_']">
+                fără card
+              </span>
+              <span className="before:mr-1 before:text-neon before:content-['✓_']">
+                anulezi oricând
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div id="waitlist" className="relative mt-9 scroll-mt-28">
+              <WaitlistForm source="landing-hero" />
+            </div>
+
+            <div className="relative mt-5 flex flex-wrap items-center justify-center gap-6 font-mono text-[12.5px] text-fg-mute">
+              <span className="before:mr-1 before:text-neon before:content-['✓_']">
+                lansare în curând
+              </span>
+              <span className="before:mr-1 before:text-neon before:content-['✓_']">
+                fără spam
+              </span>
+              <Link
+                href="#how"
+                className="underline-offset-2 hover:text-fg hover:underline"
+              >
+                vezi cum funcționează →
+              </Link>
+            </div>
+          </>
+        )}
       </section>
 
       {/* ===== COUNTDOWN PANEL ===== */}
@@ -465,13 +503,16 @@ export default async function LandingPage() {
           tag="01 / Simulator oficial"
           title={
             <>
-              200 de grile. <span className="italic text-neon">3 ore.</span>{" "}
+              200 de grile.{" "}
+              <span className="italic text-neon">
+                {durationHours} {oreLabel}.
+              </span>{" "}
               Cronometru oficial.
             </>
           }
           body="Reconstrucție fidelă a examenului real. 50 CS + 150 CM, randomizate din toate capitolele. Scoring identic cu cel oficial — 4p/0p pe CS, partial credit cu anulare pe CM."
           bullets={[
-            "Cronometru de 3 ore care nu poate fi pus pauză",
+            `Cronometru de ${durationHours} ${oreLabel} care nu poate fi pus pauză`,
             'Navigator între întrebări, marcaj pentru "revin mai târziu"',
             "Submit la sfârșit, scor calculat în timp real",
           ]}
@@ -546,7 +587,7 @@ export default async function LandingPage() {
           {[
             { num: "01", title: "Cont gratuit", body: "Email + parolă. 7 zile trial fără card cerut.", pct: 25 },
             { num: "02", title: "Practica țintit", body: "Începe cu zonele unde ești slab. Feedback la fiecare grilă.", pct: 50 },
-            { num: "03", title: "Simulare oficială", body: "200 grile, 3 ore. Identic cu examenul real.", pct: 75 },
+            { num: "03", title: "Simulare oficială", body: `200 grile, ${durationHours} ${oreLabel}. Identic cu examenul real.`, pct: 75 },
             { num: "04", title: "Comparație admitere", body: "Vezi instant la ce specialitate ai fi fost admis.", pct: 100 },
           ].map((step) => (
             <div key={step.num} className="px-6 py-7">
@@ -586,7 +627,7 @@ export default async function LandingPage() {
           </p>
         </div>
 
-        <LandingPricing tiers={tiers} />
+        <LandingPricing tiers={tiers} registrationOpen={registrationOpen} />
       </section>
 
       {/* ===== FAQ ===== */}
@@ -660,22 +701,38 @@ export default async function LandingPage() {
           187 zile.
           <br />
           Sau{" "}
-          <span className="italic text-neon">primul tău scor real,</span> în 3
-          ore.
+          <span className="italic text-neon">primul tău scor real,</span> în{" "}
+          {durationHours} {oreLabel}.
         </h2>
         <p className="relative mt-6 text-[17px] leading-[1.55] text-fg-dim">
-          7 zile gratuit. Vezi în prima simulare unde te afli.
+          {registrationOpen
+            ? "7 zile gratuit. Vezi în prima simulare unde te afli."
+            : "Fii printre primii care primesc acces la lansare."}
         </p>
-        <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Button asChild size="lg">
-            <Link href="/signup?source=landing-final">
-              Începe simularea →
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/demo-result">Vezi un rezultat exemplu</Link>
-          </Button>
-        </div>
+        {registrationOpen ? (
+          <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button asChild size="lg">
+              <Link href="/signup?source=landing-final">
+                Începe simularea →
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/demo-result">Vezi un rezultat exemplu</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="relative mt-8">
+            <WaitlistForm source="landing-final" />
+            <div className="mt-4 text-center">
+              <Link
+                href="/demo-result"
+                className="font-mono text-[12.5px] text-fg-mute underline-offset-2 hover:text-fg hover:underline"
+              >
+                Vezi un rezultat exemplu →
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ===== FOOTER ===== */}
@@ -710,11 +767,18 @@ export default async function LandingPage() {
           />
           <FooterCol
             title="Cont"
-            links={[
-              { href: "/login", label: "Login" },
-              { href: "/signup", label: "Signup" },
-              { href: "/signup", label: "Trial gratuit" },
-            ]}
+            links={
+              registrationOpen
+                ? [
+                    { href: "/login", label: "Login" },
+                    { href: "/signup", label: "Signup" },
+                    { href: "/signup", label: "Trial gratuit" },
+                  ]
+                : [
+                    { href: "/login", label: "Login" },
+                    { href: "/#waitlist", label: "Vreau acces" },
+                  ]
+            }
           />
           <FooterCol
             title="Legal"

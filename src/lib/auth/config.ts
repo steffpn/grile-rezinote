@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 import { hasUsedTrialBefore } from "@/lib/subscription/trial"
 import { STRIPE_CONFIG } from "@/lib/stripe/config"
+import { isRegistrationOpen } from "@/lib/launch"
 
 /**
  * Name of the short-lived cookie the client sets before a Google OAuth signup
@@ -139,6 +140,13 @@ export const authConfig: NextAuthConfig = {
         // Pin our internal id onto the user object so the jwt callback uses it.
         ;(user as { id?: string }).id = existing.id
         return true
+      }
+
+      // Pre-launch gate: existing users (handled above) may always sign in,
+      // but no BRAND-NEW account is created via Google while public
+      // registration is closed. Mirrors the credentials signup guard.
+      if (!isRegistrationOpen()) {
+        return false
       }
 
       // Brand new account → create it. Apply trial-history check so users

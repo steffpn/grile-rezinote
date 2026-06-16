@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { MarketingNav } from "@/components/marketing/marketing-nav"
+import { isRegistrationOpen } from "@/lib/launch"
 
 export default async function MarketingLayout({
   children,
@@ -13,7 +14,7 @@ export default async function MarketingLayout({
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-bg text-fg">
-      <MarketingNav userEmail={userEmail} />
+      <MarketingNav userEmail={userEmail} registrationOpen={isRegistrationOpen()} />
       {children}
     </div>
   )

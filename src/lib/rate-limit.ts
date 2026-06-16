@@ -59,6 +59,9 @@ export const signupLimiter = makeLimiter("signup", 5, 60 * 60)
 // Forgot/update password: 5 per hour per IP.
 export const passwordResetLimiter = makeLimiter("password-reset", 5, 60 * 60)
 
+// Waitlist sign-ups: 5 per hour per IP.
+export const waitlistLimiter = makeLimiter("waitlist", 5, 60 * 60)
+
 // Stripe webhook: 100 per minute per source IP — well above legitimate volume,
 // but caps invalid-signature spam DoS.
 export const webhookLimiter = makeLimiter("webhook", 100, 60)

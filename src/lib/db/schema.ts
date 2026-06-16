@@ -255,3 +255,13 @@ export const siteSettings = pgTable("site_settings", {
   value: text("value").notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })
+
+// Pre-launch waitlist. While public registration is closed (REGISTRATION_OPEN),
+// visitors leave their email here so we can notify them at launch. Email is
+// stored lowercased and unique; inserts use ON CONFLICT DO NOTHING.
+export const waitlist = pgTable("waitlist", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull().unique(),
+  source: text("source"), // analytics tag: where the sign-up came from
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})

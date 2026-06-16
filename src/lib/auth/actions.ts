@@ -14,6 +14,7 @@ import {
   updatePasswordSchema,
 } from "@/lib/validations/auth"
 import { auth } from "@/lib/auth"
+import { isRegistrationOpen } from "@/lib/launch"
 import { hasUsedTrialBefore } from "@/lib/subscription/trial"
 import { STRIPE_CONFIG } from "@/lib/stripe/config"
 import {
@@ -44,6 +45,15 @@ export async function signup(
   prevState: AuthState,
   formData: FormData
 ): Promise<AuthState> {
+  // Pre-launch gate: public account creation is closed until REGISTRATION_OPEN.
+  // Enforced server-side so hiding the form in the UI can't be bypassed.
+  if (!isRegistrationOpen()) {
+    return {
+      error:
+        "Înregistrările sunt închise momentan. Înscrie-te pe lista de așteptare de pe pagina principală și te anunțăm la lansare.",
+    }
+  }
+
   const key = await getClientKey("signup")
   if (!(await signupLimiter.check(key))) {
     return { error: "Prea multe incercari. Te rugam sa astepti si sa reincerci mai tarziu." }
