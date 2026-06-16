@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
-import { attempts, attemptAnswers, questions, options } from "@/lib/db/schema"
+import { attempts, attemptAnswers, questions, options, chapters } from "@/lib/db/schema"
 import { eq, and, inArray, isNull, sql } from "drizzle-orm"
 import { getCurrentUser } from "@/lib/auth/get-user"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
@@ -179,8 +179,10 @@ export async function createPracticeAttempt(formData: FormData) {
       SELECT mc.question_id
       FROM mastery_check mc
       JOIN questions q ON mc.question_id = q.id
+      JOIN chapters c ON q.chapter_id = c.id
       WHERE mc.is_mastered = false
         AND q.archived_at IS NULL
+        AND c.archived_at IS NULL
         ${config.chapterIds.length > 0 ? sql`AND q.chapter_id IN (${sql.join(config.chapterIds.map((id) => sql`${id}`), sql`, `)})` : sql``}
         ${config.subchapters && config.subchapters.length > 0 ? sql`AND q.subchapter IN (${sql.join(config.subchapters.map((s) => sql`${s}`), sql`, `)})` : sql``}
     `
@@ -192,9 +194,13 @@ export async function createPracticeAttempt(formData: FormData) {
   } else {
     // Get questions from selected chapters (and optionally restricted to
     // a chosen set of subchapters within those chapters).
+    // isNull(chapters.archivedAt) is defense-in-depth: the picker only offers
+    // non-archived chapters, but a stale/forged chapterId (e.g. a chapter
+    // archived after the form loaded) must not pull retired questions either.
     const baseConds = [
       inArray(questions.chapterId, config.chapterIds),
       isNull(questions.archivedAt),
+      isNull(chapters.archivedAt),
     ]
     if (config.subchapters && config.subchapters.length > 0) {
       baseConds.push(inArray(questions.subchapter, config.subchapters))
@@ -202,6 +208,7 @@ export async function createPracticeAttempt(formData: FormData) {
     const eligibleQuestions = await db
       .select({ id: questions.id, chapterId: questions.chapterId })
       .from(questions)
+      .innerJoin(chapters, eq(chapters.id, questions.chapterId))
       .where(and(...baseConds))
 
     // Group by chapter for proportional distribution

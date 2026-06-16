@@ -49,9 +49,17 @@ export async function getUnmasteredWrongAnswers(
         AND aa.is_correct IS NOT NULL
     ),
     wrong_questions AS (
-      SELECT DISTINCT question_id
-      FROM user_answers
-      WHERE is_correct = false
+      -- Exclude retired questions AND questions in archived chapters so the
+      -- "Greșelile mele" count, per-chapter breakdown and playable list all
+      -- stay consistent and never resurface questions from a retired chapter
+      -- (archiving a chapter only sets chapters.archived_at, not the questions').
+      SELECT DISTINCT ua.question_id
+      FROM user_answers ua
+      JOIN questions q ON ua.question_id = q.id
+      JOIN chapters c ON q.chapter_id = c.id
+      WHERE ua.is_correct = false
+        AND q.archived_at IS NULL
+        AND c.archived_at IS NULL
     ),
     mastery_check AS (
       SELECT
@@ -124,9 +132,17 @@ export async function getWrongAnswerStats(
         AND aa.is_correct IS NOT NULL
     ),
     wrong_questions AS (
-      SELECT DISTINCT question_id
-      FROM user_answers
-      WHERE is_correct = false
+      -- Exclude retired questions AND questions in archived chapters so the
+      -- "Greșelile mele" count, per-chapter breakdown and playable list all
+      -- stay consistent and never resurface questions from a retired chapter
+      -- (archiving a chapter only sets chapters.archived_at, not the questions').
+      SELECT DISTINCT ua.question_id
+      FROM user_answers ua
+      JOIN questions q ON ua.question_id = q.id
+      JOIN chapters c ON q.chapter_id = c.id
+      WHERE ua.is_correct = false
+        AND q.archived_at IS NULL
+        AND c.archived_at IS NULL
     ),
     mastery_check AS (
       SELECT
@@ -159,9 +175,17 @@ export async function getWrongAnswerStats(
         AND aa.is_correct IS NOT NULL
     ),
     wrong_questions AS (
-      SELECT DISTINCT question_id
-      FROM user_answers
-      WHERE is_correct = false
+      -- Exclude retired questions AND questions in archived chapters so the
+      -- "Greșelile mele" count, per-chapter breakdown and playable list all
+      -- stay consistent and never resurface questions from a retired chapter
+      -- (archiving a chapter only sets chapters.archived_at, not the questions').
+      SELECT DISTINCT ua.question_id
+      FROM user_answers ua
+      JOIN questions q ON ua.question_id = q.id
+      JOIN chapters c ON q.chapter_id = c.id
+      WHERE ua.is_correct = false
+        AND q.archived_at IS NULL
+        AND c.archived_at IS NULL
     ),
     mastery_check AS (
       SELECT

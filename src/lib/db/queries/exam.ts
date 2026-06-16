@@ -280,10 +280,15 @@ export async function getAdmissionThresholds(): Promise<AdmissionRow[]> {
 }
 
 /**
- * Get in-progress simulation attempt for a user (if any).
+ * Get the in-progress simulation a user can still resume (if any).
+ *
+ * Only returns an attempt whose timer (plus grace) hasn't expired yet — an
+ * expired in-progress attempt is effectively over, so surfacing "Continuă
+ * simularea" for it is what left the banner stuck after a finished or abandoned
+ * simulation. Picks the most recent when several exist.
  */
 export async function getInProgressExam(userId: string) {
-  const [exam] = await db
+  const rows = await db
     .select({
       id: attempts.id,
       startedAt: attempts.startedAt,
@@ -298,7 +303,17 @@ export async function getInProgressExam(userId: string) {
         eq(attempts.status, "in_progress")
       )
     )
-    .limit(1)
+    .orderBy(desc(attempts.startedAt))
 
-  return exam ?? null
+  const GRACE_MS = 60_000
+  const now = Date.now()
+  const resumable = rows.find(
+    (r) =>
+      now <=
+      r.startedAt.getTime() +
+        (r.timeLimit ?? DEFAULT_EXAM_DURATION_SECONDS) * 1000 +
+        GRACE_MS
+  )
+
+  return resumable ?? null
 }

@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
-import { attempts, attemptAnswers, questions, options } from "@/lib/db/schema"
+import { attempts, attemptAnswers, questions, options, chapters } from "@/lib/db/schema"
 import { eq, and, inArray, isNull, sql } from "drizzle-orm"
 import { getCurrentUser } from "@/lib/auth/get-user"
 import { checkSubscriptionAccess } from "@/lib/subscription/check"
@@ -47,19 +47,36 @@ export async function createExamAttempt() {
   // Get configurable exam duration
   const duration = await getExamDuration()
 
-  // Draw 50 CS questions randomly
+  // Draw 50 CS questions randomly. The inner join + chapters.archivedAt check
+  // keeps simulations in sync with the practice pool: archiving a chapter only
+  // stamps chapters.archivedAt, never the questions' own archivedAt, so without
+  // this filter questions from retired chapters would still leak into the draw.
   const csQuestions = await db
     .select({ id: questions.id })
     .from(questions)
-    .where(and(eq(questions.type, "CS"), isNull(questions.archivedAt)))
+    .innerJoin(chapters, eq(chapters.id, questions.chapterId))
+    .where(
+      and(
+        eq(questions.type, "CS"),
+        isNull(questions.archivedAt),
+        isNull(chapters.archivedAt)
+      )
+    )
     .orderBy(sql`RANDOM()`)
     .limit(50)
 
-  // Draw 150 CM questions randomly
+  // Draw 150 CM questions randomly (same archived-chapter exclusion as above)
   const cmQuestions = await db
     .select({ id: questions.id })
     .from(questions)
-    .where(and(eq(questions.type, "CM"), isNull(questions.archivedAt)))
+    .innerJoin(chapters, eq(chapters.id, questions.chapterId))
+    .where(
+      and(
+        eq(questions.type, "CM"),
+        isNull(questions.archivedAt),
+        isNull(chapters.archivedAt)
+      )
+    )
     .orderBy(sql`RANDOM()`)
     .limit(150)
 
@@ -78,6 +95,21 @@ export async function createExamAttempt() {
 
   // Generate deterministic shuffle seed for option shuffling
   const shuffleSeed = Math.floor(Math.random() * 2147483647)
+
+  // Starting a fresh simulation closes out any earlier unfinished one, so the
+  // user never accumulates multiple in-progress simulations. Without this, an
+  // abandoned/old attempt kept the "Continuă simularea" banner stuck even after
+  // finishing a new simulation.
+  await db
+    .update(attempts)
+    .set({ status: "abandoned" })
+    .where(
+      and(
+        eq(attempts.userId, user.id),
+        eq(attempts.type, "simulation"),
+        eq(attempts.status, "in_progress")
+      )
+    )
 
   // Create attempt
   const [attempt] = await db
@@ -225,15 +257,11 @@ export async function submitExam(attemptId: string) {
     return { error: "Examenul este deja finalizat" }
   }
 
-  // Check deadline + grace period
-  const deadlineWithGrace = new Date(
-    attempt.startedAt.getTime() +
-      (attempt.timeLimit ?? 14400) * 1000 +
-      GRACE_PERIOD_SECONDS * 1000
-  )
-  if (new Date() > deadlineWithGrace) {
-    return { error: "Timpul a expirat. Examenul nu mai poate fi trimis." }
-  }
+  // No deadline gate here: submit must ALWAYS finalize the attempt. Late saves
+  // are already blocked in batchSaveAnswers, so submitting past the grace period
+  // simply scores whatever was persisted before time ran out. Refusing here is
+  // what previously stranded expired exams in_progress forever (and kept the
+  // "Continuă simularea" banner alive).
 
   // Fetch all saved answers
   const answerRows = await db
