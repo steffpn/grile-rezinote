@@ -1,6 +1,7 @@
 import { getTierPricing } from "@/lib/stripe/tier-pricing"
 import { BillingCycleToggle } from "@/components/subscription/BillingCycleToggle"
 import { auth } from "@/lib/auth"
+import { isRegistrationOpen } from "@/lib/launch"
 
 // Server component — prices are fetched from Stripe on the server, not hardcoded
 // in the client bundle, so a tampered client cannot misrepresent pricing.
@@ -10,6 +11,7 @@ export default async function PricingPage() {
   const [tiers, session] = await Promise.all([getTierPricing(), auth()])
 
   const isAuthenticated = Boolean(session?.user?.id)
+  const registrationOpen = isRegistrationOpen()
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-28 pb-16 sm:px-6 sm:pt-32 lg:px-8">
@@ -25,7 +27,11 @@ export default async function PricingPage() {
       </div>
 
       <div className="mt-12 sm:mt-16">
-        <BillingCycleToggle tiers={tiers} isAuthenticated={isAuthenticated} />
+        <BillingCycleToggle
+          tiers={tiers}
+          isAuthenticated={isAuthenticated}
+          registrationOpen={registrationOpen}
+        />
       </div>
 
       {/* Why choose us */}

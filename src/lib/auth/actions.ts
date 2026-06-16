@@ -16,6 +16,7 @@ import {
 import { auth } from "@/lib/auth"
 import { isRegistrationOpen } from "@/lib/launch"
 import { hasUsedTrialBefore } from "@/lib/subscription/trial"
+import { isEmailOnWaitlist } from "@/lib/db/queries/waitlist"
 import { STRIPE_CONFIG } from "@/lib/stripe/config"
 import {
   authLimiter,
@@ -96,6 +97,10 @@ export async function signup(
     ? new Date(Date.now() - (STRIPE_CONFIG.trialDays + 1) * 24 * 60 * 60 * 1000)
     : null
 
+  // Early-bird perk: emails that joined the pre-launch waitlist get PREMIUM
+  // (not just PRO) during their trial.
+  const earlyBird = await isEmailOnWaitlist(result.data.email)
+
   // Create user
   await db.insert(users).values({
     email: result.data.email,
@@ -105,6 +110,7 @@ export async function signup(
     marketingOptIn,
     marketingOptInAt: marketingOptIn ? new Date() : null,
     trialStartedAt,
+    earlyBird,
   })
 
   // Send welcome email (best-effort; never block signup)

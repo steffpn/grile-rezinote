@@ -16,6 +16,8 @@ export type { PricingCardModel }
 interface BillingCycleToggleProps {
   tiers: PricingCardModel[]
   isAuthenticated: boolean
+  /** When false (pre-launch) anonymous CTAs point at the waitlist. */
+  registrationOpen: boolean
 }
 
 /**
@@ -26,6 +28,7 @@ interface BillingCycleToggleProps {
 export function BillingCycleToggle({
   tiers,
   isAuthenticated,
+  registrationOpen,
 }: BillingCycleToggleProps) {
   const [cycle, setCycle] = useState<BillingCycle>("annual")
 
@@ -84,6 +87,7 @@ export function BillingCycleToggle({
               cta={t.cta}
               popular={t.popular}
               isAuthenticated={isAuthenticated}
+              registrationOpen={registrationOpen}
             />
           )
         })}

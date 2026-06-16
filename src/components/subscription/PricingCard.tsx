@@ -25,6 +25,8 @@ interface PricingCardProps {
   popular?: boolean
   /** Whether the current user is already logged in (affects FREE CTA destination). */
   isAuthenticated: boolean
+  /** When false (pre-launch) anonymous CTAs point at the waitlist instead of signup/checkout. */
+  registrationOpen: boolean
 }
 
 export function PricingCard({
@@ -39,6 +41,7 @@ export function PricingCard({
   cta,
   popular = false,
   isAuthenticated,
+  registrationOpen,
 }: PricingCardProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -49,7 +52,19 @@ export function PricingCard({
     })
   }
 
-  const freeHref = isAuthenticated ? "/dashboard" : "/signup"
+  // Pre-launch, anonymous visitors are funnelled to the waitlist instead of a
+  // signup/checkout dead-end. Logged-in users (staff/founder) keep normal flow.
+  const goWaitlist = !isAuthenticated && !registrationOpen
+  const freeHref = isAuthenticated
+    ? "/dashboard"
+    : registrationOpen
+      ? "/signup"
+      : "/#waitlist"
+  const paidButtonClass = `min-h-[44px] w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+    popular
+      ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5"
+      : "bg-primary text-primary-foreground hover:bg-primary/90"
+  }`
 
   return (
     <motion.div
@@ -114,18 +129,21 @@ export function PricingCard({
           href={freeHref}
           className="inline-flex min-h-[44px] w-full items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent"
         >
-          {cta}
+          {goWaitlist ? "Intră pe listă" : cta}
+        </Link>
+      ) : goWaitlist ? (
+        <Link
+          href="/#waitlist"
+          className={`inline-flex items-center justify-center ${paidButtonClass}`}
+        >
+          Intră pe listă
         </Link>
       ) : (
         <form action={handleSubscribe}>
           <button
             type="submit"
             disabled={isPending}
-            className={`min-h-[44px] w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-              popular
-                ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5"
-                : "bg-primary text-primary-foreground hover:bg-primary/90"
-            } disabled:cursor-not-allowed disabled:opacity-60`}
+            className={`${paidButtonClass} disabled:cursor-not-allowed disabled:opacity-60`}
           >
             {isPending ? "Se incarca..." : cta}
           </button>

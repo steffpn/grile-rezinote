@@ -55,6 +55,10 @@ export const users = pgTable("users", {
   targetScore: integer("target_score"), // goal score for the exam (0–950)
   graduationYear: integer("graduation_year"), // year they graduate
   trialStartedAt: timestamp("trial_started_at"), // set on first paid feature access
+  // Early-bird perk: set true at account creation when the email was on the
+  // pre-launch waitlist. Such users get PREMIUM (not just PRO) for the duration
+  // of their trial — see checkSubscriptionAccess.
+  earlyBird: boolean("early_bird").notNull().default(false),
   // OAuth metadata (nullable for credentials-only users)
   googleId: text("google_id").unique(),
   image: text("image"),

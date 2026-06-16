@@ -7,6 +7,7 @@ import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 import { hasUsedTrialBefore } from "@/lib/subscription/trial"
+import { isEmailOnWaitlist } from "@/lib/db/queries/waitlist"
 import { STRIPE_CONFIG } from "@/lib/stripe/config"
 import { isRegistrationOpen } from "@/lib/launch"
 
@@ -170,6 +171,10 @@ export const authConfig: NextAuthConfig = {
       // on the login page).
       const marketingOptIn = await readAndClearSignupMarketingCookie()
 
+      // Early-bird perk: emails that joined the pre-launch waitlist get PREMIUM
+      // (not just PRO) during their trial.
+      const earlyBird = await isEmailOnWaitlist(user.email)
+
       const [created] = await db
         .insert(users)
         .values({
@@ -181,6 +186,7 @@ export const authConfig: NextAuthConfig = {
           image: (user.image as string | undefined) ?? null,
           marketingOptIn,
           marketingOptInAt: marketingOptIn ? new Date() : null,
+          earlyBird,
           trialStartedAt,
         })
         .returning({ id: users.id })

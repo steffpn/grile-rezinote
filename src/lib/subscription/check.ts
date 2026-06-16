@@ -29,8 +29,9 @@ export type SubscriptionAccess = {
 }
 
 /**
- * Tier granted to users during an active trial. PRO (not PREMIUM) so PREMIUM
- * features stay as an upgrade incentive even while trialing.
+ * Default tier granted during an active trial. PRO (not PREMIUM) so PREMIUM
+ * features stay as an upgrade incentive even while trialing — EXCEPT for
+ * early-bird waitlist users, who trial PREMIUM (see the trial branch below).
  */
 const ACTIVE_TRIAL_TIER: PlanTier = "PRO"
 
@@ -79,7 +80,10 @@ export const checkSubscriptionAccess = cache(async function checkSubscriptionAcc
 
   // Server-side trial (independent of Stripe — pre-checkout goodwill trial).
   const [user] = await db
-    .select({ trialStartedAt: users.trialStartedAt })
+    .select({
+      trialStartedAt: users.trialStartedAt,
+      earlyBird: users.earlyBird,
+    })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1)
@@ -117,7 +121,9 @@ export const checkSubscriptionAccess = cache(async function checkSubscriptionAcc
     return {
       hasAccess: true,
       status: "trialing",
-      tier: ACTIVE_TRIAL_TIER,
+      // Early-bird waitlist users trial PREMIUM (Admission module unlocked);
+      // everyone else trials PRO.
+      tier: user.earlyBird ? "PREMIUM" : ACTIVE_TRIAL_TIER,
       trialAvailable: false,
       trialDaysRemaining: daysRemaining,
     }

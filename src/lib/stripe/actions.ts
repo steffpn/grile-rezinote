@@ -104,6 +104,9 @@ export async function createCheckoutSessionForTier(
     customer: customerId,
     mode: "subscription",
     line_items: [{ price: priceId, quantity: 1 }],
+    // Let early-bird / promo codes (created in the Stripe Dashboard) be entered
+    // at checkout for the subscription discount.
+    allow_promotion_codes: true,
     success_url: `${STRIPE_CONFIG.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: STRIPE_CONFIG.cancelUrl,
     metadata: { userId: session.user.id, planTier: tier },

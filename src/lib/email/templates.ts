@@ -116,6 +116,38 @@ export function welcomeEmail(opts: {
   }
 }
 
+export function waitlistWelcomeEmail(opts: {
+  code?: string | null
+}): { subject: string; html: string } {
+  const codeBlock = opts.code
+    ? `
+        <p style="margin:0 0 8px 0">Codul tau de early-bird (pastreaza-l pentru cand te abonezi):</p>
+        <div style="margin:0 0 16px 0;padding:14px 16px;border:1px dashed ${BRAND_GREEN};border-radius:10px;background:#0d1f17;text-align:center">
+          <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;font-weight:700;letter-spacing:1px;color:${BRAND_GREEN}">${escape(opts.code)}</span>
+        </div>`
+    : ""
+
+  return {
+    subject: "Esti pe lista — acces early-bird la grile-ReziNOTE",
+    html: shell({
+      preheader:
+        "Esti pe lista. La lansare primesti PREMIUM in trial + reducere la abonament.",
+      heading: "Esti pe lista!",
+      body: `
+        <p style="margin:0 0 12px 0">Mersi ca te-ai inscris! Esti printre primii — te anuntam pe email in clipa in care deschidem.</p>
+        <p style="margin:0 0 8px 0">Pentru ca ai intrat inainte de lansare, primesti <strong>acces early-bird</strong>:</p>
+        <ul style="margin:0 0 16px 20px;padding:0;line-height:1.7">
+          <li><strong>PREMIUM deblocat pe toata perioada de trial</strong> — inclusiv modulul de Admitere (vezi unde ai fi fost admis), nu doar PRO.</li>
+          <li>Reducere la abonament cu codul de mai jos.</li>
+        </ul>
+        ${codeBlock}
+        <p style="margin:0">Nu trebuie sa faci nimic acum. Te anuntam noi cand deschidem conturile.</p>
+      `,
+      footerNote: "Daca nu te-ai inscris tu pe lista, poti ignora acest email.",
+    }),
+  }
+}
+
 export function paymentFailedEmail(opts: {
   fullName?: string | null
   manageUrl: string
