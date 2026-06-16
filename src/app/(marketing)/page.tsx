@@ -774,10 +774,7 @@ export default async function LandingPage() {
                     { href: "/signup", label: "Signup" },
                     { href: "/signup", label: "Trial gratuit" },
                   ]
-                : [
-                    { href: "/login", label: "Login" },
-                    { href: "/#waitlist", label: "Vreau acces" },
-                  ]
+                : [{ href: "/#waitlist", label: "Vreau acces" }]
             }
           />
           <FooterCol

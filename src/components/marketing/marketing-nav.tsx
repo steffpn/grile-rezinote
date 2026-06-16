@@ -78,19 +78,19 @@ export function MarketingNav({
               </Button>
               <UserMenu userEmail={userEmail!} variant="marketing" />
             </>
-          ) : (
+          ) : registrationOpen ? (
             <>
               <Button asChild variant="ghost" size="sm">
                 <Link href="/login">Login</Link>
               </Button>
               <Button asChild size="sm">
-                {registrationOpen ? (
-                  <Link href="/signup?source=landing-nav">Începe gratuit</Link>
-                ) : (
-                  <Link href="/#waitlist">Vreau acces</Link>
-                )}
+                <Link href="/signup?source=landing-nav">Începe gratuit</Link>
               </Button>
             </>
+          ) : (
+            <Button asChild size="sm">
+              <Link href="/#waitlist">Vreau acces</Link>
+            </Button>
           )}
         </div>
 
@@ -140,29 +140,29 @@ export function MarketingNav({
                       Dashboard
                     </Link>
                   </Button>
-                ) : (
+                ) : registrationOpen ? (
                   <>
                     <Button asChild variant="outline" size="lg" className="w-full">
                       <Link href="/login">Login</Link>
                     </Button>
                     <Button asChild size="lg" className="w-full">
-                      {registrationOpen ? (
-                        <Link
-                          href="/signup?source=landing-nav"
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          Începe gratuit
-                        </Link>
-                      ) : (
-                        <Link
-                          href="/#waitlist"
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          Vreau acces
-                        </Link>
-                      )}
+                      <Link
+                        href="/signup?source=landing-nav"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Începe gratuit
+                      </Link>
                     </Button>
                   </>
+                ) : (
+                  <Button asChild size="lg" className="w-full">
+                    <Link
+                      href="/#waitlist"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Vreau acces
+                    </Link>
+                  </Button>
                 )}
               </div>
             </div>
