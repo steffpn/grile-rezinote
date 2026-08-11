@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google"
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "sonner"
 import { OfflineIndicator } from "@/components/pwa/offline-indicator"
+import { AppUpdateBanner } from "@/components/pwa/app-update-banner"
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider"
 import { CommandPalette } from "@/components/command/command-palette"
 import { CookieBanner } from "@/components/shared/cookie-banner"
@@ -66,6 +67,7 @@ export default function RootLayout({
           <SmoothScrollProvider>
             {children}
             <CommandPalette />
+            <AppUpdateBanner />
             <CookieBanner />
             <Toaster
               theme="dark"

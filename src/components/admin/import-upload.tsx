@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback, useMemo } from "react"
+import { unstable_isUnrecognizedActionError } from "next/navigation"
 import {
   Upload,
   FileSpreadsheet,
@@ -11,6 +12,7 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronRight,
+  RefreshCw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -63,6 +65,7 @@ export function ImportUpload() {
     done: number
     total: number
   } | null>(null)
+  const [staleVersion, setStaleVersion] = useState(false)
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState<
     null | "csv" | "xlsx"
   >(null)
@@ -79,6 +82,7 @@ export function ImportUpload() {
     setStatusFilter("all")
     setExpandedRow(null)
     setImportProgress(null)
+    setStaleVersion(false)
   }
 
   // ── Parsers ──────────────────────────────────────────────────────────
@@ -311,12 +315,26 @@ export function ImportUpload() {
       // Chunks commit independently, so a mid-run failure leaves the
       // earlier ones in the database — report the partial state instead of
       // implying nothing happened.
-      total.errors.push({
-        row: 0,
-        message: `Import întrerupt după ${total.imported} întrebări adăugate: ${
-          err instanceof Error ? err.message : "eroare de rețea"
-        }. Restul rândurilor nu au fost salvate — reia importul cu un fișier din care ai scos rândurile deja adăugate, altfel le vei duplica.`,
-      })
+      if (unstable_isUnrecognizedActionError(err)) {
+        // The tab was loaded before the last deploy: Server Action IDs are
+        // regenerated per build, so this one no longer exists server-side.
+        // Nothing reached the database on this call — only a reload fixes it.
+        setStaleVersion(true)
+        total.errors.push({
+          row: 0,
+          message:
+            total.imported > 0
+              ? `Aplicația a fost actualizată în timpul importului. Primele ${total.imported} întrebări au fost adăugate, restul nu. Reîncarcă pagina și reia importul doar cu rândurile rămase, altfel le vei duplica pe primele.`
+              : "Pagina rulează o versiune veche a aplicației, publicată înainte de ultima actualizare. Nicio întrebare nu a fost adăugată — reîncarcă pagina și reia importul.",
+        })
+      } else {
+        total.errors.push({
+          row: 0,
+          message: `Import întrerupt după ${total.imported} întrebări adăugate: ${
+            err instanceof Error ? err.message : "eroare de rețea"
+          }. Restul rândurilor nu au fost salvate — reia importul cu un fișier din care ai scos rândurile deja adăugate, altfel le vei duplica.`,
+        })
+      }
     } finally {
       setResult(total)
       setParsedData(null)
@@ -626,6 +644,21 @@ export function ImportUpload() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Version skew — the only fix is reloading the tab */}
+      {staleVersion && (
+        <div className="flex flex-wrap items-center gap-3 rounded-[12px] border border-warm/50 bg-warm/10 p-4">
+          <RefreshCw className="size-5 shrink-0 text-warm" aria-hidden />
+          <p className="min-w-[220px] flex-1 text-[13.5px] leading-snug text-fg">
+            Aplicația a fost actualizată de când ai deschis pagina. Reîncarcă
+            pagina ca importul să funcționeze.
+          </p>
+          <Button size="sm" onClick={() => window.location.reload()}>
+            <RefreshCw className="size-4" />
+            Reîncarcă pagina
+          </Button>
         </div>
       )}
 
