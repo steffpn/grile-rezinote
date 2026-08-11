@@ -8,6 +8,7 @@ import { getCurrentAdmin, logAudit } from "@/lib/db/queries/admin"
 import {
   importRowSchema,
   IMPORT_COLUMNS,
+  MAX_IMPORT_ROWS,
   type ImportColumn,
   type ImportRow,
   type ImportResult,
@@ -15,12 +16,23 @@ import {
 import ExcelJS from "exceljs"
 
 const BATCH_SIZE = 50
-const MAX_IMPORT_ROWS = 5000
 
+/**
+ * Insert a batch of questions.
+ *
+ * The upload UI calls this once per chunk (see IMPORT_CHUNK_SIZE), so
+ * `rows` is a slice of the spreadsheet with the invalid rows already
+ * dropped. `rowNums` carries each row's original 1-indexed spreadsheet
+ * position so the error report still points at the right line; it falls
+ * back to the slice index when omitted.
+ */
 export async function importQuestions(
   rows: ImportRow[],
+  rowNums?: number[],
 ): Promise<ImportResult> {
   const admin = await getCurrentAdmin()
+
+  const rowNumAt = (i: number) => rowNums?.[i] ?? i + 2
 
   // Hard cap on payload size to prevent OOM/DoS via huge imports.
   if (rows.length > MAX_IMPORT_ROWS) {
@@ -45,12 +57,12 @@ export async function importQuestions(
     if (!parsed.success) {
       const issue = parsed.error.issues[0]
       errors.push({
-        row: i + 2, // +2 for 1-indexed + header row
+        row: rowNumAt(i),
         message: issue?.message ?? "Eroare de validare",
         column: issue?.path?.[0] ? String(issue.path[0]) : undefined,
       })
     } else {
-      validRows.push({ data: parsed.data, rowNum: i + 2 })
+      validRows.push({ data: parsed.data, rowNum: rowNumAt(i) })
     }
   }
 

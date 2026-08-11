@@ -19,6 +19,8 @@ import {
 } from "@/lib/actions/import-export"
 import {
   IMPORT_COLUMNS,
+  IMPORT_CHUNK_SIZE,
+  MAX_IMPORT_ROWS,
   COLUMN_LABELS,
   buildImportRow,
   importRowSchema,
@@ -57,6 +59,10 @@ export function ImportUpload() {
   const [parseError, setParseError] = useState<string | null>(null)
   const [isParsing, setIsParsing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [importProgress, setImportProgress] = useState<{
+    done: number
+    total: number
+  } | null>(null)
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState<
     null | "csv" | "xlsx"
   >(null)
@@ -72,6 +78,7 @@ export function ImportUpload() {
     setResult(null)
     setStatusFilter("all")
     setExpandedRow(null)
+    setImportProgress(null)
   }
 
   // ── Parsers ──────────────────────────────────────────────────────────
@@ -204,6 +211,13 @@ export function ImportUpload() {
           return
         }
 
+        if (rowStates.length > MAX_IMPORT_ROWS) {
+          setParseError(
+            `Fișierul are ${rowStates.length} rânduri, iar limita este ${MAX_IMPORT_ROWS} per import. Împarte-l în mai multe fișiere.`,
+          )
+          return
+        }
+
         setParsedData({ fileName: file.name, rows: rowStates })
       } catch (err) {
         setParseError(
@@ -266,24 +280,48 @@ export function ImportUpload() {
   // ── Actions ─────────────────────────────────────────────────────────
   const handleImport = async () => {
     if (!parsedData) return
-    const validRows = parsedData.rows.filter((r) => r.valid).map((r) => r.raw)
+    const validRows = parsedData.rows.filter((r) => r.valid)
     if (validRows.length === 0) return
+
     setIsImporting(true)
+    setImportProgress({ done: 0, total: validRows.length })
+
+    // A whole bank serialises to several MB, well past the Server Action
+    // body limit — so ship it in chunks and merge the per-chunk reports.
+    // Each chunk carries its original spreadsheet row numbers so errors
+    // still point at the right line in the file.
+    const total: ImportResult = { imported: 0, updated: 0, errors: [] }
 
     try {
-      const importResult = await importQuestions(validRows)
-      setResult(importResult)
-      setParsedData(null)
-    } catch {
-      setResult({
-        imported: 0,
-        updated: 0,
-        errors: [
-          { row: 0, message: "Eroare neașteptată la import. Încearcă din nou." },
-        ],
+      for (let i = 0; i < validRows.length; i += IMPORT_CHUNK_SIZE) {
+        const chunk = validRows.slice(i, i + IMPORT_CHUNK_SIZE)
+        const res = await importQuestions(
+          chunk.map((r) => r.raw),
+          chunk.map((r) => r.rowNum),
+        )
+        total.imported += res.imported
+        total.updated += res.updated
+        total.errors.push(...res.errors)
+        setImportProgress({
+          done: Math.min(i + IMPORT_CHUNK_SIZE, validRows.length),
+          total: validRows.length,
+        })
+      }
+    } catch (err) {
+      // Chunks commit independently, so a mid-run failure leaves the
+      // earlier ones in the database — report the partial state instead of
+      // implying nothing happened.
+      total.errors.push({
+        row: 0,
+        message: `Import întrerupt după ${total.imported} întrebări adăugate: ${
+          err instanceof Error ? err.message : "eroare de rețea"
+        }. Restul rândurilor nu au fost salvate — reia importul cu un fișier din care ai scos rândurile deja adăugate, altfel le vei duplica.`,
       })
     } finally {
+      setResult(total)
+      setParsedData(null)
       setIsImporting(false)
+      setImportProgress(null)
     }
   }
 
@@ -432,7 +470,7 @@ export function ImportUpload() {
                 Trage fișierul aici sau apasă pentru a-l alege
               </p>
               <p className="text-[12px] text-fg-mute">
-                .xlsx sau .csv · max 5000 rânduri
+                .xlsx sau .csv · max {MAX_IMPORT_ROWS} rânduri
               </p>
             </>
           )}
@@ -506,7 +544,9 @@ export function ImportUpload() {
                 {isImporting ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    Se importă...
+                    {importProgress
+                      ? `Se importă... ${importProgress.done}/${importProgress.total}`
+                      : "Se importă..."}
                   </>
                 ) : (
                   `Importă ${stats.valid} valide`

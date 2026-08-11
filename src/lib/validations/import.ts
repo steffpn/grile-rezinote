@@ -79,6 +79,17 @@ export const importRowSchema = z
 
 export type ImportRow = z.infer<typeof importRowSchema>
 
+/** Hard cap on a single import job (enforced client-side across all chunks). */
+export const MAX_IMPORT_ROWS = 5000
+
+/**
+ * Rows per `importQuestions` call. Server Actions cap the request body at a
+ * few MB and a full question bank serialises to far more than that, so the
+ * upload UI ships the rows in chunks. ~200 rows lands around 120 KB — with
+ * plenty of headroom for unusually long enunțuri.
+ */
+export const IMPORT_CHUNK_SIZE = 200
+
 export interface ImportError {
   row: number
   message: string
